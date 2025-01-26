@@ -17,3 +17,5 @@ combined = CombinedDataset(datasets)
 
 print(datasets[0][:][0].shape)
 print(datasets[1][:][0].shape)
+
+# Test
