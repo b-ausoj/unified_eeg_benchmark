@@ -125,3 +125,8 @@ class AbstractDataset(ABC):
     def split(self, split: Split):
         """Set the split."""
         self._split = split
+
+    @property
+    def interval_length(self):
+        """Return the interval length."""
+        return self._interval[1] - self._interval[0]

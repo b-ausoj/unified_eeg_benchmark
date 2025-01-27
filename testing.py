@@ -15,7 +15,8 @@ datasets = LeftHandRightHandTask().get_dataset(
 
 combined = CombinedDataset(datasets)
 
-print(datasets[0][:][0].shape)
-print(datasets[1][:][0].shape)
+print(len(combined))
+print(combined[0][0].shape)
 
 # Test
+# per dataset or across datasets (common or big)
