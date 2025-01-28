@@ -8,6 +8,7 @@ from scipy.io import loadmat
 from ..enums.split import Split
 from ..tasks.abstract_task import AbstractTask
 from resampy import resample
+from mne.filter import filter_data
 
 """
 BCI IV 2a dataset aka BNCI2014_001
@@ -29,6 +30,7 @@ def _load_data_bcicomp_iv_2a(
     subjects: list[int],
     target_labels: list[str],
     interval: list[int],
+    filter_band: list[int],
     sampling_frequency: int,
     target_frequency: int,
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -61,6 +63,20 @@ def _load_data_bcicomp_iv_2a(
                     )
                     labels.append(run.y[i])
                 data.append(run_data)
+
+    # first apply bandpass filter, for each run individually wihtout clipping
+    if filter_band is not None:
+        [
+            filter_data(
+                run,
+                sampling_frequency,
+                filter_band[0],
+                filter_band[1],
+                method="iir",
+                verbose=False,
+            )
+            for run in data
+        ]
 
     data = np.concatenate(data, axis=0)
     labels = np.array(labels)
@@ -172,6 +188,7 @@ class BCICompIV2aDataset(AbstractDataset):
             subjects,
             self.task_split[self._task.name]["labels"],
             self._interval,
+            [8, 32],
             self._sampling_frequency,
             self._target_frequency,
         )
@@ -181,10 +198,3 @@ class BCICompIV2aDataset(AbstractDataset):
                 self._channel_names.index(ch) for ch in self._target_channels
             ]
             self.data = self.data[:, target_indices, :]
-
-        if self.split == Split.TRAIN:
-            print(self.data.shape)
-            print(self.data[0])
-            print(np.mean(self.data[0]))
-            print(np.var(self.data[0]))
-            print()

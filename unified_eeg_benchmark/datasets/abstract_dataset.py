@@ -26,6 +26,7 @@ class AbstractDataset(ABC):
         self.labels = None
         self.meta = None
         self._interval = interval
+        self.task_split = None
         self.name = name
         self._task = task
         self._tasks = tasks

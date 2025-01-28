@@ -1,5 +1,5 @@
 from .abstract_model import AbstractModel
-from sklearn.svm import SVC
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from typing import List, Dict
 import numpy as np
 from mne.decoding import CSP
@@ -7,20 +7,17 @@ from resampy import resample
 from sklearn.utils import shuffle
 
 
-class CSPSVMModel(AbstractModel):
+class CSPLDAModel(AbstractModel):
     def __init__(
         self,
-        kernel="linear",
-        C=1.0,
-        random_state=42,
         n_components=4,
         reg=None,
         log=True,
         resample_rate=200,
         channels=["C3", "Cz", "C4"],
     ):
-        super().__init__("CSP-SVM")
-        self.svm = SVC(kernel=kernel, C=C, random_state=random_state)
+        super().__init__("CSP-LDA")
+        self.lda = LDA()
         self.csp = CSP(n_components=n_components, reg=reg, log=log)
         self.resample_rate = resample_rate
         self.channels = channels
@@ -40,14 +37,14 @@ class CSPSVMModel(AbstractModel):
         X_csp = self.csp.fit_transform(X, y)
 
         # Fit LDA on CSP-transformed training data
-        self.svm.fit(X_csp, y)
+        self.lda.fit(X_csp, y)
 
     def predict(self, X: List[np.ndarray], meta: List[Dict]) -> np.ndarray:
         [self.validate_meta(m) for m in meta]
 
         X = self._prepare_data(X, meta)
         X_csp = self.csp.transform(X)
-        return self.svm.predict(X_csp)
+        return self.lda.predict(X_csp)
 
     def _prepare_data(self, X: List[np.ndarray], meta: List[Dict]) -> np.ndarray:
 

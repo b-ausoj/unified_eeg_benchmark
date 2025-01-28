@@ -8,6 +8,7 @@ from pooch import Unzip, retrieve
 from scipy.io import loadmat
 from ..enums.split import Split
 from resampy import resample
+from mne.filter import filter_data
 
 
 """
@@ -29,6 +30,7 @@ def _load_data_weibo2013(
     subjects: list[int],
     target_labels: list[str],
     interval: list[int],
+    filter_band: list[int],
     sampling_frequency: int,
     target_frequency: int,
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -81,6 +83,20 @@ def _load_data_weibo2013(
     # save the data in the cache
     # intervall isn't applied yet
     # nor resampled to target frequency
+
+    # first apply bandpass filter, for each run individually wihtout clipping
+    if filter_band is not None:
+        [
+            filter_data(
+                run,
+                sampling_frequency,
+                filter_band[0],
+                filter_band[1],
+                method="iir",
+                verbose=False,
+            )
+            for run in data
+        ]
 
     data = np.concatenate(data, axis=0)
     labels = np.concatenate(labels, axis=0)
@@ -213,6 +229,7 @@ class Weibo2013Dataset(AbstractDataset):
             subjects,
             self.task_split[self._task.name]["labels"],
             self._interval,
+            [8, 32],
             self._sampling_frequency,
             self._target_frequency,
         )
