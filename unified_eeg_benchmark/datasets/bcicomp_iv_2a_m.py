@@ -45,6 +45,7 @@ class BCICompIV2aMDataset(AbstractDataset):
             "sampling_frequency": self._sampling_frequency,  # check if correct or target frequency
             "channel_names": self._channel_names,  # check if correct or target channels
             "labels_mapping": {"left_hand": 1, "right_hand": 2, "feet": 3, "tongue": 4},
+            "name": "BCICompIV2a",
         }
 
         self._load_task_split()

@@ -156,6 +156,7 @@ class Weibo2013Dataset(AbstractDataset):
                 "right_hand_left_foot": 6,
                 "rest": 7,
             },
+            "name": self.name,
         }
         self.task_split = None  # defines which subject, session, run is relevant for the specific task and split
         # annotations has the structure:

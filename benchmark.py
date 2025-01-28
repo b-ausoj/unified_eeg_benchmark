@@ -18,7 +18,7 @@ from sklearn.metrics import (
 )
 
 
-def print_classification_results(y_train, y_test, model_names, y_preds):
+def print_classification_results(y_train, y_test, model_names, y_preds, dataset_names):
     # Assuming y_train and y_test are lists of numpy arrays
 
     # Gather basic statistics
@@ -38,7 +38,7 @@ def print_classification_results(y_train, y_test, model_names, y_preds):
 
     # Create a DataFrame for better formatting
     task_data = {
-        "Dataset": [f"Dataset {i+1}" for i in range(len(y_train))],
+        "Dataset": [f"{dataset_names[i]}" for i in range(len(y_train))],
         "Train Samples": train_samples,
         "Test Samples": test_samples,
         "Train Class Distribution": [str(dist) for dist in train_distribution],
@@ -86,7 +86,7 @@ def print_classification_results(y_train, y_test, model_names, y_preds):
         # Add per-dataset metrics
         for i, (y_true, y_pred) in enumerate(zip(y_test, y_pred)):
             dataset_metrics = calculate_metrics(y_true, y_pred)
-            results.append([f"Dataset {i+1}"] + list(dataset_metrics.values()))
+            results.append([f"{dataset_names[i]}"] + list(dataset_metrics.values()))
 
         # Create a DataFrame for tabular formatting
         metrics_table = pd.DataFrame(
@@ -115,7 +115,7 @@ def benchmark(tasks: List[AbstractDataset], models: List[AbstractModel]):
         # such as the sampling frequency, the channel names, the labels mapping, etc.
 
         scoring = task.get_scoring()
-
+        dataset_names = [m["name"] for m in meta_train]
         models_names = []
         results = []
         for model in models:
@@ -128,7 +128,9 @@ def benchmark(tasks: List[AbstractDataset], models: List[AbstractModel]):
             models_names.append(str(model))
             results.append(y_pred)
 
-        print_classification_results(y_train, y_test, models_names, results)
+        print_classification_results(
+            y_train, y_test, models_names, results, dataset_names
+        )
 
 
 # this should also be possible to be defined in a separate file json/yaml so that it can be easily extended

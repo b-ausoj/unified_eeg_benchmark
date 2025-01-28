@@ -12,8 +12,8 @@ class LeftHandRightHandTask(AbstractTask):
             classes=["left_hand", "right_hand"],
             datasets=[
                 BCICompIV2aMDataset,
-                Weibo2013MDataset,
                 BCICompIV2bMDataset,
+                Weibo2013MDataset,
             ],
         )
 

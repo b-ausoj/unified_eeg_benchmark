@@ -51,6 +51,7 @@ class Weibo2013MDataset(AbstractDataset):
                 "right_hand_left_foot": 6,
                 "rest": 7,
             },
+            "name": "Weibo2013",
         }
         self._load_task_split()
         if preload:

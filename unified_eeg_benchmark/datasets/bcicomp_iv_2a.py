@@ -129,6 +129,7 @@ class BCICompIV2aDataset(AbstractDataset):
             "sampling_frequency": self._sampling_frequency,  # check if correct or target frequency
             "channel_names": self._channel_names,  # check if correct or target channels
             "labels_mapping": {"left_hand": 1, "right_hand": 2, "feet": 3, "tongue": 4},
+            "name": self.name,
         }
         self.task_split = None  # defines which subject, session, run is relevant for the specific task and split
         # annotations has the structure:
