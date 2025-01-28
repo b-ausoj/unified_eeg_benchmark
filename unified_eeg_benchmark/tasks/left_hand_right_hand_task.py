@@ -16,6 +16,7 @@ class LeftHandRightHandTask(AbstractTask):
                 BCICompIV2bMDataset,
                 Weibo2013MDataset,
             ],
+            # TODO add the split (subjects) here and remove it from the dataset
         )
 
     def get_scoring(self):

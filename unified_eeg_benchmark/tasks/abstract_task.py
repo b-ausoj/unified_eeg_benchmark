@@ -22,6 +22,7 @@ class AbstractTask(ABC):
         ys = []
         metas = []
         for dataset in self.datasets:
+            # TODO create another layer of abstraction for the dataset
             X, y, meta = dataset(
                 classes=self.classes,
                 split=split,
