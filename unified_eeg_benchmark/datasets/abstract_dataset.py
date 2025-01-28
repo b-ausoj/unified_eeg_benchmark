@@ -23,8 +23,10 @@ class AbstractDataset(ABC):
         preload=False,
     ):
         self.data = None
+        self.labels = None
+        self.meta = None
         self._interval = interval
-        self._name = name
+        self.name = name
         self._task = task
         self._tasks = tasks
         self._split = split
@@ -38,7 +40,7 @@ class AbstractDataset(ABC):
             ), "Target channels must be a subset of the available channels"
         self._target_channels = target_channels
         self._target_frequency = target_frequency
-        self._preload = False
+        self._preload = preload
         self._cache = Memory(location=os.path.join(base_path, "cache"), verbose=0)
         # TODO make this more generic with a config file and parameters
 
@@ -51,7 +53,14 @@ class AbstractDataset(ABC):
         return len(self.data)
 
     def __str__(self):
-        return self._name
+        return self.name
+
+    def get_data(self):
+        if self.data is None or self.labels is None:
+            self.load_data()
+        if self.meta is None:
+            raise ValueError("Meta information not implemented in {self}")
+        return self.data, self.labels, self.meta
 
     @abstractmethod
     def load_data(self):
@@ -63,7 +72,7 @@ class AbstractDataset(ABC):
 
     def _load_task_split(self):
         task_split_path = os.path.join(
-            base_path, "unified_eeg_benchmark", "task_split", f"{self._name}.json"
+            base_path, "unified_eeg_benchmark", "task_split", f"{self.name}.json"
         )
         if os.path.exists(task_split_path):
             with open(task_split_path, "r") as f:

@@ -23,7 +23,7 @@ base_path = "/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/"
 data_path = os.path.join(base_path, "data", "bcicomp_iv_2a")
 
 
-def _load_data(
+def _load_data_bcicomp_iv_2a(
     task_name: str,  # needed for the cache
     split_value: str,  # needed for the cache
     subjects: list[int],
@@ -32,7 +32,7 @@ def _load_data(
     sampling_frequency: int,
     target_frequency: int,
 ) -> tuple[np.ndarray, np.ndarray]:
-    print("BCICompIV2aDataset._load_data")
+    print("BCICompIV2aDataset._load_data_bcicomp_iv_2a")
 
     data = []
     labels = []
@@ -49,7 +49,8 @@ def _load_data(
                 run_data = []
                 if len(run.trial) == 0:
                     continue
-                eeg_data = 1e-6 * run.X  # scale
+                # eeg_data = 1e-6 * run.X  # scale
+                eeg_data = run.X
                 eeg_data = eeg_data[:, :22]  # only use EEG channels
 
                 for i, start_idx in enumerate(run.trial):
@@ -105,9 +106,14 @@ class BCICompIV2aDataset(AbstractDataset):
             preload=preload,
         )
         # fmt: on
-        print("BCICompIV2aDataset")
+        print("BCICompIV2aDataset.__init__")
         self.data = None  # has the raw data in a array of shape (n_samples, n_channels, n_times) already for the specific task and split
         self.labels = None  # has the labels in a array of shape (n_samples,) already for the specific task
+        self.meta = {
+            "sampling_frequency": self._sampling_frequency,  # check if correct or target frequency
+            "channel_names": self._channel_names,  # check if correct or target channels
+            "labels_mapping": {"left_hand": 1, "right_hand": 2, "feet": 3, "tongue": 4},
+        }
         self.task_split = None  # defines which subject, session, run is relevant for the specific task and split
         # annotations has the structure:
         # {
@@ -160,7 +166,7 @@ class BCICompIV2aDataset(AbstractDataset):
                     self._download(subject)
         # now the data is downloaded and unpacked
         # load the data
-        self.data, self.labels = self._cache.cache(_load_data)(
+        self.data, self.labels = self._cache.cache(_load_data_bcicomp_iv_2a)(
             self._task.name,
             self._split.value,
             subjects,
@@ -175,3 +181,10 @@ class BCICompIV2aDataset(AbstractDataset):
                 self._channel_names.index(ch) for ch in self._target_channels
             ]
             self.data = self.data[:, target_indices, :]
+
+        if self.split == Split.TRAIN:
+            print(self.data.shape)
+            print(self.data[0])
+            print(np.mean(self.data[0]))
+            print(np.var(self.data[0]))
+            print()

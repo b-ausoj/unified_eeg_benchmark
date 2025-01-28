@@ -1,0 +1,98 @@
+{
+    "tasks": [
+        {
+            "name": "4 class motor imagery",
+            "tasks": [
+                "left hand imagined",
+                "right hand imagined",
+                "feet imagined",
+                "tongue imagined"
+            ],
+            "datasets": [
+                "BCI Competition IV 2a",
+                "MI SCP"
+            ]
+        },
+        {
+            "name": "real movement lr hand feet",
+            "tasks": [
+                "left hand movement",
+                "right hand movement",
+                "feet movement"
+            ],
+            "datasets": [
+                "Eegmmidb",
+                "MI HGD",
+                "MI LR",
+                "MI GVH",
+                "MI SCP"
+            ]
+        },
+        {
+            "name": "left vs right hand motor execution",
+            "tasks": [
+                "left hand movement",
+                "right hand movement"
+            ]
+        },
+        {
+            "name": "left vs right hand motor imagery",
+            "tasks": [
+                "left hand imagined",
+                "right hand imagined"
+            ]
+        },
+        {
+            "name": "fingers imagined",
+            "tasks": [
+                "thumb imagined",
+                "index finger imagined",
+                "middle finger imagined",
+                "ring finger imagined",
+                "little finger imagined"
+            ]
+        },
+        {
+            "name": "flexion vs extension motor execution",
+            "tasks": [
+                "hand flexion",
+                "hand extension"
+            ]
+        },
+        {
+            "name": "flexion vs extension motor imagery",
+            "tasks": [
+                "hand flexion imagined",
+                "hand extension imagined"
+            ]
+        },
+        {
+            "name": "palmar grasp vs lateral grasp motor execution",
+            "tasks": [
+                "palmar grasp",
+                "lateral grasp"
+            ]
+        },
+        {
+            "name": "palmar grasp vs lateral grasp motor imagery",
+            "tasks": [
+                "palmar grasp imagined",
+                "lateral grasp imagined"
+            ]
+        },
+        {
+            "name": "pronation vs supination motor execution",
+            "tasks": [
+                "pronation",
+                "supination"
+            ]
+        },
+        {
+            "name": "pronation vs supination motor imagery",
+            "tasks": [
+                "pronation imagined",
+                "supination imagined"
+            ]
+        }
+    ]
+}

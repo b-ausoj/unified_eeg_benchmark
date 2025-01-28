@@ -1,4 +1,5 @@
 from .abstract_dataset import AbstractDataset
+from ..tasks.abstract_task import AbstractTask
 import numpy as np
 import logging
 import os
@@ -22,7 +23,7 @@ base_path = "/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/"
 data_path = os.path.join(base_path, "data", "weibo2013")
 
 
-def _load_data(
+def _load_data_weibo2013(
     task_name: str,  # needed for the cache
     split_value: str,  # needed for the cache
     subjects: list[int],
@@ -31,7 +32,7 @@ def _load_data(
     sampling_frequency: int,
     target_frequency: int,
 ) -> tuple[np.ndarray, np.ndarray]:
-    print("Weibo2013Dataset._load_data")
+    print("Weibo2013Dataset._load_data_weibo2013")
 
     data = []
     labels = []
@@ -72,7 +73,7 @@ def _load_data(
         # de-mean each trial
         raw_data = raw_data - np.mean(raw_data, axis=2, keepdims=True)
         log.warning("Trial data de-meaned")
-        raw_data = 1e-6 * raw_data  # scale
+        # raw_data = 1e-6 * raw_data  # scale
 
         data.append(raw_data)
         labels.append(events)
@@ -104,7 +105,7 @@ def _load_data(
 class Weibo2013Dataset(AbstractDataset):
     def __init__(
         self,
-        task: AbstractDataset,
+        task: AbstractTask,
         split: Split,
         target_channels=None,
         target_frequency=None,
@@ -124,9 +125,22 @@ class Weibo2013Dataset(AbstractDataset):
             preload=preload,
         )
         # fmt: on
-        print("Weibo2013Dataset")
+        print("Weibo2013Dataset.__init__")
         self.data = None  # has the raw data in a array of shape (n_samples, n_channels, n_times) already for the specific task and split
         self.labels = None  # has the labels in a array of shape (n_samples,) already for the specific task
+        self.meta = {
+            "sampling_frequency": self._sampling_frequency,  # check if correct or target frequency
+            "channel_names": self._channel_names,  # check if correct or target channels
+            "labels_mapping": {
+                "left_hand": 1,
+                "right_hand": 2,
+                "hands": 3,
+                "feet": 4,
+                "left_hand_right_foot": 5,
+                "right_hand_left_foot": 6,
+                "rest": 7,
+            },
+        }
         self.task_split = None  # defines which subject, session, run is relevant for the specific task and split
         # annotations has the structure:
         # {
@@ -193,7 +207,7 @@ class Weibo2013Dataset(AbstractDataset):
                 self._download(subject)
         # now the data is downloaded and unpacked
         # load the data and labels and cache them
-        self.data, self.labels = self._cache.cache(_load_data)(
+        self.data, self.labels = self._cache.cache(_load_data_weibo2013)(
             self._task.name,
             self._split.value,
             subjects,
