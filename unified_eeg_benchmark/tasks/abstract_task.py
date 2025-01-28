@@ -1,12 +1,15 @@
 from abc import ABC, abstractmethod
 from ..datasets.abstract_dataset import AbstractDataset
 from ..enums.split import Split
-from typing import List, Tuple, Dict
+from ..enums.classes import Classes
+from typing import List, Tuple, Dict, Type
 import numpy as np
 
 
 class AbstractTask(ABC):
-    def __init__(self, name: str, classes: List[str], datasets: List[AbstractDataset]):
+    def __init__(
+        self, name: str, classes: List[Classes], datasets: List[Type[AbstractDataset]]
+    ):
         self.name = name
         self.classes = classes
         self.datasets = datasets
@@ -20,12 +23,12 @@ class AbstractTask(ABC):
         metas = []
         for dataset in self.datasets:
             X, y, meta = dataset(
-                    task=self,
-                    split=split,
-                    target_channels=channels,
-                    target_frequency=target_frequency,
-                    preload=True,
-                ).get_data()
+                classes=self.classes,
+                split=split,
+                target_channels=channels,
+                target_frequency=target_frequency,
+                preload=True,
+            ).get_data()
             Xs.append(X)
             ys.append(y)
             metas.append(meta)

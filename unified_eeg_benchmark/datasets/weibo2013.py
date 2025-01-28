@@ -131,8 +131,8 @@ class Weibo2013Dataset(AbstractDataset):
         super().__init__(
             interval=[3, 7],
             name="weibo2013", # MI Limb
-            task=task,
-            tasks=["left_right", "right_feet"],
+            target_classes=task,
+            classes=["left_right", "right_feet"],
             split=split,
             target_channels=target_channels,
             target_frequency=target_frequency,
@@ -218,17 +218,19 @@ class Weibo2013Dataset(AbstractDataset):
         shutil.rmtree(os.path.join(data_path, data_name + ".zip.unzip"))
 
     def load_data(self):
-        subjects = self.task_split[self._task.name][self._split.value]["subjects"]
+        subjects = self.task_split[self._target_classes.name][self._split.value][
+            "subjects"
+        ]
         for subject in subjects:
             if not os.path.isfile(os.path.join(data_path, f"subject_{subject}.mat")):
                 self._download(subject)
         # now the data is downloaded and unpacked
         # load the data and labels and cache them
         self.data, self.labels = self._cache.cache(_load_data_weibo2013)(
-            self._task.name,
+            self._target_classes.name,
             self._split.value,
             subjects,
-            self.task_split[self._task.name]["labels"],
+            self.task_split[self._target_classes.name]["labels"],
             self._interval,
             [8, 32],
             self._sampling_frequency,

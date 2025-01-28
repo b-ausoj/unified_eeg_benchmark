@@ -2,6 +2,8 @@ from .abstract_dataset import AbstractDataset
 from ..tasks.abstract_task import AbstractTask
 import warnings
 from ..enums.split import Split
+from ..enums.classes import Classes
+from typing import List
 import moabb
 from moabb.datasets import Weibo2014
 from moabb.paradigms import LeftRightImagery
@@ -18,7 +20,7 @@ def _load_data_weibo2013(paradigm, dataset, subjects):
 class Weibo2013MDataset(AbstractDataset):
     def __init__(
         self,
-        task: AbstractTask,
+        classes: List[Classes],
         split: Split,
         target_channels=None,
         target_frequency=None,
@@ -28,8 +30,8 @@ class Weibo2013MDataset(AbstractDataset):
         super().__init__(
             interval=[3, 7],
             name="weibo2013_m", # MI Limb
-            task=task,
-            tasks=["left_right", "right_feet"],
+            target_classes=classes,
+            classes=[Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI],
             split=split,
             target_channels=target_channels,
             target_frequency=target_frequency,
@@ -63,7 +65,7 @@ class Weibo2013MDataset(AbstractDataset):
     def load_data(self):
         MI_Limb = Weibo2014()
         paradigm = LeftRightImagery()
-        subjects = self.task_split[self._task.name][self._split.value]["subjects"]
+        subjects = self.task_split["left_right"][self._split.value]["subjects"]
         self.data, self.labels, _ = self._cache.cache(_load_data_weibo2013)(
             paradigm, MI_Limb, subjects
         )

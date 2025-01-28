@@ -112,8 +112,8 @@ class BCICompIV2aDataset(AbstractDataset):
         super().__init__(
             interval=[2, 6],
             name="bcicomp_iv_2a", # MI Limb
-            task=task,
-            tasks=["left_right", "right_feet", "left_right_feet_tongue"],
+            target_classes=task,
+            classes=["left_right", "right_feet", "left_right_feet_tongue"],
             split=split,
             target_channels=target_channels,
             target_frequency=target_frequency,
@@ -174,7 +174,9 @@ class BCICompIV2aDataset(AbstractDataset):
 
     def load_data(self):
         # check if the data is downloaded
-        subjects = self.task_split[self._task.name][self._split.value]["subjects"]
+        subjects = self.task_split[self._target_classes.name][self._split.value][
+            "subjects"
+        ]
         for subject in subjects:
             for s in ["T", "E"]:
                 if not os.path.isfile(
@@ -184,10 +186,10 @@ class BCICompIV2aDataset(AbstractDataset):
         # now the data is downloaded and unpacked
         # load the data
         self.data, self.labels = self._cache.cache(_load_data_bcicomp_iv_2a)(
-            self._task.name,
+            self._target_classes.name,
             self._split.value,
             subjects,
-            self.task_split[self._task.name]["labels"],
+            self.task_split[self._target_classes.name]["labels"],
             self._interval,
             [8, 32],
             self._sampling_frequency,

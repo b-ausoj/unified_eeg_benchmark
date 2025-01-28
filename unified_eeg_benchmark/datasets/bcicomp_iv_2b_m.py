@@ -1,6 +1,8 @@
 from .abstract_dataset import AbstractDataset
 import warnings
 from ..enums.split import Split
+from ..enums.classes import Classes
+from typing import List
 from ..tasks.abstract_task import AbstractTask
 import moabb
 from moabb.datasets import (
@@ -20,7 +22,7 @@ def _load_data_bcicomp_iv_2b(paradigm, dataset, subjects):
 class BCICompIV2bMDataset(AbstractDataset):
     def __init__(
         self,
-        task: AbstractTask,
+        classes: List[Classes],
         split: Split,
         target_channels=None,
         target_frequency=None,
@@ -30,8 +32,8 @@ class BCICompIV2bMDataset(AbstractDataset):
         super().__init__(
             interval=[3, 7.5],
             name="bcicomp_iv_2b_m",
-            task=task,
-            tasks=["left_right"],
+            target_classes=classes,
+            classes=[Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI],
             split=split,
             target_channels=target_channels,
             target_frequency=target_frequency,
@@ -58,7 +60,7 @@ class BCICompIV2bMDataset(AbstractDataset):
     def load_data(self):
         BCI_IV_2a = BNCI2014_004()
         paradigm = LeftRightImagery()
-        subjects = self.task_split[self._task.name][self._split.value]["subjects"]
+        subjects = self.task_split["left_right"][self._split.value]["subjects"]
         self.data, self.labels, _ = self._cache.cache(_load_data_bcicomp_iv_2b)(
             paradigm, BCI_IV_2a, subjects
         )

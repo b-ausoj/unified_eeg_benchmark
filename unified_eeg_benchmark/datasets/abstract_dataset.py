@@ -3,6 +3,8 @@ import os
 from joblib import Memory
 import json
 from ..enums.split import Split
+from ..enums.classes import Classes
+from typing import Dict
 import numpy as np
 
 base_path = "/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/"
@@ -13,8 +15,8 @@ class AbstractDataset(ABC):
         self,
         interval,
         name,
-        task,
-        tasks,
+        target_classes,
+        classes,
         split: Split,
         sampling_frequency=None,
         channel_names=None,
@@ -22,14 +24,18 @@ class AbstractDataset(ABC):
         target_frequency=None,
         preload=False,
     ):
-        self.data = None
-        self.labels = None
-        self.meta = None
+        self.data: np.ndarray
+        self.labels: np.ndarray
+        self.meta: Dict
+        self.task_split: Dict
         self._interval = interval
-        self.task_split = None
         self.name = name
-        self._task = task
-        self._tasks = tasks
+        if target_classes is not None:
+            assert all(
+                [c in classes for c in target_classes]
+            ), "Target classes must be a subset of the available classes"
+        self._target_classes = target_classes
+        self._classes = classes
         self._split = split
         self._channel_names = channel_names
         # Default value, to be overridden by subclasses
@@ -118,12 +124,12 @@ class AbstractDataset(ABC):
     @property
     def task(self):
         """Return the task."""
-        return self._task
+        return self._target_classes
 
     @task.setter
     def task(self, task):
         """Set the task."""
-        self._task = task
+        self._target_classes = task
 
     # Getters and setters for split
     @property
