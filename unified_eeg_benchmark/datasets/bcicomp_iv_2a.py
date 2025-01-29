@@ -113,7 +113,7 @@ class BCICompIV2aDataset(AbstractDataset):
             interval=[2, 6],
             name="bcicomp_iv_2a", # MI Limb
             target_classes=task,
-            classes=["left_right", "right_feet", "left_right_feet_tongue"],
+            target_classes=["left_right", "right_feet", "left_right_feet_tongue"],
             split=split,
             target_channels=target_channels,
             target_frequency=target_frequency,

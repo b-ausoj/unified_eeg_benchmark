@@ -1,10 +1,8 @@
 from abc import ABC, abstractmethod
 import os
 from joblib import Memory
-import json
-from ..enums.split import Split
 from ..enums.classes import Classes
-from typing import Dict
+from typing import Dict, Sequence, Tuple
 import numpy as np
 
 base_path = "/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/"
@@ -13,136 +11,23 @@ base_path = "/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/"
 class AbstractDataset(ABC):
     def __init__(
         self,
-        interval,
-        name,
-        target_classes,
-        classes,
-        split: Split,
-        sampling_frequency=None,
-        channel_names=None,
-        target_channels=None,
-        target_frequency=None,
-        preload=False,
+        target_classes: Sequence[Classes],
+        subjects: Sequence[int],
     ):
         self.data: np.ndarray
         self.labels: np.ndarray
         self.meta: Dict
-        self.task_split: Dict
-        self._interval = interval
-        self.name = name
-        if target_classes is not None:
-            assert all(
-                [c in classes for c in target_classes]
-            ), "Target classes must be a subset of the available classes"
-        self._target_classes = target_classes
-        self._classes = classes
-        self._split = split
-        self._channel_names = channel_names
-        # Default value, to be overridden by subclasses
-        self._sampling_frequency = sampling_frequency
-        # Default value, to be overridden by subclasses
-        if target_channels is not None:
-            assert all(
-                [channel in self._channel_names for channel in target_channels]
-            ), "Target channels must be a subset of the available channels"
-        self._target_channels = target_channels
-        self._target_frequency = target_frequency
-        self._preload = preload
-        self._cache = Memory(location=os.path.join(base_path, "cache"), verbose=0)
-        # TODO make this more generic with a config file and parameters
-
-    def __getitem__(self, index):
-        if self.data is None:
-            self.load_data()
-        return self.data[index], self.labels[index]
-
-    def __len__(self):
-        return len(self.data)
-
-    def __str__(self):
-        return self.name
-
-    def get_data(self):
-        if self.data is None or self.labels is None:
-            self.load_data()
-        if self.meta is None:
-            raise ValueError("Meta information not implemented in {self}")
-        return self.data, self.labels, self.meta
+        self.target_classes = target_classes
+        self.subjects = subjects
+        self.cache = Memory(location=os.path.join(base_path, "cache"), verbose=0)
 
     @abstractmethod
     def load_data(self):
         pass
 
-    @abstractmethod
-    def _download(self, subject: int):
-        pass
-
-    def _load_task_split(self):
-        task_split_path = os.path.join(
-            base_path, "unified_eeg_benchmark", "task_split", f"{self.name}.json"
-        )
-        if os.path.exists(task_split_path):
-            with open(task_split_path, "r") as f:
-                self.task_split = json.load(f)
-        else:
-            raise FileNotFoundError(f"Task split file not found at {task_split_path}")
-
-    # Getters for channel_names and sampling_frequency
-    @property
-    def channel_names(self):
-        """Return the names of the channels."""
-        return self._channel_names
-
-    @property
-    def sampling_frequency(self):
-        """Return the sampling frequency."""
-        return self._sampling_frequency
-
-    # Getters and setters for target_channels
-    @property
-    def target_channels(self):
-        """Return the target channels."""
-        return self._target_channels
-
-    @target_channels.setter
-    def target_channels(self, channels):
-        """Set the target channels."""
-        self._target_channels = channels
-
-    # Getters and setters for target_frequency
-    @property
-    def target_frequency(self):
-        """Return the target frequency."""
-        return self._target_frequency
-
-    @target_frequency.setter
-    def target_frequency(self, frequency):
-        """Set the target frequency."""
-        self._target_frequency = frequency
-
-    # Getters and setters for task
-    @property
-    def task(self):
-        """Return the task."""
-        return self._target_classes
-
-    @task.setter
-    def task(self, task):
-        """Set the task."""
-        self._target_classes = task
-
-    # Getters and setters for split
-    @property
-    def split(self) -> Split:
-        """Return the split."""
-        return self._split
-
-    @split.setter
-    def split(self, split: Split):
-        """Set the split."""
-        self._split = split
-
-    @property
-    def interval_length(self):
-        """Return the interval length."""
-        return self._interval[1] - self._interval[0]
+    def get_data(self) -> Tuple[np.ndarray, np.ndarray, Dict]:
+        if self.data is None or self.labels is None:
+            self.load_data()
+        if self.meta is None:
+            raise ValueError("Meta information not implemented in {self}")
+        return self.data, self.labels, self.meta

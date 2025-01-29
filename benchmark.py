@@ -6,10 +6,10 @@ from models.csp_svm_model import CSPSVMModel
 from models.csp_lda_model import CSPLDAModel
 from models.abstract_model import AbstractModel
 from utils import print_classification_results
-from typing import List
+from typing import Sequence
 
 
-def benchmark(tasks: List[AbstractTask], models: List[AbstractModel]):
+def benchmark(tasks: Sequence[AbstractTask], models: Sequence[AbstractModel]):
     for task in tasks:
         (X_train, y_train, meta_train) = task.get_data(Split.TRAIN)
         # y_train = [y - 1 for y in y_train]

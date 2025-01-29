@@ -132,7 +132,7 @@ class Weibo2013Dataset(AbstractDataset):
             interval=[3, 7],
             name="weibo2013", # MI Limb
             target_classes=task,
-            classes=["left_right", "right_feet"],
+            target_classes=["left_right", "right_feet"],
             split=split,
             target_channels=target_channels,
             target_frequency=target_frequency,

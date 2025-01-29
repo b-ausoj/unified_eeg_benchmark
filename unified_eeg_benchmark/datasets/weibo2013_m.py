@@ -1,38 +1,41 @@
-from .abstract_dataset import AbstractDataset
-from ..tasks.abstract_task import AbstractTask
+from .base_dataset import BaseDataset
 import warnings
-from ..enums.split import Split
 from ..enums.classes import Classes
-from typing import List
 import moabb
-from moabb.datasets import Weibo2014
+from typing import Optional, Sequence
+from moabb.paradigms.base import BaseParadigm
+from moabb.datasets import (
+    Weibo2014,
+)
+import moabb.datasets.base as base
 from moabb.paradigms import LeftRightImagery
-
 
 moabb.set_log_level("info")
 warnings.filterwarnings("ignore")
 
 
-def _load_data_weibo2013(paradigm, dataset, subjects):
+def _load_data_weibo2013(
+    paradigm: BaseParadigm, dataset: base.BaseDataset, subjects: Sequence[int]
+):
     return paradigm.get_data(dataset=dataset, subjects=subjects)
 
 
-class Weibo2013MDataset(AbstractDataset):
+class Weibo2013MDataset(BaseDataset):
     def __init__(
         self,
-        classes: List[Classes],
-        split: Split,
-        target_channels=None,
-        target_frequency=None,
-        preload=False,
+        target_classes: Sequence[Classes],
+        subjects: Sequence[int],
+        target_channels: Optional[Sequence[str]] = None,
+        target_frequency: Optional[int] = None,
+        preload: bool = True,
     ):
         # fmt: off
         super().__init__(
-            interval=[3, 7],
             name="weibo2013_m", # MI Limb
-            target_classes=classes,
-            classes=[Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI],
-            split=split,
+            interval=(3, 7),
+            target_classes=target_classes,
+            available_classes=[Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI],
+            subjects=subjects,
             target_channels=target_channels,
             target_frequency=target_frequency,
             sampling_frequency=200,
@@ -40,7 +43,7 @@ class Weibo2013MDataset(AbstractDataset):
             preload=preload,
         )
         # fmt: on
-        print("Weibo2013Dataset.__init__")
+        print("Weibo2013MDataset.__init__")
         self.meta = {
             "sampling_frequency": self._sampling_frequency,  # check if correct or target frequency
             "channel_names": self._channel_names,  # check if correct or target channels
@@ -55,17 +58,16 @@ class Weibo2013MDataset(AbstractDataset):
             },
             "name": "Weibo2013",
         }
-        self._load_task_split()
+
         if preload:
             self.load_data()
 
     def _download(self, subject: int):
         pass
 
-    def load_data(self):
+    def load_data(self) -> None:
         MI_Limb = Weibo2014()
         paradigm = LeftRightImagery()
-        subjects = self.task_split["left_right"][self._split.value]["subjects"]
-        self.data, self.labels, _ = self._cache.cache(_load_data_weibo2013)(
-            paradigm, MI_Limb, subjects
-        )
+        self.data, self.labels, _ = self.cache.cache(_load_data_weibo2013)(
+            paradigm, MI_Limb, self.subjects
+        )  # type: ignore

@@ -1,13 +1,13 @@
-from .abstract_dataset import AbstractDataset
+from .base_dataset import BaseDataset
 import warnings
-from ..enums.split import Split
 from ..enums.classes import Classes
-from ..tasks.abstract_task import AbstractTask
 import moabb
-from typing import List, Optional
+from typing import Optional, Sequence
+from moabb.paradigms.base import BaseParadigm
 from moabb.datasets import (
     BNCI2014_001,
 )
+import moabb.datasets.base as base
 from moabb.paradigms import LeftRightImagery
 
 
@@ -15,26 +15,28 @@ moabb.set_log_level("info")
 warnings.filterwarnings("ignore")
 
 
-def _load_data_bcicomp_iv_2a(paradigm, dataset, subjects):
+def _load_data_bcicomp_iv_2a(
+    paradigm: BaseParadigm, dataset: base.BaseDataset, subjects: Sequence[int]
+):
     return paradigm.get_data(dataset=dataset, subjects=subjects)
 
 
-class BCICompIV2aMDataset(AbstractDataset):
+class BCICompIV2aMDataset(BaseDataset):
     def __init__(
         self,
-        classes: List[Classes],
-        split: Split,
-        target_channels: Optional[List[str]] = None,
+        target_classes: Sequence[Classes],
+        subjects: Sequence[int],
+        target_channels: Optional[Sequence[str]] = None,
         target_frequency: Optional[int] = None,
-        preload: bool = False,
+        preload: bool = True,
     ):
         # fmt: off
         super().__init__(
-            interval=[2, 6],
             name="bcicomp_iv_2a_m", # MI Limb
-            target_classes=classes,
-            classes=[Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI, Classes.FEET_MI, Classes.TONGUE_MI],
-            split=split,
+            interval=(2, 6),
+            target_classes=target_classes,
+            available_classes=[Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI, Classes.FEET_MI, Classes.TONGUE_MI],
+            subjects=subjects,
             target_channels=target_channels,
             target_frequency=target_frequency,
             sampling_frequency=250,
@@ -42,7 +44,7 @@ class BCICompIV2aMDataset(AbstractDataset):
             preload=preload,
         )
         # fmt: on
-        print("BCICompIV2aDataset.__init__")
+        print("BCICompIV2aMDataset.__init__")
         self.meta = {
             "sampling_frequency": self._sampling_frequency,  # check if correct or target frequency
             "channel_names": self._channel_names,  # check if correct or target channels
@@ -50,17 +52,15 @@ class BCICompIV2aMDataset(AbstractDataset):
             "name": "BCICompIV2a",
         }
 
-        self._load_task_split()
         if preload:
             self.load_data()
 
     def _download(self, subject: int):
         pass
 
-    def load_data(self):
+    def load_data(self) -> None:
         BCI_IV_2a = BNCI2014_001()
         paradigm = LeftRightImagery()
-        subjects = self.task_split["left_right"][self._split.value]["subjects"]
-        self.data, self.labels, _ = self._cache.cache(_load_data_bcicomp_iv_2a)(
-            paradigm, BCI_IV_2a, subjects
-        )
+        self.data, self.labels, _ = self.cache.cache(_load_data_bcicomp_iv_2a)(
+            paradigm, BCI_IV_2a, self.subjects
+        )  # type: ignore
