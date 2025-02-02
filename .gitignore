@@ -2,3 +2,5 @@ cache/
 data/
 __pycache__/
 *.pyc
+log/
+testing.py
