@@ -5,10 +5,11 @@ import moabb
 from typing import Optional, Sequence
 from moabb.paradigms.base import BaseParadigm
 from moabb.datasets import (
-    BNCI2014_001,
+    Liu2024,
 )
 import moabb.datasets.base as base
-from moabb.paradigms import MotorImagery
+from moabb.paradigms import LeftRightImagery
+import numpy as np
 import logging
 
 moabb.set_log_level("info")
@@ -16,13 +17,13 @@ warnings.filterwarnings("ignore")
 logger = logging.getLogger(__name__)
 
 
-def _load_data_bcicomp_iv_2a(
+def _load_data_liu2022(
     paradigm: BaseParadigm, dataset: base.BaseDataset, subjects: Sequence[int]
 ):
     return paradigm.get_data(dataset=dataset, subjects=subjects)
 
 
-class BCICompIV2aMDataset(BaseDataset):
+class Liu2022MDataset(BaseDataset):
     def __init__(
         self,
         target_classes: Sequence[Classes],
@@ -33,24 +34,27 @@ class BCICompIV2aMDataset(BaseDataset):
     ):
         # fmt: off
         super().__init__(
-            name="bcicomp_iv_2a_m", # MI Limb
+            name="liu2022_m", # aka Liu2024
             interval=(2, 6),
             target_classes=target_classes,
-            available_classes=[Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI, Classes.FEET_MI, Classes.TONGUE_MI],
+            available_classes=[Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI],  
             subjects=subjects,
             target_channels=target_channels,
             target_frequency=target_frequency,
-            sampling_frequency=250,
-            channel_names=["Fz", "FC3", "FC1", "FCz", "FC2", "FC4", "C5", "C3", "C1", "Cz", "C2", "C4", "C6", "CP3", "CP1", "CPz", "CP2", "CP4", "P1", "Pz", "P2", "POz"],
+            sampling_frequency=500,
+            channel_names=['FP1', 'FP2', 'Fz', 'F3', 'F4', 'F7', 'F8', 'FCz', 'FC3', 'FC4', 'FT7', 'FT8', 'Cz', 'C3', 'C4', 'T3', 'T4', 'CP3', 'CP4', 'TP7', 'TP8', 'Pz', 'P3', 'P4', 'T5', 'T6', 'Oz', 'O1', 'O2'],
             preload=preload,
         )
         # fmt: on
-        logger.debug("in BCICompIV2aMDataset.__init__")
+        logger.debug("in Liu2022MDataset.__init__")
         self.meta = {
             "sampling_frequency": self._sampling_frequency,  # check if correct or target frequency
             "channel_names": self._channel_names,  # check if correct or target channels
-            "labels_mapping": {"left_hand": 1, "right_hand": 2, "feet": 3, "tongue": 4},
-            "name": "BCICompIV2a",
+            "labels_mapping": {
+                "left_hand": 1,
+                "right_hand": 2,
+            },
+            "name": "Liu2022",
         }
 
         if preload:
@@ -60,32 +64,21 @@ class BCICompIV2aMDataset(BaseDataset):
         pass
 
     def load_data(self) -> None:
-        BCI_IV_2a = BNCI2014_001()
+        Liu2022M = Liu2024()
         if self.target_classes is None:
             logger.warning("target_classes is None, loading all classes...")
-            paradigm = MotorImagery(
-                n_classes=4, events=["left_hand", "right_hand", "feet", "tongue"]
-            )
-        elif set(self.target_classes) == set(
-            [
-                Classes.LEFT_HAND_MI,
-                Classes.RIGHT_HAND_MI,
-                Classes.FEET_MI,
-                Classes.TONGUE_MI,
-            ]
-        ):
-            paradigm = MotorImagery(
-                n_classes=4, events=["left_hand", "right_hand", "feet", "tongue"]
-            )
+            paradigm = LeftRightImagery()
         elif set(self.target_classes) == set(
             [Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI]
         ):
-            paradigm = MotorImagery(n_classes=2, events=["left_hand", "right_hand"])
-        elif set(self.target_classes) == set([Classes.RIGHT_HAND_MI, Classes.FEET_MI]):
-            paradigm = MotorImagery(n_classes=2, events=["right_hand", "feet"])
+            paradigm = LeftRightImagery()
         else:
             raise ValueError("Invalid target classes")
 
-        self.data, self.labels, _ = self.cache.cache(_load_data_bcicomp_iv_2a)(
-            paradigm, BCI_IV_2a, self.subjects
+        if (self.subjects is None) or (len(self.subjects) == 0):
+            self.data = np.array([])
+            self.labels = np.array([])
+            return
+        self.data, self.labels, _ = self.cache.cache(_load_data_liu2022)(
+            paradigm, Liu2022M, self.subjects
         )  # type: ignore

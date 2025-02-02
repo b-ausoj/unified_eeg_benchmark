@@ -5,10 +5,11 @@ import moabb
 from typing import Optional, Sequence
 from moabb.paradigms.base import BaseParadigm
 from moabb.datasets import (
-    BNCI2014_001,
+    Lee2019_MI,
 )
 import moabb.datasets.base as base
-from moabb.paradigms import MotorImagery
+from moabb.paradigms import LeftRightImagery
+import numpy as np
 import logging
 
 moabb.set_log_level("info")
@@ -16,13 +17,13 @@ warnings.filterwarnings("ignore")
 logger = logging.getLogger(__name__)
 
 
-def _load_data_bcicomp_iv_2a(
+def _load_data_lee2019(
     paradigm: BaseParadigm, dataset: base.BaseDataset, subjects: Sequence[int]
 ):
     return paradigm.get_data(dataset=dataset, subjects=subjects)
 
 
-class BCICompIV2aMDataset(BaseDataset):
+class Lee2019MDataset(BaseDataset):
     def __init__(
         self,
         target_classes: Sequence[Classes],
@@ -33,24 +34,27 @@ class BCICompIV2aMDataset(BaseDataset):
     ):
         # fmt: off
         super().__init__(
-            name="bcicomp_iv_2a_m", # MI Limb
-            interval=(2, 6),
+            name="lee2019_m", # aka Lee2019_MI 
+            interval=(0, 4),
             target_classes=target_classes,
-            available_classes=[Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI, Classes.FEET_MI, Classes.TONGUE_MI],
+            available_classes=[Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI],  
             subjects=subjects,
             target_channels=target_channels,
             target_frequency=target_frequency,
-            sampling_frequency=250,
-            channel_names=["Fz", "FC3", "FC1", "FCz", "FC2", "FC4", "C5", "C3", "C1", "Cz", "C2", "C4", "C6", "CP3", "CP1", "CPz", "CP2", "CP4", "P1", "Pz", "P2", "POz"],
+            sampling_frequency=1000,
+            channel_names=['Fp1', 'Fp2', 'F7', 'F3', 'Fz', 'F4', 'F8', 'FC5', 'FC1', 'FC2', 'FC6', 'T7', 'C3', 'Cz', 'C4', 'T8', 'TP9', 'CP5', 'CP1', 'CP2', 'CP6', 'TP10', 'P7', 'P3', 'Pz', 'P4', 'P8', 'PO9', 'O1', 'Oz', 'O2', 'PO10', 'FC3', 'FC4', 'C5', 'C1', 'C2', 'C6', 'CP3', 'CPz', 'CP4', 'P1', 'P2', 'POz', 'FT9', 'FTT9h', 'TTP7h', 'TP7', 'TPP9h', 'FT10', 'FTT10h', 'TPP8h', 'TP8', 'TPP10h', 'F9', 'F10', 'AF7', 'AF3', 'AF4', 'AF8', 'PO3', 'PO4'],
             preload=preload,
         )
         # fmt: on
-        logger.debug("in BCICompIV2aMDataset.__init__")
+        logger.debug("in Lee2019MDataset.__init__")
         self.meta = {
             "sampling_frequency": self._sampling_frequency,  # check if correct or target frequency
             "channel_names": self._channel_names,  # check if correct or target channels
-            "labels_mapping": {"left_hand": 1, "right_hand": 2, "feet": 3, "tongue": 4},
-            "name": "BCICompIV2a",
+            "labels_mapping": {
+                "left_hand": 2,
+                "right_hand": 1,
+            },
+            "name": "Lee2019",
         }
 
         if preload:
@@ -60,32 +64,21 @@ class BCICompIV2aMDataset(BaseDataset):
         pass
 
     def load_data(self) -> None:
-        BCI_IV_2a = BNCI2014_001()
+        Lee2019 = Lee2019_MI()  # type: ignore
         if self.target_classes is None:
             logger.warning("target_classes is None, loading all classes...")
-            paradigm = MotorImagery(
-                n_classes=4, events=["left_hand", "right_hand", "feet", "tongue"]
-            )
-        elif set(self.target_classes) == set(
-            [
-                Classes.LEFT_HAND_MI,
-                Classes.RIGHT_HAND_MI,
-                Classes.FEET_MI,
-                Classes.TONGUE_MI,
-            ]
-        ):
-            paradigm = MotorImagery(
-                n_classes=4, events=["left_hand", "right_hand", "feet", "tongue"]
-            )
+            paradigm = LeftRightImagery()
         elif set(self.target_classes) == set(
             [Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI]
         ):
-            paradigm = MotorImagery(n_classes=2, events=["left_hand", "right_hand"])
-        elif set(self.target_classes) == set([Classes.RIGHT_HAND_MI, Classes.FEET_MI]):
-            paradigm = MotorImagery(n_classes=2, events=["right_hand", "feet"])
+            paradigm = LeftRightImagery()
         else:
             raise ValueError("Invalid target classes")
 
-        self.data, self.labels, _ = self.cache.cache(_load_data_bcicomp_iv_2a)(
-            paradigm, BCI_IV_2a, self.subjects
+        if (self.subjects is None) or (len(self.subjects) == 0):
+            self.data = np.array([])
+            self.labels = np.array([])
+            return
+        self.data, self.labels, _ = self.cache.cache(_load_data_lee2019)(
+            paradigm, Lee2019, self.subjects
         )  # type: ignore

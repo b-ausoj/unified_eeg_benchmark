@@ -6,3 +6,4 @@ class Classes(Enum):
     RIGHT_HAND_MI = "right_hand"
     FEET_MI = "feet"
     TONGUE_MI = "tongue"
+    BOTH_HANDS_MI = "hands"

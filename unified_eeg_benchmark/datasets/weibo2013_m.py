@@ -8,10 +8,12 @@ from moabb.datasets import (
     Weibo2014,
 )
 import moabb.datasets.base as base
-from moabb.paradigms import LeftRightImagery
+from moabb.paradigms import MotorImagery
+import logging
 
 moabb.set_log_level("info")
 warnings.filterwarnings("ignore")
+logger = logging.getLogger(__name__)
 
 
 def _load_data_weibo2013(
@@ -34,7 +36,7 @@ class Weibo2013MDataset(BaseDataset):
             name="weibo2013_m", # MI Limb
             interval=(3, 7),
             target_classes=target_classes,
-            available_classes=[Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI],
+            available_classes=[Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI, Classes.FEET_MI, Classes.BOTH_HANDS_MI],
             subjects=subjects,
             target_channels=target_channels,
             target_frequency=target_frequency,
@@ -43,7 +45,7 @@ class Weibo2013MDataset(BaseDataset):
             preload=preload,
         )
         # fmt: on
-        print("Weibo2013MDataset.__init__")
+        logger.debug("in Weibo2013MDataset.__init__")
         self.meta = {
             "sampling_frequency": self._sampling_frequency,  # check if correct or target frequency
             "channel_names": self._channel_names,  # check if correct or target channels
@@ -67,7 +69,20 @@ class Weibo2013MDataset(BaseDataset):
 
     def load_data(self) -> None:
         MI_Limb = Weibo2014()
-        paradigm = LeftRightImagery()
+        if self.target_classes is None:
+            logging.warning("target_classes is None, loading all classes...")
+            paradigm = MotorImagery(
+                n_classes=4, events=["left_hand", "right_hand", "feet", "hands"]
+            )
+        elif set(self.target_classes) == set(
+            [Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI]
+        ):
+            paradigm = MotorImagery(n_classes=2, events=["left_hand", "right_hand"])
+        elif set(self.target_classes) == set([Classes.RIGHT_HAND_MI, Classes.FEET_MI]):
+            paradigm = MotorImagery(n_classes=2, events=["right_hand", "feet"])
+        else:
+            raise ValueError("Invalid target classes")
+
         self.data, self.labels, _ = self.cache.cache(_load_data_weibo2013)(
             paradigm, MI_Limb, self.subjects
         )  # type: ignore

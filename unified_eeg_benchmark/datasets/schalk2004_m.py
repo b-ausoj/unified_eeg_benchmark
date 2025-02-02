@@ -5,10 +5,11 @@ import moabb
 from typing import Optional, Sequence
 from moabb.paradigms.base import BaseParadigm
 from moabb.datasets import (
-    BNCI2014_001,
+    PhysionetMI,
 )
 import moabb.datasets.base as base
 from moabb.paradigms import MotorImagery
+import numpy as np
 import logging
 
 moabb.set_log_level("info")
@@ -16,13 +17,13 @@ warnings.filterwarnings("ignore")
 logger = logging.getLogger(__name__)
 
 
-def _load_data_bcicomp_iv_2a(
+def _load_data_schalk2004(
     paradigm: BaseParadigm, dataset: base.BaseDataset, subjects: Sequence[int]
 ):
     return paradigm.get_data(dataset=dataset, subjects=subjects)
 
 
-class BCICompIV2aMDataset(BaseDataset):
+class Schalk2004MDataset(BaseDataset):
     def __init__(
         self,
         target_classes: Sequence[Classes],
@@ -33,24 +34,30 @@ class BCICompIV2aMDataset(BaseDataset):
     ):
         # fmt: off
         super().__init__(
-            name="bcicomp_iv_2a_m", # MI Limb
-            interval=(2, 6),
+            name="schalk2004_m", # EEGMMIDB or PhysionetMI
+            interval=(0, 3),
             target_classes=target_classes,
-            available_classes=[Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI, Classes.FEET_MI, Classes.TONGUE_MI],
+            available_classes=[Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI, Classes.FEET_MI, Classes.BOTH_HANDS_MI],  
             subjects=subjects,
             target_channels=target_channels,
             target_frequency=target_frequency,
-            sampling_frequency=250,
-            channel_names=["Fz", "FC3", "FC1", "FCz", "FC2", "FC4", "C5", "C3", "C1", "Cz", "C2", "C4", "C6", "CP3", "CP1", "CPz", "CP2", "CP4", "P1", "Pz", "P2", "POz"],
+            sampling_frequency=160,
+            channel_names=['FC5', 'FC3', 'FC1', 'FCz', 'FC2', 'FC4', 'FC6', 'C5', 'C3', 'C1', 'Cz', 'C2', 'C4', 'C6', 'CP5', 'CP3', 'CP1', 'CPz', 'CP2', 'CP4', 'CP6', 'Fp1', 'FPz', 'Fp2', 'AF7', 'AF3', 'AFz', 'AF4', 'AF8', 'F7', 'F5', 'F3', 'F1', 'Fz', 'F2', 'F4', 'F6', 'F8', 'FT7', 'FT8', 'T7', 'T8', 'T9', 'T10', 'TP7', 'TP8', 'P7', 'P5', 'P3', 'P1', 'Pz', 'P2', 'P4', 'P6', 'P8', 'PO7', 'PO3', 'POz', 'PO4', 'PO8', 'O1', 'Oz', 'O2', 'Iz'],
             preload=preload,
         )
         # fmt: on
-        logger.debug("in BCICompIV2aMDataset.__init__")
+        logger.debug("in Schalk2004MDataset.__init__")
         self.meta = {
             "sampling_frequency": self._sampling_frequency,  # check if correct or target frequency
             "channel_names": self._channel_names,  # check if correct or target channels
-            "labels_mapping": {"left_hand": 1, "right_hand": 2, "feet": 3, "tongue": 4},
-            "name": "BCICompIV2a",
+            "labels_mapping": {
+                "left_hand": 2,
+                "right_hand": 3,
+                "hands": 4,
+                "feet": 5,
+                "rest": 1,
+            },
+            "name": "Schalk2004",
         }
 
         if preload:
@@ -60,22 +67,11 @@ class BCICompIV2aMDataset(BaseDataset):
         pass
 
     def load_data(self) -> None:
-        BCI_IV_2a = BNCI2014_001()
+        Schalk2004 = PhysionetMI()
         if self.target_classes is None:
             logger.warning("target_classes is None, loading all classes...")
             paradigm = MotorImagery(
-                n_classes=4, events=["left_hand", "right_hand", "feet", "tongue"]
-            )
-        elif set(self.target_classes) == set(
-            [
-                Classes.LEFT_HAND_MI,
-                Classes.RIGHT_HAND_MI,
-                Classes.FEET_MI,
-                Classes.TONGUE_MI,
-            ]
-        ):
-            paradigm = MotorImagery(
-                n_classes=4, events=["left_hand", "right_hand", "feet", "tongue"]
+                n_classes=4, events=["left_hand", "right_hand", "feet", "hands"]
             )
         elif set(self.target_classes) == set(
             [Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI]
@@ -86,6 +82,10 @@ class BCICompIV2aMDataset(BaseDataset):
         else:
             raise ValueError("Invalid target classes")
 
-        self.data, self.labels, _ = self.cache.cache(_load_data_bcicomp_iv_2a)(
-            paradigm, BCI_IV_2a, self.subjects
+        if (self.subjects is None) or (len(self.subjects) == 0):
+            self.data = np.array([])
+            self.labels = np.array([])
+            return
+        self.data, self.labels, _ = self.cache.cache(_load_data_schalk2004)(
+            paradigm, Schalk2004, self.subjects
         )  # type: ignore
