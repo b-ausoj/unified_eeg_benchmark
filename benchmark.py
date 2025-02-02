@@ -1,12 +1,23 @@
 # Description: Benchmarking script for the unified EEG benchmark.
 from unified_eeg_benchmark.enums.split import Split
 from unified_eeg_benchmark.tasks.abstract_task import AbstractTask
-from unified_eeg_benchmark.tasks.left_hand_right_hand_task import LeftHandRightHandTask
+from unified_eeg_benchmark.tasks.left_hand_right_hand_mi_task import (
+    LeftHandvRightHandMITask,
+)
+from unified_eeg_benchmark.tasks.right_hand_feet_mi_task import RightHandvFeetMITask
+from unified_eeg_benchmark.tasks.left_hand_right_hand_feet_tongue_mi_task import (
+    LeftHandvRightHandvFeetvTongueMITask,
+)
 from models.csp_svm_model import CSPSVMModel
 from models.csp_lda_model import CSPLDAModel
 from models.abstract_model import AbstractModel
+from models.csp_pyriemann_lda_model import CSPriemannLDAModel
+from models.ts_lr_model import TSLRModel
+from models.ts_svm_grid_model import TSSVMGridModel
+from models.fgmdm_model import FgMDMModel
 from utils import print_classification_results
 from typing import Sequence
+from tqdm import tqdm
 
 
 def benchmark(tasks: Sequence[AbstractTask], models: Sequence[AbstractModel]):
@@ -33,7 +44,7 @@ def benchmark(tasks: Sequence[AbstractTask], models: Sequence[AbstractModel]):
         dataset_names = [m["name"] for m in meta_train]
         models_names = []
         results = []
-        for model in models:
+        for model in tqdm(models):
 
             model.fit(X_train, y_train, meta_train)
             y_pred = []
@@ -49,8 +60,19 @@ def benchmark(tasks: Sequence[AbstractTask], models: Sequence[AbstractModel]):
 
 
 if __name__ == "__main__":
-    tasks = [LeftHandRightHandTask()]
-    models = [CSPSVMModel(), CSPLDAModel()]
+    tasks = [
+        LeftHandvRightHandMITask(),
+        RightHandvFeetMITask(),
+        LeftHandvRightHandvFeetvTongueMITask(),
+    ]
+    models = [
+        CSPSVMModel(),
+        CSPLDAModel(),
+        CSPriemannLDAModel(),
+        FgMDMModel(),
+        TSLRModel(),
+        TSSVMGridModel(),
+    ]
 
     benchmark(tasks, models)
 
