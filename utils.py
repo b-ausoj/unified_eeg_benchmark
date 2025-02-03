@@ -1,6 +1,8 @@
 from sklearn.preprocessing import LabelEncoder
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+import os
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
@@ -89,3 +91,87 @@ def print_classification_results(y_train, y_test, model_names, y_preds, dataset_
         # Display the table
         print(metrics_table.to_string(index=False))
         print()
+
+def save_class_distribution_plots(dataset_names, train_distribution, test_distribution, output_dir="plots"):
+    os.makedirs(output_dir, exist_ok=True)
+    
+    for i, dataset in enumerate(dataset_names):
+        plt.figure(figsize=(8, 4))
+        plt.bar(range(len(train_distribution[i])), train_distribution[i], alpha=0.7, label="Train")
+        plt.bar(range(len(test_distribution[i])), test_distribution[i], alpha=0.7, label="Test")
+        plt.xlabel("Class Label")
+        plt.ylabel("Count")
+        plt.title(f"Class Distribution - {dataset}")
+        plt.legend()
+        plt.savefig(os.path.join(output_dir, f"class_distribution_{dataset}.png"))
+        plt.close()
+
+def save_evaluation_plots(model_names, dataset_names, all_metrics, output_dir="plots"):
+    os.makedirs(output_dir, exist_ok=True)
+    
+    for model_name, metrics_table in zip(model_names, all_metrics):
+        plt.figure(figsize=(10, 6))
+        metrics_table.set_index("Dataset").plot(kind="bar", figsize=(10, 6))
+        plt.title(f"Evaluation Metrics - {model_name}")
+        plt.ylabel("Score")
+        plt.xticks(rotation=45)
+        plt.legend(loc="lower right")
+        plt.grid(axis="y", linestyle="--", alpha=0.7)
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_dir, f"metrics_{model_name}.png"))
+        plt.close()
+
+def generate_classification_plots(y_train, y_test, model_names, y_preds, dataset_names, output_dir="plots"):
+    train_samples = [len(y) for y in y_train]
+    test_samples = [len(y) for y in y_test]
+    
+    def class_distribution(y_list):
+        encoder = LabelEncoder()
+        distributions = []
+        for y in y_list:
+            encoded_y = encoder.fit_transform(y)
+            distributions.append(np.bincount(encoded_y).tolist())
+        return distributions
+    
+    train_distribution = class_distribution(y_train)
+    test_distribution = class_distribution(y_test)
+    
+    # Save class distribution plots
+    save_class_distribution_plots(dataset_names, train_distribution, test_distribution, output_dir)
+    
+    def calculate_metrics(y_true, y_pred):
+        encoder = LabelEncoder()
+        y_true = encoder.fit_transform(y_true)
+        y_pred = encoder.transform(y_pred)
+        return {
+            "Accuracy": accuracy_score(y_true, y_pred),
+            "Precision": precision_score(y_true, y_pred, average="weighted"),
+            "Recall": recall_score(y_true, y_pred, average="weighted"),
+            "F1 Score": f1_score(y_true, y_pred, average="weighted"),
+            "AUC": (
+                roc_auc_score(y_true, y_pred, multi_class="ovr")
+                if len(np.unique(y_true)) > 2
+                else roc_auc_score(y_true, y_pred)
+            ),
+        }
+    
+    all_metrics = []
+    
+    for model_name, y_pred in zip(model_names, y_preds):
+        combined_y_test = np.concatenate(y_test)
+        combined_y_pred = np.concatenate(y_pred)
+        combined_metrics = calculate_metrics(combined_y_test, combined_y_pred)
+        
+        results = [["Combined"] + list(combined_metrics.values())]
+        for i, (y_true, y_pred) in enumerate(zip(y_test, y_pred)):
+            dataset_metrics = calculate_metrics(y_true, y_pred)
+            results.append([f"{dataset_names[i]}"] + list(dataset_metrics.values()))
+        
+        metrics_table = pd.DataFrame(
+            results,
+            columns=["Dataset", "Accuracy", "Precision", "Recall", "F1 Score", "AUC"],
+        )
+        all_metrics.append(metrics_table)
+    
+    # Save evaluation metric plots
+    save_evaluation_plots(model_names, dataset_names, all_metrics, output_dir)

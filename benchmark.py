@@ -8,6 +8,16 @@ from unified_eeg_benchmark.tasks.right_hand_feet_mi_task import RightHandvFeetMI
 from unified_eeg_benchmark.tasks.left_hand_right_hand_feet_tongue_mi_task import (
     LeftHandvRightHandvFeetvTongueMITask,
 )
+from unified_eeg_benchmark.datasets.bcicomp_iv_2a_m import (
+    BCICompIV2aMDataset,
+)
+from unified_eeg_benchmark.datasets.bcicomp_iv_2b_m import (
+    BCICompIV2bMDataset,
+)
+from unified_eeg_benchmark.datasets.grossewentrup2009_m import (
+    GrosseWentrup2009MDataset,
+)
+from unified_eeg_benchmark.tasks.custom_mi_task import CustomMITask
 from models.csp_svm_model import CSPSVMModel
 from models.csp_lda_model import CSPLDAModel
 from models.abstract_model import AbstractModel
@@ -15,13 +25,21 @@ from models.csp_pyriemann_lda_model import CSPriemannLDAModel
 from models.ts_lr_model import TSLRModel
 from models.ts_svm_grid_model import TSSVMGridModel
 from models.fgmdm_model import FgMDMModel
-from utils import print_classification_results
+from unified_eeg_benchmark.enums.classes import Classes
+from utils import print_classification_results, generate_classification_plots
 from typing import Sequence
 from tqdm import tqdm
+import logging
+
+logging.basicConfig(level=logging.DEBUG,
+                        format='%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 
 def benchmark(tasks: Sequence[AbstractTask], models: Sequence[AbstractModel]):
     for task in tasks:
+        logger.info(f"Running benchmark for task {task}")
         (X_train, y_train, meta_train) = task.get_data(Split.TRAIN)
         # y_train = [y - 1 for y in y_train]
         (X_test, y_test, meta_test) = task.get_data(Split.TEST)
@@ -57,6 +75,7 @@ def benchmark(tasks: Sequence[AbstractTask], models: Sequence[AbstractModel]):
         print_classification_results(
             y_train, y_test, models_names, results, dataset_names
         )
+        generate_classification_plots(y_train, y_test, models_names, results, dataset_names)
 
 
 if __name__ == "__main__":
@@ -71,7 +90,7 @@ if __name__ == "__main__":
         CSPriemannLDAModel(),
         FgMDMModel(),
         TSLRModel(),
-        TSSVMGridModel(),
+        #TSSVMGridModel(),
     ]
 
     benchmark(tasks, models)
@@ -89,3 +108,23 @@ if __name__ == "__main__":
 #        "csp+svm": CSPSVMModel()
 #    }
 # }
+
+"""
+CustomMITask(
+            classes=[Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI],
+            subjects_split={
+                BCICompIV2aMDataset: {
+                    Split.TRAIN: [1, 2, 3, 4, 5, 6, 7, 8],
+                    Split.TEST: [9],
+                },
+                BCICompIV2bMDataset: {
+                    Split.TRAIN: [1, 2, 3, 4, 5, 6, 7, 8],
+                    Split.TEST: [9],
+                },
+                GrosseWentrup2009MDataset: {
+                    Split.TRAIN: [1],
+                    Split.TEST: [2, 3, 4, 5, 6],
+                },
+            },
+        ),
+"""
