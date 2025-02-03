@@ -13,7 +13,6 @@ import logging
 
 moabb.set_log_level("info")
 warnings.filterwarnings("ignore")
-logger = logging.getLogger(__name__)
 
 
 def _load_data_weibo2013(
@@ -45,7 +44,7 @@ class Weibo2013MDataset(BaseDataset):
             preload=preload,
         )
         # fmt: on
-        logger.debug("in Weibo2013MDataset.__init__")
+        logging.info("in Weibo2013MDataset.__init__")
         self.meta = {
             "sampling_frequency": self._sampling_frequency,  # check if correct or target frequency
             "channel_names": self._channel_names,  # check if correct or target channels

@@ -13,7 +13,6 @@ import logging
 
 moabb.set_log_level("info")
 warnings.filterwarnings("ignore")
-logger = logging.getLogger(__name__)
 
 
 def _load_data_bcicomp_iv_2b(
@@ -45,7 +44,7 @@ class BCICompIV2bMDataset(BaseDataset):
             preload=preload,
         )
         # fmt: on
-        logger.debug("in BCICompIV2bMDataset.__init__")
+        logging.info("in BCICompIV2bMDataset.__init__")
         self.meta = {
             "sampling_frequency": self._sampling_frequency,  # check if correct or target frequency
             "channel_names": self._channel_names,  # check if correct or target channels
@@ -62,7 +61,7 @@ class BCICompIV2bMDataset(BaseDataset):
     def load_data(self) -> None:
         BCI_IV_2b = BNCI2014_004()
         if self.target_classes is None:
-            logger.warning("target_classes is None, loading all classes...")
+            logging.warning("target_classes is None, loading all classes...")
         elif self.target_classes == [Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI]:
             paradigm = LeftRightImagery()
         else:

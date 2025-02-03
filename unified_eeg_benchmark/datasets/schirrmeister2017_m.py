@@ -13,7 +13,6 @@ import logging
 
 moabb.set_log_level("info")
 warnings.filterwarnings("ignore")
-logger = logging.getLogger(__name__)
 
 
 def _load_data_schirrmeister2017(
@@ -45,7 +44,7 @@ class Schirrmeister2017MDataset(BaseDataset):
             preload=preload,
         )
         # fmt: on
-        logger.debug("in Schirrmeister2017MDataset.__init__")
+        logging.info("in Schirrmeister2017MDataset.__init__")
         self.meta = {
             "sampling_frequency": self._sampling_frequency,  # check if correct or target frequency
             "channel_names": self._channel_names,  # check if correct or target channels
@@ -66,7 +65,7 @@ class Schirrmeister2017MDataset(BaseDataset):
     def load_data(self) -> None:
         Schirrmeister2017M = Schirrmeister2017()
         if self.target_classes is None:
-            logger.warning("target_classes is None, loading all classes...")
+            logging.warning("target_classes is None, loading all classes...")
             paradigm = MotorImagery(
                 n_classes=3, events=["left_hand", "right_hand", "feet"]
             )

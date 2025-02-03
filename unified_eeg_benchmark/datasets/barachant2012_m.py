@@ -14,7 +14,6 @@ import numpy as np
 
 moabb.set_log_level("info")
 warnings.filterwarnings("ignore")
-logger = logging.getLogger(__name__)
 
 
 def _load_data_barachant2012(
@@ -46,7 +45,7 @@ class Barachant2012MDataset(BaseDataset):
             preload=preload,
         )
         # fmt: on
-        print("Barachant2012MDataset.__init__")
+        logging.info("in Barachant2012MDataset.__init__")
         self.meta = {
             "sampling_frequency": self._sampling_frequency,  # check if correct or target frequency
             "channel_names": self._channel_names,  # check if correct or target channels
@@ -68,7 +67,7 @@ class Barachant2012MDataset(BaseDataset):
     def load_data(self) -> None:
         Barachant2012 = AlexMI()
         if self.target_classes is None:
-            logger.warning("target_classes is None, loading all classes...")
+            logging.warning("target_classes is None, loading all classes...")
             paradigm = MotorImagery(n_classes=2, events=["right_hand", "feet"])
         elif set(self.target_classes) == set([Classes.RIGHT_HAND_MI, Classes.FEET_MI]):
             paradigm = MotorImagery(n_classes=2, events=["right_hand", "feet"])

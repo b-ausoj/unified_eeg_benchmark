@@ -14,7 +14,6 @@ import logging
 
 moabb.set_log_level("info")
 warnings.filterwarnings("ignore")
-logger = logging.getLogger(__name__)
 
 
 def _load_data_liu2022(
@@ -46,7 +45,7 @@ class Liu2022MDataset(BaseDataset):
             preload=preload,
         )
         # fmt: on
-        logger.debug("in Liu2022MDataset.__init__")
+        logging.info("in Liu2022MDataset.__init__")
         self.meta = {
             "sampling_frequency": self._sampling_frequency,  # check if correct or target frequency
             "channel_names": self._channel_names,  # check if correct or target channels
@@ -66,7 +65,7 @@ class Liu2022MDataset(BaseDataset):
     def load_data(self) -> None:
         Liu2022M = Liu2024()
         if self.target_classes is None:
-            logger.warning("target_classes is None, loading all classes...")
+            logging.warning("target_classes is None, loading all classes...")
             paradigm = LeftRightImagery()
         elif set(self.target_classes) == set(
             [Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI]

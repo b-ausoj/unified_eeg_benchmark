@@ -13,7 +13,6 @@ import logging
 
 moabb.set_log_level("info")
 warnings.filterwarnings("ignore")
-logger = logging.getLogger(__name__)
 
 
 def _load_data_bcicomp_iv_2a(
@@ -45,7 +44,7 @@ class BCICompIV2aMDataset(BaseDataset):
             preload=preload,
         )
         # fmt: on
-        logger.debug("in BCICompIV2aMDataset.__init__")
+        logging.info("in BCICompIV2aMDataset.__init__")
         self.meta = {
             "sampling_frequency": self._sampling_frequency,  # check if correct or target frequency
             "channel_names": self._channel_names,  # check if correct or target channels
@@ -62,7 +61,7 @@ class BCICompIV2aMDataset(BaseDataset):
     def load_data(self) -> None:
         BCI_IV_2a = BNCI2014_001()
         if self.target_classes is None:
-            logger.warning("target_classes is None, loading all classes...")
+            logging.warning("target_classes is None, loading all classes...")
             paradigm = MotorImagery(
                 n_classes=4, events=["left_hand", "right_hand", "feet", "tongue"]
             )
