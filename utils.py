@@ -1,4 +1,4 @@
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -11,6 +11,10 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 
+def one_hot_encode(y):
+        encoder = OneHotEncoder(sparse=False)
+        y_reshaped = np.array(y).reshape(-1, 1)
+        return encoder.fit_transform(y_reshaped)
 
 def print_classification_results(y_train, y_test, model_names, y_preds, dataset_names):
     # Assuming y_train and y_test are lists of numpy arrays
@@ -56,7 +60,7 @@ def print_classification_results(y_train, y_test, model_names, y_preds, dataset_
             "Recall": recall_score(y_true, y_pred, average="weighted"),
             "F1 Score": f1_score(y_true, y_pred, average="weighted"),
             "AUC": (
-                roc_auc_score(y_true, y_pred, multi_class="ovr")
+                roc_auc_score(one_hot_encode(y_true), one_hot_encode(y_pred), multi_class="ovr")
                 if len(np.unique(y_true)) > 2
                 else roc_auc_score(y_true, y_pred)
             ),
@@ -149,7 +153,7 @@ def generate_classification_plots(y_train, y_test, model_names, y_preds, dataset
             "Recall": recall_score(y_true, y_pred, average="weighted"),
             "F1 Score": f1_score(y_true, y_pred, average="weighted"),
             "AUC": (
-                roc_auc_score(y_true, y_pred, multi_class="ovr")
+                roc_auc_score(one_hot_encode(y_true), one_hot_encode(y_pred), multi_class="ovr")
                 if len(np.unique(y_true)) > 2
                 else roc_auc_score(y_true, y_pred)
             ),
