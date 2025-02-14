@@ -1,4 +1,4 @@
-from .base_dataset import BaseDataset
+from .base_bci_dataset import BaseBCIDataset
 import warnings
 from ..enums.classes import Classes
 from typing import Optional, Sequence
@@ -24,7 +24,7 @@ def _load_data_shin2017a(
 # doesn't have the channels C3 and C3 so can't use it for now
 ############
 
-class Shin2017AMDataset(BaseDataset):
+class Shin2017AMDataset(BaseBCIDataset):
     def __init__(
         self,
         target_classes: Sequence[Classes],

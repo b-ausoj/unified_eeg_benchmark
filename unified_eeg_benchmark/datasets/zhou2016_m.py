@@ -1,4 +1,4 @@
-from .base_dataset import BaseDataset
+from .base_bci_dataset import BaseBCIDataset
 import warnings
 from ..enums.classes import Classes
 import moabb
@@ -21,7 +21,7 @@ def _load_data_zhou2016(
     return paradigm.get_data(dataset=dataset, subjects=subjects)
 
 
-class Zhou2016MDataset(BaseDataset):
+class Zhou2016MDataset(BaseBCIDataset):
     def __init__(
         self,
         target_classes: Sequence[Classes],

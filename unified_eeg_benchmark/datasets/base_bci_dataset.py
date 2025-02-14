@@ -3,7 +3,7 @@ from typing import Tuple, Optional, Sequence
 from ..enums.classes import Classes
 
 
-class BaseDataset(AbstractDataset):
+class BaseBCIDataset(AbstractDataset):
     def __init__(
         self,
         name: str,

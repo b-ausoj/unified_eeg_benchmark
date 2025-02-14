@@ -1,4 +1,4 @@
-from .base_dataset import BaseDataset
+from .base_bci_dataset import BaseBCIDataset
 import warnings
 from ..enums.classes import Classes
 import moabb
@@ -24,7 +24,7 @@ def _load_data_stieger2021(
 # The download is broken: https://github.com/NeuroTechX/moabb/issues/677
 ###########
 
-class Stieger2021MDataset(BaseDataset):
+class Stieger2021MDataset(BaseBCIDataset):
     def __init__(
         self,
         target_classes: Sequence[Classes],

@@ -1,4 +1,4 @@
-from .base_dataset import BaseDataset
+from .base_bci_dataset import BaseBCIDataset
 import warnings
 from ..enums.classes import Classes
 import moabb
@@ -21,7 +21,7 @@ def _load_data_bcicomp_iv_2a(
     return paradigm.get_data(dataset=dataset, subjects=subjects)
 
 
-class BCICompIV2aMDataset(BaseDataset):
+class BCICompIV2aMDataset(BaseBCIDataset):
     def __init__(
         self,
         target_classes: Sequence[Classes],

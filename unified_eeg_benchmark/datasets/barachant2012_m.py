@@ -1,4 +1,4 @@
-from .base_dataset import BaseDataset
+from .base_bci_dataset import BaseBCIDataset
 import warnings
 import logging
 from ..enums.classes import Classes
@@ -22,7 +22,7 @@ def _load_data_barachant2012(
     return paradigm.get_data(dataset=dataset, subjects=subjects)
 
 
-class Barachant2012MDataset(BaseDataset):
+class Barachant2012MDataset(BaseBCIDataset):
     def __init__(
         self,
         target_classes: Sequence[Classes],
