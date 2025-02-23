@@ -1,4 +1,4 @@
-from .abstract_task import AbstractTask
+from .abstract_bci_task import AbstractBCITask
 from ..datasets.bcicomp_iv_2a_m import BCICompIV2aMDataset
 from ..datasets.weibo2013_m import Weibo2013MDataset
 from ..datasets.bcicomp_iv_2b_m import BCICompIV2bMDataset
@@ -16,7 +16,7 @@ from ..enums.split import Split
 base_path = "/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/"
 
 
-class LeftHandvRightHandMITask(AbstractTask):
+class LeftHandvRightHandMITask(AbstractBCITask):
     def __init__(self):
         super().__init__(
             name="left_hand_vs_right_hand_motor_imagery",

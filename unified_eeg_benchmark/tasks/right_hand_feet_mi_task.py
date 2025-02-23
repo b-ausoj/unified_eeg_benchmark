@@ -1,4 +1,4 @@
-from .abstract_task import AbstractTask
+from .abstract_bci_task import AbstractBCITask
 from ..datasets.bcicomp_iv_2a_m import BCICompIV2aMDataset
 from ..datasets.weibo2013_m import Weibo2013MDataset
 from ..datasets.barachant2012_m import Barachant2012MDataset
@@ -14,7 +14,7 @@ import json
 base_path = "/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/"
 
 
-class RightHandvFeetMITask(AbstractTask):
+class RightHandvFeetMITask(AbstractBCITask):
     def __init__(self):
         super().__init__(
             name="right_hand_vs_feet_mi",

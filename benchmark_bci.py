@@ -1,6 +1,6 @@
 # Description: Benchmarking script for the unified EEG benchmark.
 from unified_eeg_benchmark.enums.split import Split
-from unified_eeg_benchmark.tasks.abstract_task import AbstractTask
+from unified_eeg_benchmark.tasks.abstract_bci_task import AbstractBCITask
 from unified_eeg_benchmark.tasks.left_hand_right_hand_mi_task import (
     LeftHandvRightHandMITask,
 )
@@ -37,7 +37,7 @@ logging.basicConfig(level=logging.DEBUG,
 logger = logging.getLogger(__name__)
 
 
-def benchmark(tasks: Sequence[AbstractTask], models: Sequence[AbstractModel]):
+def benchmark(tasks: Sequence[AbstractBCITask], models: Sequence[AbstractModel]):
     for task in tasks:
         logger.info(f"Running benchmark for task {task}")
         (X_train, y_train, meta_train) = task.get_data(Split.TRAIN)

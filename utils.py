@@ -12,7 +12,7 @@ from sklearn.metrics import (
 )
 
 def one_hot_encode(y):
-        encoder = OneHotEncoder(sparse=False)
+        encoder = OneHotEncoder(sparse_output=False)
         y_reshaped = np.array(y).reshape(-1, 1)
         return encoder.fit_transform(y_reshaped)
 
@@ -36,7 +36,7 @@ def print_classification_results(y_train, y_test, model_names, y_preds, dataset_
 
     # Create a DataFrame for better formatting
     task_data = {
-        "Dataset": [f"{dataset_names[i]}" for i in range(len(y_train))],
+        "Dataset": [f"{dataset_names[i]}" for i in range(len(dataset_names))],
         "Train Samples": train_samples,
         "Test Samples": test_samples,
         "Train Class Distribution": [str(dist) for dist in train_distribution],

@@ -6,7 +6,7 @@ from typing import List, Tuple, Dict, Type, Sequence
 import numpy as np
 
 
-class AbstractTask(ABC):
+class AbstractBCITask(ABC):
     def __init__(
         self,
         name: str,
