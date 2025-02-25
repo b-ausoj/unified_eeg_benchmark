@@ -13,3 +13,5 @@ from .shin2017a_m import Shin2017AMDataset
 from .stieger2021_m import Stieger2021MDataset
 from .weibo2013_m import Weibo2013MDataset
 from .zhou2016_m import Zhou2016MDataset
+from .steyrl2016_m import Steyrl2016MDataset
+from .faller2012_m import Faller2012MDataset
