@@ -1,6 +1,6 @@
 from .abstract_model import AbstractModel
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
-from typing import List, Dict
+from typing import List, Dict, cast
 import numpy as np
 from mne.decoding import CSP
 from resampy import resample
@@ -14,7 +14,7 @@ class CSPLDAModel(AbstractModel):
         reg=None,
         log=True,
         resample_rate: int = 200,
-        channels: List[str] = ["C3", "Cz", "C4"],
+        channels: List[str] = ['FC3', "FCz", 'FC4', "C3", "Cz", "C4"],
     ):
         super().__init__("CSP-LDA")
         self.lda = LDA()
@@ -29,7 +29,7 @@ class CSPLDAModel(AbstractModel):
         X_prepared = self._prepare_data(X, meta)
         y_prepared = np.concatenate(y, axis=0)
 
-        X_prepared, y_prepared = shuffle(X_prepared, y_prepared, random_state=42)  # type: ignore
+        X_prepared, y_prepared = cast(tuple[np.ndarray, np.ndarray], shuffle(X_prepared, y_prepared, random_state=42))
         # should be done by the benchmark and not by models
 
         # Transform both training and test data using the learned CSP filters

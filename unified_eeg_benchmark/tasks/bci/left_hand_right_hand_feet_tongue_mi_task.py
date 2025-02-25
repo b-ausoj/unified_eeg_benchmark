@@ -1,12 +1,8 @@
 from .abstract_bci_task import AbstractBCITask
-from ..datasets.bcicomp_iv_2a_m import BCICompIV2aMDataset
-from ..datasets.weibo2013_m import Weibo2013MDataset
-from ..datasets.barachant2012_m import Barachant2012MDataset
-from ..datasets.schalk2004_m import Schalk2004MDataset
-from ..datasets.schirrmeister2017_m import Schirrmeister2017MDataset
-from ..enums.classes import Classes
+from ...datasets.bci import BCICompIV2aMDataset
+from ...enums.classes import Classes
 from sklearn.metrics import f1_score
-from ..enums.split import Split
+from ...enums.split import Split
 import os
 import json
 

@@ -77,7 +77,7 @@ class CSPLDAEpilepsyModel(AbstractModel):
             for raw in subject:
                 
                 # drop if too short or too long
-                if raw.times[-1] < 600:
+                if raw.times[-1] < 610:
                     # logging.warning(f"Skipping {raw.filenames[0]} because it is {'too short' if raw.times[-1] < 130 else 'too long'} with {raw.times[-1]} seconds")
                     raw.close()
                     continue
@@ -86,7 +86,7 @@ class CSPLDAEpilepsyModel(AbstractModel):
                 raw.load_data(verbose="error")
 
                 # crop to 10 minutes and remove 10 seconds from the beginning
-                raw.crop(tmin=10, tmax=600, include_tmax=False)
+                raw.crop(tmin=10, tmax=610, include_tmax=False)
 
                 # standardize channel names
                 new_ch_names = {ch: ch.replace('-REF', '').replace('-LE', '').replace('EEG ', '').upper() for ch in raw.ch_names}
@@ -120,8 +120,8 @@ class CSPLDAEpilepsyModel(AbstractModel):
             X_prepared.append(np.array(X_subject_prepared))
             if y_prepared is not None:
                 y_prepared.append(np.array(y_subject_prepared))
-                print(f"Shape of y prepared{np.array(y_subject_prepared).shape}")
-            print(f"Shape of subject prepared{np.array(X_subject_prepared).shape}")
+                #print(f"Shape of y prepared{np.array(y_subject_prepared).shape}")
+            #print(f"Shape of subject prepared{np.array(X_subject_prepared).shape}")
         
         X_prepared = np.concatenate(X_prepared, axis=0)
         if y_prepared is not None:

@@ -1,6 +1,6 @@
 from .abstract_model import AbstractModel
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
-from typing import List, Dict
+from typing import List, Dict, cast
 import numpy as np
 from resampy import resample
 from sklearn.utils import shuffle
@@ -14,7 +14,7 @@ class FgMDMModel(AbstractModel):
     def __init__(
         self,
         resample_rate: int = 200,
-        channels: List[str] = ["C3", "Cz", "C4"],
+        channels: List[str] = ['FC3', "FCz", 'FC4', "C3", "Cz", "C4"],
     ):
         super().__init__("FgMDM")
         self.pipeline = Pipeline(
@@ -39,7 +39,7 @@ class FgMDMModel(AbstractModel):
         X_prepared = self._prepare_data(X, meta)
         y_prepared = np.concatenate(y, axis=0)
 
-        X_prepared, y_prepared = shuffle(X_prepared, y_prepared, random_state=42)  # type: ignore
+        X_prepared, y_prepared = cast(tuple[np.ndarray, np.ndarray], shuffle(X_prepared, y_prepared, random_state=42))
         # should be done by the benchmark and not by models
 
         self.pipeline.fit(X_prepared, y_prepared)
@@ -49,7 +49,7 @@ class FgMDMModel(AbstractModel):
 
         X_prepared = self._prepare_data(X, meta)
 
-        return self.pipeline.predict(X_prepared)
+        return self.pipeline.predict(X_prepared) # type: ignore
 
     def _prepare_data(self, X: List[np.ndarray], meta: List[Dict]) -> np.ndarray:
 

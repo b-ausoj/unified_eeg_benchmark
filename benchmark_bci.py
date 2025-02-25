@@ -1,23 +1,15 @@
 # Description: Benchmarking script for the unified EEG benchmark.
 from unified_eeg_benchmark.enums.split import Split
-from unified_eeg_benchmark.tasks.abstract_bci_task import AbstractBCITask
-from unified_eeg_benchmark.tasks.left_hand_right_hand_mi_task import (
+from unified_eeg_benchmark.tasks.bci import (
+    AbstractBCITask,
     LeftHandvRightHandMITask,
-)
-from unified_eeg_benchmark.tasks.right_hand_feet_mi_task import RightHandvFeetMITask
-from unified_eeg_benchmark.tasks.left_hand_right_hand_feet_tongue_mi_task import (
+    RightHandvFeetMITask,
     LeftHandvRightHandvFeetvTongueMITask,
-)
-from unified_eeg_benchmark.datasets.bcicomp_iv_2a_m import (
-    BCICompIV2aMDataset,
-)
-from unified_eeg_benchmark.datasets.bcicomp_iv_2b_m import (
-    BCICompIV2bMDataset,
-)
-from unified_eeg_benchmark.datasets.grossewentrup2009_m import (
-    GrosseWentrup2009MDataset,
-)
-from unified_eeg_benchmark.tasks.custom_mi_task import CustomMITask
+    FleExtSupProCloOpnMITask,
+    FlexionvExtensionMITask,
+    PronationvSupinationMITask,
+    HandOpenvCloseMITask,
+)   
 from models.csp_svm_model import CSPSVMModel
 from models.csp_lda_model import CSPLDAModel
 from models.abstract_model import AbstractModel
@@ -75,7 +67,7 @@ def benchmark(tasks: Sequence[AbstractBCITask], models: Sequence[AbstractModel])
         print_classification_results(
             y_train, y_test, models_names, results, dataset_names
         )
-        generate_classification_plots(y_train, y_test, models_names, results, dataset_names)
+        generate_classification_plots(y_train, y_test, models_names, results, dataset_names, task.name)
 
 
 if __name__ == "__main__":
@@ -83,13 +75,17 @@ if __name__ == "__main__":
         LeftHandvRightHandMITask(),
         RightHandvFeetMITask(),
         LeftHandvRightHandvFeetvTongueMITask(),
+        FleExtSupProCloOpnMITask(),
+        FlexionvExtensionMITask(),
+        HandOpenvCloseMITask(),
+        PronationvSupinationMITask(),
     ]
     models = [
-        CSPSVMModel(),
+        #CSPSVMModel(),
         CSPLDAModel(),
-        CSPriemannLDAModel(),
+        #CSPriemannLDAModel(),
         FgMDMModel(),
-        TSLRModel(),
+        #TSLRModel(),
         #TSSVMGridModel(),
     ]
 

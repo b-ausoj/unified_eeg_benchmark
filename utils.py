@@ -110,22 +110,22 @@ def save_class_distribution_plots(dataset_names, train_distribution, test_distri
         plt.savefig(os.path.join(output_dir, f"class_distribution_{dataset}.png"))
         plt.close()
 
-def save_evaluation_plots(model_names, dataset_names, all_metrics, output_dir="plots"):
+def save_evaluation_plots(model_names, dataset_names, all_metrics, task_name, output_dir="plots"):
     os.makedirs(output_dir, exist_ok=True)
     
     for model_name, metrics_table in zip(model_names, all_metrics):
         plt.figure(figsize=(10, 6))
         metrics_table.set_index("Dataset").plot(kind="bar", figsize=(10, 6))
-        plt.title(f"Evaluation Metrics - {model_name}")
+        plt.title(f"Evaluation Metrics - {model_name} - {task_name}")
         plt.ylabel("Score")
         plt.xticks(rotation=45)
         plt.legend(loc="lower right")
         plt.grid(axis="y", linestyle="--", alpha=0.7)
         plt.tight_layout()
-        plt.savefig(os.path.join(output_dir, f"metrics_{model_name}.png"))
+        plt.savefig(os.path.join(output_dir, f"metrics_{model_name}_{task_name}.png"))
         plt.close()
 
-def generate_classification_plots(y_train, y_test, model_names, y_preds, dataset_names, output_dir="plots"):
+def generate_classification_plots(y_train, y_test, model_names, y_preds, dataset_names, task_name, output_dir="plots"):
     train_samples = [len(y) for y in y_train]
     test_samples = [len(y) for y in y_test]
     

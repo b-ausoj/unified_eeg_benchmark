@@ -84,14 +84,14 @@ class CSPLDAAbnormalModel(AbstractModel):
             raw.load_data(verbose="error")
 
             # crop to 10 minutes and remove 10 seconds from the beginning
-            raw.crop(tmin=10, tmax=600, include_tmax=False)
+            raw.crop(tmin=10, tmax=300, include_tmax=False)
 
             # standardize channel names
             new_ch_names = {ch: ch.replace('-REF', '').replace('-LE', '').replace('EEG ', '').upper() for ch in raw.ch_names}
             raw.rename_channels(new_ch_names)
 
             # apply common average reference
-            raw.set_eeg_reference('average', verbose='error')
+            # raw.set_eeg_reference('average', verbose='error')
 
             # select and reorder channels
             missing_channels = [ch for ch in self.channels if ch not in raw.ch_names]
