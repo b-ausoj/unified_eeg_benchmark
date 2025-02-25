@@ -1,4 +1,4 @@
-from abstract_clinical_task import AbstractClinicalTask
+from .abstract_clinical_task import AbstractClinicalTask
 from ...enums.clinical_classes import ClinicalClasses
 from ...datasets.clinical import SchizophreniaConflictD004Dataset
 from sklearn.metrics import f1_score
