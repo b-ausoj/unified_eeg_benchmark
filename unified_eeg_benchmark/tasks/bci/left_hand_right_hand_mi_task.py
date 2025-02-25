@@ -21,19 +21,19 @@ base_path = "/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/"
 class LeftHandvRightHandMITask(AbstractBCITask):
     def __init__(self):
         super().__init__(
-            name="left_hand_vs_right_hand_motor_imagery",
+            name="Left Hand vs Right Hand MI",
             classes=[Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI],
             datasets=[
                 BCICompIV2aMDataset,
                 BCICompIV2bMDataset,
                 Weibo2013MDataset,
                 Cho2017MDataset,
-                GrosseWentrup2009MDataset,
+                #GrosseWentrup2009MDataset,
                 #Lee2019MDataset, # some errors in some subjects
                 Liu2022MDataset,
-                Schirrmeister2017MDataset,
-                Schalk2004MDataset,
-                Zhou2016MDataset,
+                #Schirrmeister2017MDataset,
+                #Schalk2004MDataset,
+                #Zhou2016MDataset,
             ],
             subjects_split={
                 BCICompIV2aMDataset: {

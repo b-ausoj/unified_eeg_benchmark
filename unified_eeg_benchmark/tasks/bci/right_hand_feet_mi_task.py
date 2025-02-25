@@ -6,6 +6,9 @@ from ...datasets.bci import (
     BCICompIV2aMDataset,
     Barachant2012MDataset,
     Zhou2016MDataset,
+    Faller2012MDataset,
+    Steyrl2016MDataset,
+    Scherer2015MDataset,
 )
 from ...enums.classes import Classes
 from sklearn.metrics import f1_score
@@ -19,7 +22,7 @@ base_path = "/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/"
 class RightHandvFeetMITask(AbstractBCITask):
     def __init__(self):
         super().__init__(
-            name="right_hand_vs_feet_mi",
+            name="Right Hand vs Feet MI",
             classes=[Classes.RIGHT_HAND_MI, Classes.FEET_MI],
             datasets=[
                 Weibo2013MDataset,
@@ -28,6 +31,9 @@ class RightHandvFeetMITask(AbstractBCITask):
                 BCICompIV2aMDataset,
                 Barachant2012MDataset,
                 Zhou2016MDataset,
+                Faller2012MDataset,
+                Scherer2015MDataset,
+                #Steyrl2016MDataset,
             ],
             subjects_split={
                 Weibo2013MDataset: {
@@ -53,6 +59,18 @@ class RightHandvFeetMITask(AbstractBCITask):
                 Zhou2016MDataset: {
                     Split.TRAIN: list(range(1, 4)),
                     Split.TEST: list(range(4, 5)),
+                },
+                Faller2012MDataset: {
+                    Split.TRAIN: list(range(1, 10)),
+                    Split.TEST: list(range(10, 12)),
+                },
+                Scherer2015MDataset: {
+                    Split.TRAIN: list(range(1, 7)),
+                    Split.TEST: list(range(7, 9)),
+                },
+                Steyrl2016MDataset: {
+                    Split.TRAIN: list(range(1, 11)),
+                    Split.TEST: list(range(11, 15)),
                 },
             },
         )

@@ -12,7 +12,7 @@ base_path = "/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/"
 class LeftHandvRightHandvFeetvTongueMITask(AbstractBCITask):
     def __init__(self):
         super().__init__(
-            name="right_hand_vs_feet_mi",
+            name="Left Hand vs Right Hand vs Feet vs Tongue MI",
             classes=[
                 Classes.LEFT_HAND_MI,
                 Classes.RIGHT_HAND_MI,

@@ -9,6 +9,10 @@ from unified_eeg_benchmark.tasks.clinical import (
     DepressionClinicalTask,
     EpilepsyClinicalTask,
     ParkinsonsClinicalTask,
+    MedClinicalTask,
+    BDIClinicalTask,
+    AgeClinicalTask,
+    SexClinicalTask,
 )
 from models.csp_lda_cli_unm_model import CSPLDACliUnmModel
 from models.csp_lda_epilepsy_model import CSPLDAEpilepsyModel
@@ -68,17 +72,21 @@ def benchmark(tasks: Sequence[AbstractClinicalTask], models: Sequence[AbstractMo
 
 if __name__ == "__main__":
     tasks = [
-        #ParkinsonsClinicalTask(),
-        #DepressionClinicalTask(),
-        #SchizophreniaClinicalTask(),
-        #MTBIClinicalTask(),
-        #OCDClinicalTask(),
-        EpilepsyClinicalTask(),
+        ParkinsonsClinicalTask(),
+        DepressionClinicalTask(),
+        SchizophreniaClinicalTask(),
+        MTBIClinicalTask(),
+        OCDClinicalTask(),
+        #EpilepsyClinicalTask(),
         #AbnormalClinicalTask(),
+        #MedClinicalTask,
+        #BDIClinicalTask,
+        #AgeClinicalTask,
+        #SexClinicalTask,
     ]
     models = [
-        #CSPLDACliUnmModel(),
-        CSPLDAEpilepsyModel(),
+        CSPLDACliUnmModel(),
+        #CSPLDAEpilepsyModel(),
         #CSPLDAAbnormalModel(),
     ]
 

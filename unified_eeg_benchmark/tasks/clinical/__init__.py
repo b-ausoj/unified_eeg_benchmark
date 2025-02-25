@@ -6,3 +6,7 @@ from .ocd_clinical_task import OCDClinicalTask
 from .depression_clinical_task import DepressionClinicalTask
 from .epilepsy_clinical_task import EpilepsyClinicalTask
 from .parkinsons_clinical_task import ParkinsonsClinicalTask
+from .med_clinical_task import MedClinicalTask
+from .bdi_clinical_task import BDIClinicalTask
+from .age_clinical_task import AgeClinicalTask
+from .sex_clinical_task import SexClinicalTask

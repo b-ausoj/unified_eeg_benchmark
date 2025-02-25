@@ -14,7 +14,7 @@ class CSPLDAModel(AbstractModel):
         reg=None,
         log=True,
         resample_rate: int = 200,
-        channels: List[str] = ['FC3', "FCz", 'FC4', "C3", "Cz", "C4"],
+        channels: List[str] = ["C3", "Cz", "C4"], # 'FC3', "FCz", 'FC4', 
     ):
         super().__init__("CSP-LDA")
         self.lda = LDA()
