@@ -4,7 +4,7 @@ from ...enums.classes import Classes
 from typing import Optional, Sequence
 import moabb
 from moabb.datasets import (
-    BNCI2014_002,
+    BNCI2015_004,
 )
 from moabb.paradigms import MotorImagery
 import moabb.datasets.base as base
@@ -15,13 +15,13 @@ moabb.set_log_level("info")
 warnings.filterwarnings("ignore")
 
 
-def _load_data_steyrl2016(
+def _load_data_scherer2015(
     paradigm: BaseParadigm, dataset: base.BaseDataset, subjects: Sequence[int]
 ):
     return paradigm.get_data(dataset=dataset, subjects=subjects)
 
 
-class Steyrl2016MDataset(BaseBCIDataset):
+class Scherer2015MDataset(BaseBCIDataset):
     def __init__(
         self,
         target_classes: Sequence[Classes],
@@ -32,23 +32,23 @@ class Steyrl2016MDataset(BaseBCIDataset):
     ):
         # fmt: off
         super().__init__(
-            name="steyrl2016_m", # aka MI TWO or BNCI 2014-002
-            interval=(3, 8),
+            name="scherer2015_m", # aka MI II or BNCI 2015-004
+            interval=(3, 10),
             target_classes=target_classes,
             available_classes=[Classes.RIGHT_HAND_MI, Classes.FEET_MI],
             subjects=subjects,
             target_channels=target_channels,
             target_frequency=target_frequency,
-            sampling_frequency=512,
-            channel_names = ['channel1', 'channel2', 'channel3', 'channel4', 'channel5', 'channel6', 'channel7', 'channel8', 'channel9', 'channel10', 'channel11', 'channel12', 'channel13', 'channel14', 'channel15'],
+            sampling_frequency=256,
+            channel_names = ["AFz", "F7", "F3", "Fz", "F4", "F8", "FC3", "FCz", "FC4", "T3", "C3", "Cz", "C4", "T4", "CP3", "CPz", "CP4", "P7", "P5", "P3", "P1", "Pz", "P2", "P4", "P6", "P8", "PO3", "PO4", "O1", "O2"],
             preload=preload,
         )
         # fmt: on
-        logging.info("in Steyrl2016MDataset.__init__")
+        logging.info("in Scherer2015MDataset.__init__")
         self.meta = {
             "sampling_frequency": self._sampling_frequency,  # check if correct or target frequency
             "channel_names": self._channel_names,  # check if correct or target channels
-            "labels_mapping": {"right_hand": 1, "feet": 2},
+            "labels_mapping": {"right_hand": 4, "feet": 5},
             "name": self.name,
         }
 
@@ -59,14 +59,14 @@ class Steyrl2016MDataset(BaseBCIDataset):
         pass
 
     def load_data(self) -> None:
-        Steyrl2016 = BNCI2014_002()
+        Scherer2015 = BNCI2015_004()
         if self.target_classes is None:
             logging.warning("target_classes is None, loading all classes...")
             paradigm = MotorImagery()
         elif self.target_classes == [Classes.RIGHT_HAND_MI, Classes.FEET_MI]:
-            paradigm = MotorImagery()
+            paradigm = MotorImagery(n_classes=2, events=["right_hand", "feet"])
         else:
             raise ValueError("Invalid target classes")
-        self.data, self.labels, _ = self.cache.cache(_load_data_steyrl2016)(
-            paradigm, Steyrl2016, self.subjects
+        self.data, self.labels, _ = self.cache.cache(_load_data_scherer2015)(
+            paradigm, Scherer2015, self.subjects
         )  # type: ignore

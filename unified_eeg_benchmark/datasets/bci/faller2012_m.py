@@ -35,7 +35,7 @@ class Faller2012MDataset(BaseBCIDataset):
             name="faller2012_m", # aka BNCI2015_001
             interval=(0, 5),
             target_classes=target_classes,
-            available_classes=[Classes.FEET_MI, Classes.RIGHT_HAND_MI],
+            available_classes=[Classes.RIGHT_HAND_MI, Classes.FEET_MI],
             subjects=subjects,
             target_channels=target_channels,
             target_frequency=target_frequency,
@@ -63,8 +63,8 @@ class Faller2012MDataset(BaseBCIDataset):
         if self.target_classes is None:
             logging.warning("target_classes is None, loading all classes...")
             paradigm = MotorImagery()
-        elif self.target_classes == [Classes.FEET_MI, Classes.RIGHT_HAND_MI]:
-            paradigm = MotorImagery()
+        elif self.target_classes == [Classes.RIGHT_HAND_MI, Classes.FEET_MI]:
+            paradigm = MotorImagery(n_classes=2, events=["right_hand", "feet"])
         else:
             raise ValueError("Invalid target classes")
         self.data, self.labels, _ = self.cache.cache(_load_data_faller2012)(
