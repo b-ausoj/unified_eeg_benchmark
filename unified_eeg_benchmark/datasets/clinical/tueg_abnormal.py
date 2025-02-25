@@ -1,6 +1,6 @@
 from .base_clinical_dataset import BaseClinicalDataset
-from ..enums.clinical_classes import ClinicalClasses
-from ..enums.split import Split
+from ...enums.clinical_classes import ClinicalClasses
+from ...enums.split import Split
 from typing import Optional, Sequence, Tuple, List, Dict, cast
 import logging
 import glob

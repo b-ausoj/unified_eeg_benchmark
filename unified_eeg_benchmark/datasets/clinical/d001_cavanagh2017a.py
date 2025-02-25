@@ -1,5 +1,5 @@
 from .base_clinical_dataset import BaseClinicalDataset
-from ..enums.clinical_classes import ClinicalClasses
+from ...enums.clinical_classes import ClinicalClasses
 from typing import Optional, Sequence
 import logging
 from scipy.io import loadmat
@@ -43,7 +43,7 @@ def _load_data_cavanagh2017a(subjects: Sequence[int]):
     return data, labels
 
 
-class Cavanagh2017ADataset(BaseClinicalDataset):
+class ParkinsonsOddballD001Dataset(BaseClinicalDataset):
     def __init__(
         self,
         target_class: ClinicalClasses,
@@ -65,7 +65,7 @@ class Cavanagh2017ADataset(BaseClinicalDataset):
             preload=preload,
         )
         # fmt: on
-        logging.info("in Cavanagh2017ADataset.__init__")
+        logging.info("in ParkinsonsOddballD001Dataset.__init__")
         self.meta = {
             "sampling_frequency": self._sampling_frequency,  # check if correct or target frequency
             "channel_names": self._channel_names,  # check if correct or target channels
@@ -80,7 +80,7 @@ class Cavanagh2017ADataset(BaseClinicalDataset):
 
     def load_data(self) -> None:
         
-        self.data, self.labels = self.cache.cache(_load_data_cavanagh2017a)(self.subjects)
+        self.data, self.labels = self.cache.cache(_load_data_cavanagh2017a)(self.subjects) # type: ignore
         # have to reshape the data to (n_subjects, n_channels, n_timepoints) right now it is (n_subjects, n_channels, n_trials, n_timepoints)
         self.data = [np.reshape(subject_data, (subject_data.shape[0], -1)) for subject_data in self.data]
         #print("data shape: ", self.data[0].shape)

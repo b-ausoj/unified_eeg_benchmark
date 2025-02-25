@@ -1,5 +1,5 @@
 from .base_clinical_dataset import BaseClinicalDataset
-from ..enums.clinical_classes import ClinicalClasses
+from ...enums.clinical_classes import ClinicalClasses
 from typing import Optional, Sequence, Tuple, List, Dict
 import logging
 import glob

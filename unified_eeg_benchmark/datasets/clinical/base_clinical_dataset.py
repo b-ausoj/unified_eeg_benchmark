@@ -1,14 +1,14 @@
-from .abstract_dataset import AbstractDataset
+from ..abstract_dataset import AbstractDataset
 from typing import Tuple, Optional, Sequence
-from ..enums.clinical_classes import ClinicalClasses as Classes
+from ...enums.clinical_classes import ClinicalClasses
 
 
 class BaseClinicalDataset(AbstractDataset):
     def __init__(
         self,
         name: str,
-        target_class: Classes,
-        available_classes: Sequence[Classes],
+        target_class: ClinicalClasses,
+        available_classes: Sequence[ClinicalClasses],
         subjects: Sequence[int],
         sampling_frequency: int,
         channel_names: Sequence[str],
@@ -17,7 +17,7 @@ class BaseClinicalDataset(AbstractDataset):
         preload: bool = False,
     ):
         super().__init__(
-            target_classes=[target_class],
+            target_classes=[target_class], # type: ignore
             subjects=subjects,
         )
         self.name = name

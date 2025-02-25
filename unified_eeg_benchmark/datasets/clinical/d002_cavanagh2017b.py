@@ -1,5 +1,5 @@
 from .base_clinical_dataset import BaseClinicalDataset
-from ..enums.clinical_classes import ClinicalClasses
+from ...enums.clinical_classes import ClinicalClasses
 from typing import Optional, Sequence
 import logging
 from scipy.io import loadmat
@@ -72,7 +72,7 @@ def _load_data_cavanagh2017b(subjects: Sequence[int], target_class: ClinicalClas
     return data, labels
 
 
-class Cavanagh2017BDataset(BaseClinicalDataset):
+class ParkinsonsRestD002Dataset(BaseClinicalDataset):
     def __init__(
         self,
         target_class: ClinicalClasses,
@@ -94,7 +94,7 @@ class Cavanagh2017BDataset(BaseClinicalDataset):
             preload=preload,
         )
         # fmt: on
-        logging.info("in Cavanagh2017BDataset.__init__")
+        logging.info("in ParkinsonsRestD002Dataset.__init__")
         self.meta = {
             "sampling_frequency": self._sampling_frequency,  # check if correct or target frequency
             "channel_names": self._channel_names,  # check if correct or target channels
@@ -109,5 +109,5 @@ class Cavanagh2017BDataset(BaseClinicalDataset):
 
     def load_data(self) -> None:
         
-        self.data, self.labels = self.cache.cache(_load_data_cavanagh2017b)(self.subjects, self.target_classes[0])
+        self.data, self.labels = self.cache.cache(_load_data_cavanagh2017b)(self.subjects, self.target_classes[0]) # type: ignore
         self.data = [d * 1e-6 for d in self.data]

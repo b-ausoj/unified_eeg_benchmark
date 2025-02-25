@@ -6,6 +6,7 @@ class ClinicalClasses(Enum):
     DEPRESSION = "Depression"
     SCHIZOPHRENIA = "Schizophrenia"
     OCD = "OCD"
+    OCI = "OCI"
     MTBI = "mTBI"
     MEDICATION = "Medication"
     BDI = "BDI"

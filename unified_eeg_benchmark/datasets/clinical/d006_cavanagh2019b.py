@@ -1,5 +1,5 @@
 from .base_clinical_dataset import BaseClinicalDataset
-from ..enums.clinical_classes import ClinicalClasses
+from ...enums.clinical_classes import ClinicalClasses
 from typing import Optional, Sequence
 import logging
 from scipy.io import loadmat
@@ -7,19 +7,19 @@ import numpy as np
 import pandas as pd
 
 
-DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d003_cavanagh2019a/data/Depression Rest/"
+DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d006_cavanagh2019b/data/Depression PS Task/"
 
 
-def _load_data_cavanagh2019a(subjects: Sequence[int], target_class: ClinicalClasses):
-    all_subjects = [str(i) for i in range(507, 629) if i != 544 and i != 571 and i != 572]
-    df_vars = pd.read_excel(DATA_PATH + "Data_4_Import_REST.xlsx")
+def _load_data_cavanagh2019b(subjects: Sequence[int], target_class: ClinicalClasses):
+    all_subjects = [str(i) for i in range(507, 629) if i != 544 and i != 599 and i != 600]
+    df_vars = pd.read_excel(DATA_PATH + "Scripts from Manuscript/Data_4_Import.xlsx")
     dep_ids = df_vars.loc[df_vars['BDI']>=13.0, ['id']].values
 
     data = []
     labels = []
     for subject in subjects:
         subject_id = all_subjects[subject - 1]
-        file_path = f"{DATA_PATH}Matlab Files/{subject_id}_Depression_REST.mat"
+        file_path = f"{DATA_PATH}Data/{subject_id}.mat"
         mat = loadmat(file_path, simplify_cells=True)
         data.append(mat["EEG"]["data"][:64, :])
         if target_class == ClinicalClasses.DEPRESSION:
@@ -36,7 +36,7 @@ def _load_data_cavanagh2019a(subjects: Sequence[int], target_class: ClinicalClas
     return data, labels
 
 
-class Cavanagh2019ADataset(BaseClinicalDataset):
+class DepressionRLD006Dataset(BaseClinicalDataset):
     def __init__(
         self,
         target_class: ClinicalClasses,
@@ -47,7 +47,7 @@ class Cavanagh2019ADataset(BaseClinicalDataset):
     ):
         # fmt: off
         super().__init__(
-            name="Cavanagh2019a", # d003
+            name="Cavanagh2019b", # d006
             target_class=target_class,
             available_classes=[ClinicalClasses.DEPRESSION, ClinicalClasses.BDI, ClinicalClasses.AGE, ClinicalClasses.SEX],
             subjects=subjects,
@@ -58,11 +58,11 @@ class Cavanagh2019ADataset(BaseClinicalDataset):
             preload=preload,
         )
         # fmt: on
-        logging.info("in Cavanagh2019ADataset.__init__")
+        logging.info("in Cavanagh2019BDataset.__init__")
         self.meta = {
             "sampling_frequency": self._sampling_frequency,  # check if correct or target frequency
             "channel_names": self._channel_names,  # check if correct or target channels
-            "name": "Cavanagh2019a",
+            "name": "Cavanagh2019b",
         }
 
         if preload:
@@ -73,4 +73,4 @@ class Cavanagh2019ADataset(BaseClinicalDataset):
 
     def load_data(self) -> None:
         
-        self.data, self.labels = self.cache.cache(_load_data_cavanagh2019a)(self.subjects, self.target_classes[0])
+        self.data, self.labels = self.cache.cache(_load_data_cavanagh2019b)(self.subjects, self.target_classes[0])

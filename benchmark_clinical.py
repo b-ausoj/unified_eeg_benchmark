@@ -1,10 +1,15 @@
 # Description: Benchmarking script for the unified EEG benchmark.
 from unified_eeg_benchmark.enums.split import Split
-from unified_eeg_benchmark.tasks.abstract_clinical_task import AbstractClinicalTask
-from unified_eeg_benchmark.tasks.depression_clinical_task import DepressionClinicalTask
-from unified_eeg_benchmark.tasks.parkinsons_clinical_task import ParkinsonsClinicalTask
-from unified_eeg_benchmark.tasks.epilepsy_clinical_task import EpilepsyClinicalTask
-from unified_eeg_benchmark.tasks.abnormal_clinical_task import AbnormalClinicalTask
+from unified_eeg_benchmark.tasks.clinical import (
+    AbstractClinicalTask,
+    AbnormalClinicalTask,
+    SchizophreniaClinicalTask,
+    MTBIClinicalTask,
+    OCDClinicalTask,
+    DepressionClinicalTask,
+    EpilepsyClinicalTask,
+    ParkinsonsClinicalTask,
+)
 from models.csp_lda_cli_unm_model import CSPLDACliUnmModel
 from models.csp_lda_epilepsy_model import CSPLDAEpilepsyModel
 from models.csp_lda_abnormal_model import CSPLDAAbnormalModel
@@ -58,20 +63,23 @@ def benchmark(tasks: Sequence[AbstractClinicalTask], models: Sequence[AbstractMo
         print_classification_results(
             y_train, y_test, models_names, results, dataset_names
         )
-        #generate_classification_plots(y_train, y_test, models_names, results, dataset_names)
+        generate_classification_plots(y_train, y_test, models_names, results, dataset_names, task.name)
 
 
 if __name__ == "__main__":
     tasks = [
         #ParkinsonsClinicalTask(),
         #DepressionClinicalTask(),
-        #EpilepsyClinicalTask(),
-        AbnormalClinicalTask(),
+        #SchizophreniaClinicalTask(),
+        #MTBIClinicalTask(),
+        #OCDClinicalTask(),
+        EpilepsyClinicalTask(),
+        #AbnormalClinicalTask(),
     ]
     models = [
         #CSPLDACliUnmModel(),
-        #CSPLDAEpilepsyModel(),
-        CSPLDAAbnormalModel(),
+        CSPLDAEpilepsyModel(),
+        #CSPLDAAbnormalModel(),
     ]
 
     benchmark(tasks, models)
