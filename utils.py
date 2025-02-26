@@ -16,7 +16,7 @@ def one_hot_encode(y):
         y_reshaped = np.array(y).reshape(-1, 1)
         return encoder.fit_transform(y_reshaped)
 
-def print_classification_results(y_train, y_test, model_names, y_preds, dataset_names):
+def print_classification_results(y_train, y_test, model_names, y_preds, dataset_names, task_name):
     # Assuming y_train and y_test are lists of numpy arrays
 
     # Gather basic statistics
@@ -46,6 +46,7 @@ def print_classification_results(y_train, y_test, model_names, y_preds, dataset_
 
     # Display the task overview
     print("\n" + "=" * 24 + " Task Overview " + "=" * 24 + "\n")
+    print(f"{'Task: ' + task_name:^60}\n")
     print(task_table.to_string(index=False))
     print()
 
@@ -178,4 +179,4 @@ def generate_classification_plots(y_train, y_test, model_names, y_preds, dataset
         all_metrics.append(metrics_table)
     
     # Save evaluation metric plots
-    save_evaluation_plots(model_names, dataset_names, all_metrics, output_dir)
+    save_evaluation_plots(model_names, dataset_names, all_metrics, task_name, output_dir)

@@ -65,7 +65,7 @@ def benchmark(tasks: Sequence[AbstractClinicalTask], models: Sequence[AbstractMo
             results.append(y_pred)
 
         print_classification_results(
-            y_train, y_test, models_names, results, dataset_names
+            y_train, y_test, models_names, results, dataset_names, task.name
         )
         generate_classification_plots(y_train, y_test, models_names, results, dataset_names, task.name)
 
