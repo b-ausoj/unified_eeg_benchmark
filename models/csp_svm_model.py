@@ -1,6 +1,6 @@
 from .abstract_model import AbstractModel
 from sklearn.svm import SVC
-from typing import List, Dict
+from typing import List, Dict, cast, Literal
 import numpy as np
 from mne.decoding import CSP
 from resampy import resample
@@ -10,7 +10,7 @@ from sklearn.utils import shuffle
 class CSPSVMModel(AbstractModel):
     def __init__(
         self,
-        kernel="linear",
+        kernel : Literal["linear"] = "linear",
         C=1.0,
         random_state=42,
         n_components=4,
@@ -32,9 +32,7 @@ class CSPSVMModel(AbstractModel):
         X_prepared = self._prepare_data(X, meta)
         y_prepared = np.concatenate(y, axis=0)
 
-        X_prepared, y_prepared = shuffle(
-            X_prepared, y_prepared, random_state=42
-        )  # should be done by the benchmark and not by models
+        X_prepared, y_prepared = cast(tuple[np.ndarray, np.ndarray], shuffle(X_prepared, y_prepared, random_state=42)) # should be done by the benchmark and not by models
 
         # Transform both training and test data using the learned CSP filters
         X_csp = self.csp.fit_transform(X_prepared, y_prepared)
@@ -53,6 +51,8 @@ class CSPSVMModel(AbstractModel):
 
         X_resampled = []
         for data, m in zip(X, meta):
+            if data.size == 0:
+                continue
             # resample if needed
             # only take the C3, Cz, C4 channels
             channel_indices = [m["channel_names"].index(ch) for ch in self.channels]

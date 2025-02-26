@@ -10,6 +10,7 @@ from moabb.paradigms import LeftRightImagery
 import moabb.datasets.base as base
 from moabb.paradigms.base import BaseParadigm
 import logging
+import numpy as np
 
 moabb.set_log_level("info")
 warnings.filterwarnings("ignore")
@@ -66,6 +67,11 @@ class BCICompIV2bMDataset(BaseBCIDataset):
             paradigm = LeftRightImagery()
         else:
             raise ValueError("Invalid target classes")
-        self.data, self.labels, _ = self.cache.cache(_load_data_bcicomp_iv_2b)(
+        
+        if (self.subjects is None) or (len(self.subjects) == 0):
+            self.data = np.array([])
+            self.labels = np.array([])
+        else:
+            self.data, self.labels, _ = self.cache.cache(_load_data_bcicomp_iv_2b)(
             paradigm, BCI_IV_2b, self.subjects
         )  # type: ignore

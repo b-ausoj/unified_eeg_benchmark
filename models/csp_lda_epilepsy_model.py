@@ -1,12 +1,13 @@
 from .abstract_model import AbstractModel
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
-from typing import List, Dict, Sequence, Optional, Tuple
+from typing import List, Dict, Sequence, Optional, Tuple, cast, Union
 import numpy as np
 from mne.decoding import CSP
 from sklearn.utils import shuffle
-from mne.io import Raw
+from mne.io import Raw, RawArray, concatenate_raws
 import logging
 from sklearn.preprocessing import LabelEncoder
+from tqdm import tqdm
 
 
 class CSPLDAEpilepsyModel(AbstractModel):
@@ -32,7 +33,7 @@ class CSPLDAEpilepsyModel(AbstractModel):
         print(X_prepared.shape)
         print(y_prepared.shape)
 
-        X_prepared, y_prepared = shuffle(X_prepared, y_prepared, random_state=42)  # type: ignore
+        X_prepared, y_prepared = cast(tuple[np.ndarray, np.ndarray], shuffle(X_prepared, y_prepared, random_state=42))
         # should be done by the benchmark and not by models
 
         # Transform both training and test data using the learned CSP filters
@@ -66,7 +67,7 @@ class CSPLDAEpilepsyModel(AbstractModel):
         return y_pred_decoded
         """
 
-    def _prepare_data(self, X: List[List[Raw]], y: Optional[List[str]], meta: Dict) -> Tuple[np.ndarray, Optional[np.ndarray]]:
+    def _prepare_data(self, X: List[List[Raw]], y: Optional[List[str]], meta: Dict) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
         
         X_prepared = []
         y_prepared = [] if y is not None else None
@@ -76,17 +77,19 @@ class CSPLDAEpilepsyModel(AbstractModel):
             y_subject_prepared = [] if y is not None else None
             for raw in subject:
                 
+                max_time = 300
+
                 # drop if too short or too long
-                if raw.times[-1] < 610:
+                if raw.times[-1] < max_time:
                     # logging.warning(f"Skipping {raw.filenames[0]} because it is {'too short' if raw.times[-1] < 130 else 'too long'} with {raw.times[-1]} seconds")
                     raw.close()
                     continue
+                
+                # crop to 10 minutes and remove 10 seconds from the beginning
+                raw.crop(tmin=10, tmax=max_time, include_tmax=False)
 
                 # load data
                 raw.load_data(verbose="error")
-
-                # crop to 10 minutes and remove 10 seconds from the beginning
-                raw.crop(tmin=10, tmax=610, include_tmax=False)
 
                 # standardize channel names
                 new_ch_names = {ch: ch.replace('-REF', '').replace('-LE', '').replace('EEG ', '').upper() for ch in raw.ch_names}
@@ -109,7 +112,7 @@ class CSPLDAEpilepsyModel(AbstractModel):
                 raw.resample(self.resample_rate)
                 
                 # append to list
-                X_subject_prepared.append(raw.get_data())
+                X_subject_prepared.append(raw.get_data(units='uV'))
                 if y_subject_prepared is not None and y is not None:
                     y_subject_prepared.append(y[i])
                 raw.close()
@@ -120,11 +123,11 @@ class CSPLDAEpilepsyModel(AbstractModel):
             X_prepared.append(np.array(X_subject_prepared))
             if y_prepared is not None:
                 y_prepared.append(np.array(y_subject_prepared))
-                #print(f"Shape of y prepared{np.array(y_subject_prepared).shape}")
-            #print(f"Shape of subject prepared{np.array(X_subject_prepared).shape}")
+                # print(f"Shape of y prepared {np.array(y_subject_prepared).shape}")
+            # print(f"Shape of subject prepared {np.array(X_subject_prepared).shape}")
         
         X_prepared = np.concatenate(X_prepared, axis=0)
         if y_prepared is not None:
             y_prepared = np.concatenate(y_prepared, axis=0)
         
-        return X_prepared if y is None else (X_prepared, y_prepared)
+        return X_prepared if y_prepared is None else (X_prepared, y_prepared)

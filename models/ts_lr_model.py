@@ -1,6 +1,6 @@
 from .abstract_model import AbstractModel
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
-from typing import List, Dict
+from typing import List, Dict, cast
 import numpy as np
 from resampy import resample
 from sklearn.utils import shuffle
@@ -45,7 +45,7 @@ class TSLRModel(AbstractModel):
         X_prepared = self._prepare_data(X, meta)
         y_prepared = np.concatenate(y, axis=0)
 
-        X_prepared, y_prepared = shuffle(X_prepared, y_prepared, random_state=42)  # type: ignore
+        X_prepared, y_prepared = cast(tuple[np.ndarray, np.ndarray], shuffle(X_prepared, y_prepared, random_state=42))
         # should be done by the benchmark and not by models
 
         self.pipeline.fit(X_prepared, y_prepared)
@@ -61,6 +61,8 @@ class TSLRModel(AbstractModel):
 
         X_resampled = []
         for data, m in zip(X, meta):
+            if data.size == 0:
+                continue
             # resample if needed
             # only take the C3, Cz, C4 channels
             channel_indices = [m["channel_names"].index(ch) for ch in self.channels]

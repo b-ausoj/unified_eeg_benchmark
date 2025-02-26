@@ -49,6 +49,8 @@ class CSPLDAModel(AbstractModel):
 
         X_resampled = []
         for data, m in zip(X, meta):
+            if data.size == 0:
+                continue
             # resample if needed
             # only take the C3, Cz, C4 channels
             channel_indices = [m["channel_names"].index(ch) for ch in self.channels]

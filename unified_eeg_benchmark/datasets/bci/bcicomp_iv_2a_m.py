@@ -10,6 +10,7 @@ from moabb.datasets import (
 import moabb.datasets.base as base
 from moabb.paradigms import MotorImagery
 import logging
+import numpy as np
 
 moabb.set_log_level("info")
 warnings.filterwarnings("ignore")
@@ -85,6 +86,10 @@ class BCICompIV2aMDataset(BaseBCIDataset):
         else:
             raise ValueError("Invalid target classes")
 
-        self.data, self.labels, _ = self.cache.cache(_load_data_bcicomp_iv_2a)(
-            paradigm, BCI_IV_2a, self.subjects
-        )  # type: ignore
+        if (self.subjects is None) or (len(self.subjects) == 0):
+            self.data = np.array([])
+            self.labels = np.array([])
+        else:
+            self.data, self.labels, _ = self.cache.cache(_load_data_bcicomp_iv_2a)(
+                paradigm, BCI_IV_2a, self.subjects
+            )  # type: ignore

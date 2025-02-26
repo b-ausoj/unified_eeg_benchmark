@@ -1,6 +1,6 @@
 from .abstract_model import AbstractModel
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
-from typing import List, Dict, Sequence, Optional, Tuple
+from typing import List, Dict, Sequence, Optional, Tuple, cast
 import numpy as np
 from mne.decoding import CSP
 from sklearn.utils import shuffle
@@ -25,7 +25,7 @@ class CSPLDAAbnormalModel(AbstractModel):
         self.resample_rate = resample_rate
         self.channels = channels
 
-    def fit(self, X: List[List[List[Raw]]], y: List[List[str]], meta: List[Dict]) -> None:
+    def fit(self, X: List[List[Raw]], y: List[List[str]], meta: List[Dict]) -> None:
         
         X_, y_, meta_ = X[0], y[0], meta[0] # In abnormal task, we only have one dataset
         
@@ -34,7 +34,7 @@ class CSPLDAAbnormalModel(AbstractModel):
         y_prepared = np.array(y_)
         print(y_prepared.shape)
 
-        X_prepared, y_prepared = shuffle(X_prepared, y_prepared, random_state=42)  # type: ignore
+        X_prepared, y_prepared = cast(tuple[np.ndarray, np.ndarray], shuffle(X_prepared, y_prepared, random_state=42))
         # should be done by the benchmark and not by models
 
         # Transform both training and test data using the learned CSP filters
@@ -43,7 +43,7 @@ class CSPLDAAbnormalModel(AbstractModel):
         # Fit LDA on CSP-transformed training data
         self.lda.fit(X_csp, y_prepared)
 
-    def predict(self, X: List[List[List[Raw]]], meta: List[Dict]) -> np.ndarray:
+    def predict(self, X: List[List[Raw]], meta: List[Dict]) -> np.ndarray:
 
         X_, meta_ = X[0], meta[0] # In abnormal task, we only have one dataset
 
@@ -73,18 +73,20 @@ class CSPLDAAbnormalModel(AbstractModel):
         X_prepared = []
 
         for raw in tqdm(X):
-                
+            
+            max_time = 300
+
             # drop if too short or too long
-            if raw.times[-1] < 600:
+            if raw.times[-1] < max_time:
                 # logging.warning(f"Skipping {raw.filenames[0]} because it is {'too short' if raw.times[-1] < 130 else 'too long'} with {raw.times[-1]} seconds")
                 raw.close()
                 continue
 
+            # crop to 10 minutes and remove 10 seconds from the beginning
+            raw.crop(tmin=10, tmax=max_time, include_tmax=False)
+
             # load data
             raw.load_data(verbose="error")
-
-            # crop to 10 minutes and remove 10 seconds from the beginning
-            raw.crop(tmin=10, tmax=300, include_tmax=False)
 
             # standardize channel names
             new_ch_names = {ch: ch.replace('-REF', '').replace('-LE', '').replace('EEG ', '').upper() for ch in raw.ch_names}
@@ -107,7 +109,7 @@ class CSPLDAAbnormalModel(AbstractModel):
             raw.resample(self.resample_rate, verbose='error')
             
             # append to list
-            X_prepared.append(raw.get_data())
+            X_prepared.append(raw.get_data(units='uV'))
             raw.close()
 
         X_prepared = np.array(X_prepared)
