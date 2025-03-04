@@ -5,3 +5,5 @@ __pycache__/
 log/
 testing.py
 plots/
+checkpoints/
+cli_master_split.json

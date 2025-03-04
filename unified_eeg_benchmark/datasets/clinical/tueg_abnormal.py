@@ -5,7 +5,7 @@ from typing import Optional, Sequence, Tuple, List, Dict, cast
 import logging
 import glob
 import os
-from mne.io import read_raw_edf, Raw
+from mne.io import read_raw_edf, BaseRaw
 from tqdm import tqdm
 from sklearn.utils import shuffle
 from pathlib import Path
@@ -14,13 +14,11 @@ from pathlib import Path
 DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/tueg_abnormal/tuab/edf/"
 
 
-def _load_data_tueg_abnormal(subjects: Sequence[int], split: Split, preload: bool) -> Tuple[List[Raw], List[str], List[str]]:
+def _load_data_tueg_abnormal(subjects: Sequence[int], split: Split, preload: bool) -> Tuple[List[BaseRaw], List[str], List[str]]:
     """Loads EEG data from the TUEG Abnormal dataset.
     
-    This function retrieves EEG recordings of subjects with and without abnormal. 
-    Subjects are mapped to dataset files based on their index:
-    - Even-numbered subjects have abnormal.
-    - Odd-numbered subjects do not have abnormal.
+    This function retrieves EEG recordings of subjects with normal or abnormal EEGs.
+    The subjects are randomly mapped to the corresponding files in the dataset. (Improve me!)
 
     Args:
         subjects (Sequence[int]): A list of subject indices (1-indexed) to load data for.
@@ -29,16 +27,14 @@ def _load_data_tueg_abnormal(subjects: Sequence[int], split: Split, preload: boo
 
     Returns:
         Tuple:
-            - List[List[Raw]]: A nested list where each outer list corresponds to a subject, 
-              and each inner list contains `Raw` EEG recordings for that subject.
-            - List[str]: A list containing labels (`"abnormal"` or `"no_abnormal"`) for each subject.
-            - List[List[str]]: A nested list where each outer list corresponds to a subject, 
-              and each inner list contains montage types for each EEG recording.
+            - List[BaseRaw]: A list of `RawEDF` EEG recordings.
+            - List[str]: A list of labels (`"abnormal"` or `"normal"`).
+            - List[str]: A list of montage types for each EEG signal.
     """
     
-    data = []
-    labels = []
-    montage_type = []
+    data: List[BaseRaw] = []
+    labels: List[str] = []
+    montage_type: List[str] = []
 
     files = glob.glob(os.path.join(DATA_PATH, "train" if split == Split.TRAIN else "eval", "**", "*.edf"), recursive=True)
     files = cast(List[str], shuffle(files, random_state=42))
@@ -76,7 +72,7 @@ class TUEGAbnormalDataset(BaseClinicalDataset):
         )
         # fmt: on
         logging.info("in TUEGAbnormalDataset.__init__")
-        self.data: List[List[Raw]]
+        self.data: List[BaseRaw]
         self.labels: List[str]
         self.meta = {
             "name": self.name,
@@ -94,20 +90,20 @@ class TUEGAbnormalDataset(BaseClinicalDataset):
         self.data, self.labels, montage_type = self.cache.cache(_load_data_tueg_abnormal)(self.subjects, split, self._preload) # type: ignore
         self.meta["montage_type"] = montage_type
 
-    def get_data(self, split: Split) -> Tuple[List[List[Raw]], List[str], Dict]:
+    def get_data(self, split: Split) -> Tuple[List[BaseRaw], List[str], Dict]:
         """Get the data of the TUEG Abnormal dataset.
         
-        The dataset contains EEG recordings of subjects with and without abnormal.
-        Subjects are mapped to the corresponding files in the dataset using the 
-        following rule: even-numbered subjects have abnormal, while odd-numbered 
-        subjects do not.
+        The dataset contains EEG recordings of subjects with normal or abnormal EEGs.
+        The subjects are randomly mapped to the corresponding files in the dataset. (Improve me!)
+
+        Args:
+            split (Split): The split for which to load the data.
     
         Returns:
             Tuple:
-                - List[List[Raw]]: A nested list where each outer list corresponds to a subject, 
-                and each inner list contains `Raw` EEG recordings for that subject.
-                - List[str]: A list containing labels (`"abnormal"` or `"no_abnormal"`) for each subject.
-                - Dict: Metadata containing montage types for each EEG signal.
+                - List[BaseRaw]: A list of `RawEDF` EEG recordings.
+                - List[str]: A list of labels (`"abnormal"` or `"normal"`).
+                - Dict: Metadata containing a list of montage types for each EEG signal.
         """
 
         self.load_data(split)

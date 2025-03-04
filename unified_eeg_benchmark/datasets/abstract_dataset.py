@@ -26,6 +26,17 @@ class AbstractDataset(ABC):
         pass
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, Dict]:
+        """
+        Returns the data, labels and meta information of the dataset.
+        For BCI it looks mostly like this:
+        X is a list of numpy arrays, for each dataset one numpy array.
+            Each numpy array has dimensions (n_samples, n_channels, n_timepoints).
+        y is alist of numpy arrays, for each dataset one numpy array.
+            Each numpy array has dimensions (n_samples, ).
+        meta is a list of dictionaries, for each dataset one dictionary.
+            Each dictionary contains meta information about the samples.
+            Such as the sampling frequency, the channel names, the labels mapping, etc.
+        """
         if self.data is None or self.labels is None:
             self.load_data()
         if self.meta is None:

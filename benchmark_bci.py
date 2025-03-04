@@ -3,12 +3,12 @@ from unified_eeg_benchmark.enums.split import Split
 from unified_eeg_benchmark.tasks.bci import (
     AbstractBCITask,
     LeftHandvRightHandMITask,
-    RightHandvFeetMITask,
-    LeftHandvRightHandvFeetvTongueMITask,
-    FleExtSupProCloOpnMITask,
-    FlexionvExtensionMITask,
-    PronationvSupinationMITask,
-    HandOpenvCloseMITask,
+    #RightHandvFeetMITask,
+    #LeftHandvRightHandvFeetvTongueMITask,
+    #FleExtSupProCloOpnMITask,
+    #FlexionvExtensionMITask,
+    #PronationvSupinationMITask,
+    #HandOpenvCloseMITask,
 )   
 from models.csp_svm_model import CSPSVMModel
 from models.csp_lda_model import CSPLDAModel
@@ -16,12 +16,15 @@ from models.abstract_model import AbstractModel
 from models.csp_pyriemann_lda_model import CSPriemannLDAModel
 from models.ts_lr_model import TSLRModel
 from models.ts_svm_grid_model import TSSVMGridModel
+from models.labram_model import LaBraMModel
 from models.fgmdm_model import FgMDMModel
 from unified_eeg_benchmark.enums.classes import Classes
 from utils import print_classification_results, generate_classification_plots
 from typing import Sequence
 from tqdm import tqdm
 import logging
+import torch
+import numpy as np
 
 logging.basicConfig(level=logging.DEBUG,
                         format='%(asctime)s [%(levelname)s] %(name)s: %(message)s'
@@ -32,9 +35,21 @@ logger = logging.getLogger(__name__)
 def benchmark(tasks: Sequence[AbstractBCITask], models: Sequence[AbstractModel]):
     for task in tasks:
         logger.info(f"Running benchmark for task {task}")
+        print(f"Running benchmark for task {task}")
         (X_train, y_train, meta_train) = task.get_data(Split.TRAIN)
+        def make_multiple_of_64(data):
+            num_samples = data.shape[0]
+            remainder = num_samples % 64
+            if remainder != 0:
+                data = data[:num_samples - remainder]
+            return data
+
+        X_train = [make_multiple_of_64(x) for x in X_train]
+        y_train = [make_multiple_of_64(y) for y in y_train]
         # y_train = [y - 1 for y in y_train]
         (X_test, y_test, meta_test) = task.get_data(Split.TEST)
+        X_test = [make_multiple_of_64(x) for x in X_test]
+        y_test = [make_multiple_of_64(y) for y in y_test]
         # y_test = [y - 1 for y in y_test]
 
         # X_train = [x[:1260] for x in X_train]
@@ -63,7 +78,7 @@ def benchmark(tasks: Sequence[AbstractBCITask], models: Sequence[AbstractModel])
 
             models_names.append(str(model))
             results.append(y_pred)
-
+        
         print_classification_results(
             y_train, y_test, models_names, results, dataset_names, task.name
         )
@@ -73,22 +88,22 @@ def benchmark(tasks: Sequence[AbstractBCITask], models: Sequence[AbstractModel])
 if __name__ == "__main__":
     tasks = [
         LeftHandvRightHandMITask(),
-        RightHandvFeetMITask(),
-        LeftHandvRightHandvFeetvTongueMITask(),
-        FleExtSupProCloOpnMITask(),
-        FlexionvExtensionMITask(),
-        HandOpenvCloseMITask(),
-        PronationvSupinationMITask(),
+        #RightHandvFeetMITask(),
+        #LeftHandvRightHandvFeetvTongueMITask(),
+        #FleExtSupProCloOpnMITask(),
+        #FlexionvExtensionMITask(),
+        #HandOpenvCloseMITask(),
+        #PronationvSupinationMITask(),
     ]
     models = [
         #CSPSVMModel(),
-        CSPLDAModel(),
+        #CSPLDAModel(),
         #CSPriemannLDAModel(),
-        FgMDMModel(),
+        #FgMDMModel(),
         #TSLRModel(),
         #TSSVMGridModel(),
+        LaBraMModel(),
     ]
-
     benchmark(tasks, models)
 
 

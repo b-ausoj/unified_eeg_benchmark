@@ -4,7 +4,7 @@ from ...datasets.clinical import TUEGAbnormalDataset
 from sklearn.metrics import f1_score
 from ...enums.split import Split
 from typing import List, Tuple, Dict
-from mne.io import Raw
+from mne.io import BaseRaw
 
 
 class AbnormalClinicalTask(AbstractClinicalTask):
@@ -17,34 +17,30 @@ class AbnormalClinicalTask(AbstractClinicalTask):
             ],
             subjects_split={
                 TUEGAbnormalDataset: {
-                    #Split.TRAIN: list(range(1, 101)),
-                    #Split.TEST: list(range(101, 201)),
-                    Split.TRAIN: list(range(1, 1000)),
-                    Split.TEST: list(range(1, 100)),
+                    #Split.TRAIN: list(range(1, 1001)),
+                    #Split.TEST: list(range(1001, 1201)),
+                    Split.TRAIN: list(range(1, 500)), # subject mapping is different here, fix this
+                    Split.TEST: list(range(1, 50)), # subject mapping is different here, fix this
                 },
             },
         )
 
     def get_data(
         self, split: Split
-    ) -> Tuple[List[List[List[Raw]]], List[List[str]], List[Dict]]:
-        """Get the data of the TUEG Epilepsy dataset for the given split.
-
-        The dataset contains EEG recordings of subjects with and without epilepsy.
-        Subjects are mapped to the corresponding files in the dataset using the 
-        following rule: even-numbered subjects have epilepsy, while odd-numbered 
-        subjects do not.
-
+    ) -> Tuple[List[List[BaseRaw]], List[List[str]], List[Dict]]:
+        """Get the data of the TUEG Abnormal dataset for the given split.
         
+        The dataset contains EEG recordings of subjects with normal or abnormal EEGs.
+        The subjects are randomly mapped to the corresponding files in the dataset. (Improve me!)
+
         Args:
-            split: The split for which to get the data.
+            split (Split): The split for which to load the data.
     
         Returns:
-            Tuple with the follwoing elements:
-                - A list of nested lists where each outer list corresponds to a subject, 
-                and each inner list contains `Raw` EEG recordings for that subject.
-                - A list of lists containing labels (`"epilepsy"` or `"no_epilepsy"`) for each subject.
-                - A list of Metadata containing montage types for each EEG signal.
+            Tuple:
+                - List[BaseRaw]: A list of `RawEDF` EEG recordings.
+                - List[str]: A list of labels (`"abnormal"` or `"normal"`).
+                - Dict: Metadata containing a list of montage types for each EEG signal.
         """
         data = [
             dataset(

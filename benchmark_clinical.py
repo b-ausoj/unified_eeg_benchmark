@@ -17,17 +17,19 @@ from unified_eeg_benchmark.tasks.clinical import (
 from models.csp_lda_cli_unm_model import CSPLDACliUnmModel
 from models.csp_lda_epilepsy_model import CSPLDAEpilepsyModel
 from models.csp_lda_abnormal_model import CSPLDAAbnormalModel
+from models.labram_model import LaBraMModel
 from models.abstract_model import AbstractModel
 from utils import print_classification_results, generate_classification_plots
 from typing import Sequence
 from tqdm import tqdm
 import logging
+import mne
 
 logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s [%(levelname)s] %(name)s: %(message)s'
 )
 logger = logging.getLogger(__name__)
-
+mne.set_log_level("ERROR")
 
 def benchmark(tasks: Sequence[AbstractClinicalTask], models: Sequence[AbstractModel]):
     for task in tasks:
@@ -72,22 +74,23 @@ def benchmark(tasks: Sequence[AbstractClinicalTask], models: Sequence[AbstractMo
 
 if __name__ == "__main__":
     tasks = [
-        ParkinsonsClinicalTask(),
-        DepressionClinicalTask(),
-        SchizophreniaClinicalTask(),
-        MTBIClinicalTask(),
-        OCDClinicalTask(),
+        #ParkinsonsClinicalTask(),
+        #DepressionClinicalTask(),
+        #SchizophreniaClinicalTask(),
+        #MTBIClinicalTask(),
+        #OCDClinicalTask(),
         #EpilepsyClinicalTask(),
-        #AbnormalClinicalTask(),
+        AbnormalClinicalTask(),
         #MedClinicalTask,
         #BDIClinicalTask,
         #AgeClinicalTask,
         #SexClinicalTask,
     ]
     models = [
-        CSPLDACliUnmModel(),
+        #CSPLDACliUnmModel(),
         #CSPLDAEpilepsyModel(),
         #CSPLDAAbnormalModel(),
+        LaBraMModel(),
     ]
 
     benchmark(tasks, models)

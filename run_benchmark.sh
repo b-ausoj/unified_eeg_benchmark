@@ -15,7 +15,7 @@ echo "Starting on:     $(date)"
 echo "SLURM_JOB_ID:    ${SLURM_JOB_ID}"
 
 # Binary or script to execute
-python /itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/benchmark.py
+python /itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/benchmark_bci.py
 
 # Send more noteworthy information to the output log
 echo "Finished at:     $(date)"
