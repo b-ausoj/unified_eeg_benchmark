@@ -431,9 +431,7 @@ def init_distributed_mode(args):
         args.distributed = False
         return
 
-    args.distributed = False
-    return
-    # JBU hack for now
+    args.distributed = True
 
     torch.cuda.set_device(args.gpu)
     args.dist_backend = 'nccl'
@@ -578,7 +576,7 @@ def cosine_scheduler(base_value, final_value, epochs, niter_per_ep, warmup_epoch
 
     schedule = np.concatenate((warmup_schedule, schedule))
 
-    assert len(schedule) == epochs * niter_per_ep
+    assert len(schedule) == epochs * niter_per_ep, "len(schedule): " + str(len(schedule)) + ", epochs * niter_per_ep: " + str(epochs * niter_per_ep)
     return schedule
 
 

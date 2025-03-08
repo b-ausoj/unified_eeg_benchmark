@@ -1,7 +1,7 @@
 from .abstract_model import AbstractModel
 from typing import List, Dict, cast, Literal
 import numpy as np
-from .LaBraM.make_dataset import make_dataset, make_dataset_abnormal
+from .LaBraM.make_dataset import make_dataset, make_dataset_abnormal, make_dataset_pd
 import argparse
 from pathlib import Path
 from .LaBraM import utils
@@ -24,12 +24,14 @@ from .LaBraM.optim_factory import create_optimizer, get_parameter_groups, LayerD
 from .LaBraM.engine_for_finetuning import train_one_epoch, evaluate
 from einops import rearrange
 from mne.io import BaseRaw
+from scipy import stats
+from .LaBraM import modeling_finetune # important to load the models
 
 
 def get_args():
     parser = argparse.ArgumentParser('LaBraM fine-tuning and evaluation script for EEG classification', add_help=False)
-    parser.add_argument('--batch_size', default=64, type=int)
-    parser.add_argument('--epochs', default=30, type=int) # could be 50 or 30
+    parser.add_argument('--batch_size', default=32, type=int)
+    parser.add_argument('--epochs', default=5, type=int) # could be 50 or 30
     parser.add_argument('--update_freq', default=1, type=int)
     parser.add_argument('--save_ckpt_freq', default=5, type=int)
 
@@ -84,7 +86,7 @@ def get_args():
         weight decay. We use a cosine schedule for WD and using a larger decay by
         the end of training improves performance for ViTs.""")
 
-    parser.add_argument('--lr', type=float, default=5e-5, metavar='LR',
+    parser.add_argument('--lr', type=float, default=5e-4, metavar='LR',
                         help='learning rate (default: 5e-4)')
     parser.add_argument('--layer_decay', type=float, default=0.65) # or 0.65
 
@@ -124,7 +126,7 @@ def get_args():
     parser.add_argument('--disable_weight_decay_on_rel_pos_bias', action='store_true', default=False)
 
     # Dataset parameters
-    parser.add_argument('--nb_classes', default=2, type=int,
+    parser.add_argument('--nb_classes', default=1, type=int,
                         help='number of the classification types')
 
     parser.add_argument('--output_dir', default='/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/models/LaBraM/checkpoints/finetune_tuab_base/',
@@ -142,7 +144,7 @@ def get_args():
 
     parser.add_argument('--save_ckpt', action='store_true')
     parser.add_argument('--no_save_ckpt', action='store_false', dest='save_ckpt')
-    parser.set_defaults(save_ckpt=True)
+    parser.set_defaults(save_ckpt=False)
 
     parser.add_argument('--start_epoch', default=0, type=int, metavar='N',
                         help='start epoch')
@@ -150,7 +152,7 @@ def get_args():
                         help='Perform evaluation only')
     parser.add_argument('--dist_eval', action='store_true', default=False,
                         help='Enabling distributed evaluation')
-    parser.add_argument('--num_workers', default=10, type=int)
+    parser.add_argument('--num_workers', default=8, type=int)
     parser.add_argument('--pin_mem', action='store_true',
                         help='Pin CPU memory in DataLoader for more efficient (sometimes) transfer to GPU.')
     parser.add_argument('--no_pin_mem', action='store_false', dest='pin_mem')
@@ -191,9 +193,11 @@ class LaBraMModel(AbstractModel):
     ):
         super().__init__("LaBraMModel")
         assert torch.cuda.is_available(), "CUDA is not available"
+
         self.args, self.ds_init = get_args()
         if self.args.output_dir:
             Path(self.args.output_dir).mkdir(parents=True, exist_ok=True)
+        
         utils.init_distributed_mode(self.args)
 
         if self.ds_init is not None:
@@ -291,41 +295,46 @@ class LaBraMModel(AbstractModel):
 
     def fit(self, X: List[np.ndarray|List[BaseRaw]], y: List[np.ndarray|List[str]], meta: List[Dict]) -> None:
         print("inside fit")
+        dataset_val_list, ch_names_list_val = None, None
         if isinstance(X[0], np.ndarray):
-            datasets_train_list = [make_dataset(X_, y_, meta_["sampling_frequency"], meta_["channel_names"]) for X_, y_, meta_ in zip(cast(List[np.ndarray], X), cast(List[np.ndarray], y), meta)]
+            dataset_train_list = [make_dataset(X_, y_, meta_["sampling_frequency"], meta_["channel_names"], train=True) for X_, y_, meta_ in zip(cast(List[np.ndarray], X), cast(List[np.ndarray], y), meta)]
         elif isinstance(X[0][0], BaseRaw):
-            datasets_train_list = [make_dataset_abnormal(X_, y_) for X_, y_, meta_ in zip(cast(List[List[BaseRaw]], X), cast(List[List[str]], y), meta)]
+            datasets = [make_dataset_abnormal(X_, y_, train=True, val_per=0.2) for X_, y_, meta_ in zip(cast(List[List[BaseRaw]], X), cast(List[List[str]], y), meta)]
+            dataset_train_list = [dataset[0] for dataset in datasets]
+            dataset_val_list = [dataset[1] for dataset in datasets]
+        elif isinstance(X[0][0], np.ndarray):
+            datasets = [make_dataset_pd(X_, y_, meta_["sampling_frequency"], meta_["channel_names"], meta_["name"], train=True) for X_, y_, meta_ in zip(cast(List[List[np.ndarray]], X), cast(List[List[np.ndarray]], y), meta)]
+            dataset_train_list = [dataset[0] for dataset in datasets]
+            dataset_val_list = [dataset[1] for dataset in datasets]
         else:
             print(type(X[0][0]))
             raise ValueError("X must be a list of numpy arrays or a list of BaseRaw objects")
-        datasets_train_list = [dataset for dataset in datasets_train_list if len(dataset) > 0]
-        ch_names_list = [dataset.ch_names for dataset in datasets_train_list]
-        self.args.nb_classes = 2
+        del X, y, meta
+        dataset_train_list = [dataset for dataset in dataset_train_list if len(dataset) > 0]
+        if dataset_val_list is not None:
+            dataset_val_list = [dataset for dataset in dataset_val_list if len(dataset) > 0]
+            ch_names_list_val = [dataset.ch_names for dataset in dataset_val_list]
+
+        ch_names_list = [dataset.ch_names for dataset in dataset_train_list]
+        self.args.nb_classes = 1
         metrics = ["pr_auc", "roc_auc", "accuracy", "balanced_accuracy"]
-        dataset_test_list, dataset_val_list = None, None
+
+        torch.cuda.empty_cache()
 
         num_tasks = utils.get_world_size()
         global_rank = utils.get_rank()
         sampler_rank = global_rank
-        num_training_steps_per_epoch = sum([len(dataset) for dataset in datasets_train_list]) // self.args.batch_size // num_tasks
+        num_training_steps_per_epoch = sum([len(dataset) for dataset in dataset_train_list]) // self.args.batch_size // num_tasks
 
         sampler_train_list = []
-        for dataset in datasets_train_list:
+        for dataset in dataset_train_list:
             sampler_train = DistributedSampler(
                 dataset, num_replicas=num_tasks, rank=sampler_rank, shuffle=True
             )
             sampler_train_list.append(sampler_train)
             print("Sampler_train = %s" % str(sampler_train))
-        sampler_test_list = []
-        if dataset_test_list is not None:
-            for dataset in dataset_test_list: # type: ignore
-                sampler_test = DistributedSampler(
-                    dataset, num_replicas=num_tasks, rank=sampler_rank, shuffle=False
-                )
-                sampler_test_list.append(sampler_test)
-                print("Sampler_test = %s" % str(sampler_test))
         sampler_val_list = []
-        if dataset_test_list is not None:
+        if dataset_val_list is not None:
             for dataset in dataset_val_list: # type: ignore
                 sampler_val = DistributedSampler(
                     dataset, num_replicas=num_tasks, rank=sampler_rank, shuffle=False
@@ -345,8 +354,8 @@ class LaBraMModel(AbstractModel):
                 batch_size=self.args.batch_size,
                 num_workers=self.args.num_workers,
                 pin_memory=self.args.pin_mem,
-                drop_last=True,
-            ) for dataset, sampler in zip(datasets_train_list, sampler_train_list)]
+                drop_last=False,
+            ) for dataset, sampler in zip(dataset_train_list, sampler_train_list)]
         if dataset_val_list is not None:
             data_loader_val_list = [DataLoader(
                 dataset, sampler=sampler,
@@ -357,19 +366,9 @@ class LaBraMModel(AbstractModel):
             ) for dataset, sampler in zip(dataset_val_list, sampler_val_list)]
         else:
             data_loader_val_list = None
-        if dataset_test_list is not None:
-            data_loader_test_list = [DataLoader(
-                dataset, sampler=sampler,
-                batch_size=int(1.5 * self.args.batch_size),
-                num_workers=self.args.num_workers,
-                pin_memory=self.args.pin_mem,
-                drop_last=False
-            ) for dataset, sampler in zip(dataset_test_list, sampler_test_list)]
-        else:
-            data_loader_test_list = None
         
         total_batch_size = self.args.batch_size * self.args.update_freq * utils.get_world_size()
-        number_of_training_examples = sum([len(dataset) for dataset in datasets_train_list])
+        number_of_training_examples = sum([len(dataset) for dataset in dataset_train_list])
         num_training_steps_per_epoch = number_of_training_examples // total_batch_size
         print("LR = %.8f" % self.args.lr)
         print("Batch size = %d" % total_batch_size)
@@ -391,11 +390,29 @@ class LaBraMModel(AbstractModel):
             for i in range(num_layers):
                 skip_weight_decay_list.add("blocks.%d.attn.relative_position_bias_table" % i)    
     
-        optimizer = create_optimizer(
-            self.args, self.model_without_ddp, skip_list=skip_weight_decay_list,
-            get_num_layer=assigner.get_layer_id if assigner is not None else None, 
-            get_layer_scale=assigner.get_scale if assigner is not None else None)
-        loss_scaler = NativeScaler() #None # #GradScaler() #
+        if self.args.enable_deepspeed:
+            print("Use DeepSpeed!")
+            loss_scaler = None
+            optimizer_params = get_parameter_groups(
+                self.model, self.args.weight_decay, skip_weight_decay_list,
+                assigner.get_layer_id if assigner is not None else None,
+                assigner.get_scale if assigner is not None else None)
+            model, optimizer, _, _ = self.ds_init(
+                args=self.args, model=self.model, model_parameters=optimizer_params, dist_init_required=not self.args.distributed,
+            ) # type: ignore
+
+            print("model.gradient_accumulation_steps() = %d" % model.gradient_accumulation_steps())
+            assert model.gradient_accumulation_steps() == self.args.update_freq
+        else:
+            if self.args.distributed:
+                model = torch.nn.parallel.DistributedDataParallel(self.model, device_ids=[self.args.gpu], find_unused_parameters=True)
+                self.model_without_ddp = model.module
+
+            optimizer = create_optimizer(
+                self.args, self.model_without_ddp, skip_list=skip_weight_decay_list,
+                get_num_layer=assigner.get_layer_id if assigner is not None else None, 
+                get_layer_scale=assigner.get_scale if assigner is not None else None)
+            loss_scaler = NativeScaler()
 
         print("Use step level LR scheduler!")
         lr_schedule_values = utils.cosine_scheduler(
@@ -406,9 +423,7 @@ class LaBraMModel(AbstractModel):
             self.args.weight_decay_end = self.args.weight_decay
         wd_schedule_values = utils.cosine_scheduler(
             self.args.weight_decay, self.args.weight_decay_end, self.args.epochs, num_training_steps_per_epoch)
-        print("wd_schedule_values = %s" % str(wd_schedule_values))
-        if len(wd_schedule_values) > 0:
-            print("Max WD = %.7f, Min WD = %.7f" % (max(wd_schedule_values), min(wd_schedule_values)))
+        print("Max WD = %.7f, Min WD = %.7f" % (max(wd_schedule_values), min(wd_schedule_values)))
 
         if self.args.nb_classes == 1:
             criterion = torch.nn.BCEWithLogitsLoss()
@@ -422,16 +437,6 @@ class LaBraMModel(AbstractModel):
         utils.auto_load_model(
             args=self.args, model=self.model, model_without_ddp=self.model_without_ddp,
             optimizer=optimizer, loss_scaler=loss_scaler, model_ema=self.model_ema)
-                
-        if self.args.eval and data_loader_test_list is not None:
-            balanced_accuracy = []
-            accuracy = []
-            for data_loader in data_loader_test_list:
-                test_stats = evaluate(data_loader, self.model, self.device, header='Test:', ch_names=ch_names_list, metrics=metrics, is_binary=(self.args.nb_classes == 1))
-                accuracy.append(test_stats['accuracy'])
-                balanced_accuracy.append(test_stats['balanced_accuracy'])
-            print(f"======Accuracy: {np.mean(accuracy)} {np.std(accuracy)}, balanced accuracy: {np.mean(balanced_accuracy)} {np.std(balanced_accuracy)}")
-            exit(0)
 
         print(f"Start training for {self.args.epochs} epochs")
         start_time = time.time()
@@ -443,7 +448,6 @@ class LaBraMModel(AbstractModel):
                     data_loader_train.sampler.set_epoch(epoch) # type: ignore
             if log_writer is not None:
                 log_writer.set_step(epoch * num_training_steps_per_epoch * self.args.update_freq)
-
             train_stats = train_one_epoch(
                 self.model, criterion, data_loader_train_list, optimizer,
                 self.device, epoch, loss_scaler, max_norm=self.args.clip_grad, log_writer=log_writer, 
@@ -458,12 +462,10 @@ class LaBraMModel(AbstractModel):
                     args=self.args, model=self.model, model_without_ddp=self.model_without_ddp, optimizer=optimizer,
                     loss_scaler=loss_scaler, epoch=epoch, model_ema=self.model_ema, save_ckpt_freq=self.args.save_ckpt_freq)
                 
-            if data_loader_val_list is not None and data_loader_test_list is not None and dataset_val_list is not None and dataset_test_list is not None:
-                for data_loader_val, data_loader_test in zip(data_loader_val_list,data_loader_test_list):
-                    val_stats = evaluate(data_loader_val, self.model, self.device, header='Val:', ch_names=ch_names_list, metrics=metrics, is_binary=self.args.nb_classes == 1)
+            if data_loader_val_list is not None and dataset_val_list is not None:
+                for data_loader_val, ch_names in zip(data_loader_val_list, ch_names_list_val):
+                    val_stats = evaluate(data_loader_val, self.model, self.device, header='Val:', ch_names=ch_names, metrics=metrics, is_binary=self.args.nb_classes == 1)
                     print(f"Accuracy of the network on the {len(dataset_val_list)} val EEG: {val_stats['accuracy']:.2f}%")
-                    test_stats = evaluate(data_loader_test, self.model, self.device, header='Test:', ch_names=ch_names_list, metrics=metrics, is_binary=self.args.nb_classes == 1)
-                    print(f"Accuracy of the network on the {len(dataset_test_list)} test EEG: {test_stats['accuracy']:.2f}%")
                 
                     if max_accuracy < val_stats["accuracy"]:
                         max_accuracy = val_stats["accuracy"]
@@ -471,9 +473,8 @@ class LaBraMModel(AbstractModel):
                             utils.save_model(
                                 args=self.args, model=self.model, model_without_ddp=self.model_without_ddp, optimizer=optimizer,
                                 loss_scaler=loss_scaler, epoch="best", model_ema=self.model_ema)
-                        max_accuracy_test = test_stats["accuracy"]
 
-                    print(f'Max accuracy val: {max_accuracy:.2f}%, max accuracy test: {max_accuracy_test:.2f}%')
+                    print(f'Max accuracy val: {max_accuracy:.2f}%')
                     if log_writer is not None:
                         for key, value in val_stats.items():
                             if key == 'accuracy':
@@ -490,25 +491,9 @@ class LaBraMModel(AbstractModel):
                                 log_writer.update(cohen_kappa=value, head="val", step=epoch)
                             elif key == 'loss':
                                 log_writer.update(loss=value, head="val", step=epoch)
-                        for key, value in test_stats.items():
-                            if key == 'accuracy':
-                                log_writer.update(accuracy=value, head="test", step=epoch)
-                            elif key == 'balanced_accuracy':
-                                log_writer.update(balanced_accuracy=value, head="test", step=epoch)
-                            elif key == 'f1_weighted':
-                                log_writer.update(f1_weighted=value, head="test", step=epoch)
-                            elif key == 'pr_auc':
-                                log_writer.update(pr_auc=value, head="test", step=epoch)
-                            elif key == 'roc_auc':
-                                log_writer.update(roc_auc=value, head="test", step=epoch)
-                            elif key == 'cohen_kappa':
-                                log_writer.update(cohen_kappa=value, head="test", step=epoch)
-                            elif key == 'loss':
-                                log_writer.update(loss=value, head="test", step=epoch)
                     
                     log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
                                 **{f'val_{k}': v for k, v in val_stats.items()},
-                                **{f'test_{k}': v for k, v in test_stats.items()},
                                 'epoch': epoch,
                                 'n_parameters': self.n_parameters}
             else:
@@ -526,18 +511,22 @@ class LaBraMModel(AbstractModel):
         total_time_str = str(datetime.timedelta(seconds=int(total_time)))
         print('Training time {}'.format(total_time_str))
 
+    @torch.no_grad()
     def predict(self, X: List[np.ndarray|List[BaseRaw]], meta: List[Dict]) -> np.ndarray:
         print("inside predict")
         if isinstance(X[0], np.ndarray):
-            datasets_test_list = [make_dataset(X_, None, meta_["sampling_frequency"], meta_["channel_names"]) for X_, meta_ in zip(cast(List[np.ndarray], X), meta)]
+            datasets_test_list = [make_dataset(X_, None, meta_["sampling_frequency"], meta_["channel_names"], train=False) for X_, meta_ in zip(cast(List[np.ndarray], X), meta)]
         elif isinstance(X[0][0], BaseRaw):
-            datasets_test_list = [make_dataset_abnormal(X_, None) for X_, meta_ in zip(cast(List[List[BaseRaw]], X), meta)]
+            datasets_test_list = [make_dataset_abnormal(X_, None, train=False) for X_, meta_ in zip(cast(List[List[BaseRaw]], X), meta)]
+        elif isinstance(X[0][0], np.ndarray):
+            datasets_test_list = [make_dataset_pd(X_, None, meta_["sampling_frequency"], meta_["channel_names"], meta_["name"], train=False) for X_, meta_ in zip(cast(List[List[np.ndarray]], X), meta)]
         else:
             print(type(X[0][0]))
             raise ValueError("X must be a list of numpy arrays or a list of BaseRaw objects")
         datasets_test_list = [dataset for dataset in datasets_test_list if len(dataset) > 0]
+        print("datasets length: ", len(datasets_test_list[0]))
         ch_names_list = [dataset.ch_names for dataset in datasets_test_list]
-        self.args.nb_classes = 2
+        self.args.nb_classes = 1
 
         num_tasks = utils.get_world_size()
         global_rank = utils.get_rank()
@@ -549,42 +538,92 @@ class LaBraMModel(AbstractModel):
                 dataset, num_replicas=num_tasks, rank=sampler_rank, shuffle=True
             )
             sampler_train_list.append(sampler_train)
-            print("Sampler_train = %s" % str(sampler_train))
+            print("Sampler_test = %s" % str(sampler_train))
 
         data_loader_test_list = [DataLoader(
                 dataset, sampler=sampler,
                 batch_size=self.args.batch_size,
                 num_workers=self.args.num_workers,
                 pin_memory=self.args.pin_mem,
-                drop_last=True,
+                drop_last=False,
             ) for dataset, sampler in zip(datasets_test_list, sampler_train_list)]
             
+        if self.args.nb_classes == 1:
+            criterion = torch.nn.BCEWithLogitsLoss()
+        else:
+            criterion = torch.nn.CrossEntropyLoss()
+
+        metric_logger = utils.MetricLogger(delimiter="  ")
+
         self.model.eval()
         self.model.zero_grad()
 
         pred = []
         for data_loader, ch_names in zip(data_loader_test_list, ch_names_list):
-            for step, batch in enumerate(data_loader):
+            print("data loader length: ", len(data_loader))
+            for step, batch in enumerate(metric_logger.log_every(data_loader, 10, 'Test:')):
                 input_chans = None
                 if ch_names is not None:
                     input_chans = utils.get_input_chans(ch_names)
                 else:
                     print("error: ch_names is None")
-                batch = batch.float().to(self.device, non_blocking=True) / 100
-                batch = rearrange(batch, 'B N (A T) -> B N A T', T=200)
 
+                EEG = batch[0]
+                target = batch[-1]
+                EEG = EEG.float().to(self.device, non_blocking=True) / 100
+                EEG = rearrange(EEG, 'B N (A T) -> B N A T', T=200)
+                target = target.to(self.device, non_blocking=True)
+                if self.args.nb_classes == 1:
+                    target = target.float().unsqueeze(-1)
+                
                 # compute output
                 with torch.cuda.amp.autocast(): # type: ignore
-                    with torch.no_grad(): 
-                        output = self.model(batch, input_chans)
-                output = output.cpu().detach().numpy()
-                output = np.argmax(output, axis=-1)
+                    output = self.model(EEG, input_chans=input_chans)
+                    loss = criterion(output, target)
 
+                if self.args.nb_classes == 1:
+                    output = torch.sigmoid(output).cpu()
+                else:
+                    output = output.cpu()
+                target = target.cpu()
+
+                results = utils.get_metrics(output.numpy(), target.numpy(), ["pr_auc", "roc_auc", "accuracy", "balanced_accuracy"], self.args.nb_classes == 1)
                 pred.append(output)
-            #print("pred = %s" % str(pred))
-        # Inverse the mapping
-        inverse_mapping = {0: 'left_hand', 1: 'right_hand'}
-        pred = [inverse_mapping[p] for p in np.array(pred).flatten()]
-        print(np.array(pred).flatten())
-        print(len(np.array(pred).flatten()))
-        return np.array(pred).flatten()
+
+                batch_size = EEG.shape[0]
+                metric_logger.update(loss=loss.item())
+                for key, value in results.items():
+                    metric_logger.meters[key].update(value, n=batch_size)
+                #metric_logger.meters['acc5'].update(acc5.item(), n=batch_size)
+        # gather the stats from all processes
+        metric_logger.synchronize_between_processes()
+        print('* loss {losses.global_avg:.3f}'
+            .format(losses=metric_logger.loss))
+        
+        pred = torch.cat(pred, dim=0).numpy()
+        
+        binary_pred = (pred >= 0.5).astype(int)
+        binary_pred = binary_pred.ravel()
+        #mapped_pred = np.where(binary_pred == 0, 'abnormal', 'normal')
+        mapped_pred = np.where(binary_pred == 0, 'left_hand', 'right_hand')
+        
+        """
+        segment_lengths = [75, 76, 75, 75, 73, 76, 77, 76, 75, 75, 76, 75, 73, 72, 74, 75, 72, 74, 75, 74, 78, 75, 75, 74, 76, 78, 74, 74, 72, 72, 74, 74, 74, 76, 75, 76, 74, 74, 74]
+        aggregated_predictions = []
+        start_idx = 0
+        
+        for length in segment_lengths:
+            segment = binary_pred[start_idx:start_idx + length]
+            #print(segment)
+            #class_counts = np.bincount(segment)
+            #print(f"Class counts: {class_counts}")
+            majority = stats.mode(segment)[0]  # Get the most frequent element (mode)
+            aggregated_predictions.append(majority)
+            start_idx += length
+        
+        aggregated_predictions = np.array(aggregated_predictions)
+        mapped_pred = np.where(aggregated_predictions == 0, 'parkinsons', 'no_parkinsons')
+        """
+        print(mapped_pred.shape)
+        return mapped_pred
+        
