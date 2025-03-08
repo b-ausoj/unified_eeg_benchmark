@@ -50,6 +50,11 @@ def _load_data_tueg_abnormal(subjects: Sequence[int], split: Split, preload: boo
 
 
 class TUEGAbnormalDataset(BaseClinicalDataset):
+    """
+    - self.data is a list of `RawEDF` EEG recordings (List[BaseRaw])
+    - self.labels is a list of labels (`"abnormal"` or `"normal"`) (List[str])
+    - 2785 train recordings, 280 test recordings
+    """
     def __init__(
         self,
         target_class: ClinicalClasses,

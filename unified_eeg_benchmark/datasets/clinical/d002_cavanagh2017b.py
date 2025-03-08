@@ -73,6 +73,9 @@ def _load_data_cavanagh2017b(subjects: Sequence[int], target_class: ClinicalClas
 
 
 class ParkinsonsRestD002Dataset(BaseClinicalDataset):
+    """
+    - self.data: List of length n_subjects, where each element is a numpy array of shape (n_channels, n_samples)
+    """
     def __init__(
         self,
         target_class: ClinicalClasses,

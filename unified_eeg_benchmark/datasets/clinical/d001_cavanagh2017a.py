@@ -44,6 +44,11 @@ def _load_data_cavanagh2017a(subjects: Sequence[int]):
 
 
 class ParkinsonsOddballD001Dataset(BaseClinicalDataset):
+    """
+    - self.data: List[np.ndarray], list of data samples, one (or two) for each subject, not all samples are of the same shape
+    - self.labels: List[str], list of labels
+    """
+
     def __init__(
         self,
         target_class: ClinicalClasses,
