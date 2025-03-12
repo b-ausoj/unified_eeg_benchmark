@@ -19,13 +19,17 @@ class ParkinsonsClinicalTask(AbstractClinicalTask):
             name="parkinsons_clinical",
             clinical_class = ClinicalClasses.PARKINSONS,
             datasets = [
-                ParkinsonsOddballD001Dataset, # good results
-                ParkinsonsRestD002Dataset, # okay results
+                #ParkinsonsOddballD001Dataset, # good results 
+                # Dataset        Accuracy    Balanced Accuracy  Precision    Recall      F1 Score      AUC 
+                # Cavanagh2017a  0.666667       0.673077        0.706349     0.666667    0.675818      0.673077
+                #ParkinsonsRestD002Dataset, # okay results
+                # Dataset        Accuracy    Balanced Accuracy  Precision    Recall      F1 Score      AUC
+                # Cavanagh2017b  0.535714       0.535714        0.56087      0.535714    0.482219      0.535714
                 ParkinsonsConflictTaskD005Dataset, # bad results
-                ParkinsonsRLTaskD007Dataset, # good results
-                PDGaitD011Dataset, # good results
-                PDLPCRestD013Dataset, # bad results
-                PDIntervalTimingD014Dataset, # bad results
+                #ParkinsonsRLTaskD007Dataset, # good results
+                #PDGaitD011Dataset, # good results
+                #PDLPCRestD013Dataset, # bad results
+                #PDIntervalTimingD014Dataset, # bad results
             ],
             subjects_split={
                 ParkinsonsOddballD001Dataset: {

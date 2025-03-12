@@ -25,20 +25,20 @@ class LeftHandvRightHandMITask(AbstractBCITask):
             classes=[Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI],
             datasets=[
                 BCICompIV2aMDataset,
-                BCICompIV2bMDataset,
+                #BCICompIV2bMDataset,
                 Weibo2013MDataset,
-                Cho2017MDataset,
+                #Cho2017MDataset,
                 #GrosseWentrup2009MDataset,
                 #Lee2019MDataset, # some errors in some subjects
-                Liu2022MDataset,
+                #Liu2022MDataset,
                 #Schirrmeister2017MDataset,
-                #Schalk2004MDataset,
+                Schalk2004MDataset,
                 #Zhou2016MDataset,
             ],
             subjects_split={
                 BCICompIV2aMDataset: {
-                    Split.TRAIN: [1, 2, 3, 4, 5, 6, 7],
-                    Split.TEST: [8, 9],
+                    Split.TRAIN: [2, 3, 4, 5, 6, 7, 8, 9],
+                    Split.TEST: [1],
                 },
                 BCICompIV2bMDataset: {
                     Split.TRAIN: [1, 2, 3, 4, 5, 6, 7],
@@ -69,8 +69,8 @@ class LeftHandvRightHandMITask(AbstractBCITask):
                     Split.TEST: list(range(12, 15)),
                 },
                 Schalk2004MDataset: {
-                    Split.TRAIN: list(range(1, 10)),
-                    Split.TEST: list(range(10, 15)),
+                    Split.TRAIN: list(range(1, 70)),
+                    Split.TEST: list(range(70, 85)),
                 },
                 Zhou2016MDataset: {
                     Split.TRAIN: list(range(1, 4)),
