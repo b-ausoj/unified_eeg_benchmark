@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import os
 from sklearn.metrics import (
     accuracy_score,
+    balanced_accuracy_score,
     precision_score,
     recall_score,
     f1_score,
@@ -57,6 +58,7 @@ def print_classification_results(y_train, y_test, model_names, y_preds, dataset_
         y_pred = encoder.transform(y_pred)
         return {
             "Accuracy": accuracy_score(y_true, y_pred),
+            "Balanced Accuracy": balanced_accuracy_score(y_true, y_pred),
             "Precision": precision_score(y_true, y_pred, average="weighted"),
             "Recall": recall_score(y_true, y_pred, average="weighted"),
             "F1 Score": f1_score(y_true, y_pred, average="weighted"),
@@ -90,7 +92,7 @@ def print_classification_results(y_train, y_test, model_names, y_preds, dataset_
         # Create a DataFrame for tabular formatting
         metrics_table = pd.DataFrame(
             results,
-            columns=["Dataset", "Accuracy", "Precision", "Recall", "F1 Score", "AUC"],
+            columns=["Dataset", "Accuracy", "Balanced Accuracy", "Precision", "Recall", "F1 Score", "AUC"],
         )
 
         # Display the table
@@ -150,6 +152,7 @@ def generate_classification_plots(y_train, y_test, model_names, y_preds, dataset
         y_pred = encoder.transform(y_pred)
         return {
             "Accuracy": accuracy_score(y_true, y_pred),
+            "Balanced Accuracy": balanced_accuracy_score(y_true, y_pred),
             "Precision": precision_score(y_true, y_pred, average="weighted"),
             "Recall": recall_score(y_true, y_pred, average="weighted"),
             "F1 Score": f1_score(y_true, y_pred, average="weighted"),
@@ -174,7 +177,7 @@ def generate_classification_plots(y_train, y_test, model_names, y_preds, dataset
         
         metrics_table = pd.DataFrame(
             results,
-            columns=["Dataset", "Accuracy", "Precision", "Recall", "F1 Score", "AUC"],
+            columns=["Dataset", "Accuracy", "Balanced Accuracy", "Precision", "Recall", "F1 Score", "AUC"],
         )
         all_metrics.append(metrics_table)
     
