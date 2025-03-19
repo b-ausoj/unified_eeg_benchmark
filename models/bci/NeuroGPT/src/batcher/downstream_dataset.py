@@ -8,17 +8,25 @@ from resampy import resample
 
 
 class BCIDataset(EEGDataset):
-    def __init__(self, trials, labels, meta, sample_keys, chunk_len=500, num_chunks=10, ovlp=50, root_path="", gpt_only=True):
+    def __init__(self, trials, labels, meta, task_name, sample_keys, chunk_len=500, num_chunks=10, ovlp=50, root_path="", gpt_only=True):
         super().__init__([], sample_keys, chunk_len, num_chunks, ovlp, root_path=root_path, gpt_only=gpt_only)
 
         self.Fs = 250  # 250Hz from original paper
         self.P = np.load("./models/NeuroGPT/inputs/tMatrix_value.npy")
 
         self.channels = ["Fz", "FC3", "FC1", "FCz", "FC2", "FC4", "C5", "C3", "C1", "Cz", "C2", "C4", "C6", "CP3", "CP1", "CPz", "CP2", "CP4", "P1", "Pz", "P2", "POz"]
-        self.labels_string2int = {'left_hand': 0, 'right_hand': 1,
-                         'feet': 2, 'tongue':3 } #, 'unknown': -1
-        self.labels_int2string = {0: 'left_hand', 1: 'right_hand',
-                         2: 'feet', 3: 'tongue'}
+        
+        if task_name == "Left Hand vs Right Hand MI":
+            self.labels_string2int = {'left_hand': 0, 'right_hand': 1}
+            self.labels_int2string = {0: 'left_hand', 1: 'right_hand'}
+        elif task_name == "Right Hand vs Feet MI":
+            self.labels_string2int = {'right_hand': 0, 'feet': 1}
+            self.labels_int2string = {0: 'right_hand', 1: 'feet'}
+        elif task_name == "Left Hand vs Right Hand vs Feet vs Tongue MI":
+            self.labels_string2int = {'left_hand': 0, 'right_hand': 1, 'feet': 2, 'tongue':3 }
+            self.labels_int2string = {0: 'left_hand', 1: 'right_hand', 2: 'feet', 3: 'tongue'}
+        else:
+            raise ValueError("Invalid task name")
 
         self.data_all = []
         if labels is None:
@@ -44,8 +52,29 @@ class BCIDataset(EEGDataset):
 
     def preprocess_trials(self, trial, meta):
         # reorder channels and select subset
+        print(trial.shape) # (256, 22, 1001)
         chs = meta["channel_names"]
-        trial = trial[:, [chs.index(ch) for ch in self.channels], :]
+        required_channels = self.channels
+        channel_indices = []
+        for ch in required_channels:
+            if ch in chs:
+                channel_indices.append(chs.index(ch))
+            else:
+                channel_indices.append(None)
+
+        trial_data = []
+        print(channel_indices.count(None)) # 0
+        for idx, ch in zip(channel_indices, required_channels):
+            if idx is not None:
+                trial_data.append(trial[:, idx, :])  # Select the data for that channel
+            else:
+                trial_data.append(np.zeros((trial.shape[0], trial.shape[2])))  # Shape (n_samples, n_timepoints)
+
+        trial = np.array(trial_data).transpose(1, 0, 2)  # Shape (n_samples, n_channels, n_timepoints)
+        print(trial.shape) # (22, 256, 1001)    
+        
+        #trial = trial[:, [chs.index(ch) for ch in self.channels], :]
+
         # resample to 250Hz
         sampling_rate = meta["sampling_frequency"]
         trial = resample(trial, sampling_rate, self.Fs, axis=-1, filter='kaiser_best')
@@ -57,13 +86,13 @@ class BCIDataset(EEGDataset):
         return trial
 
     def decode_predictions(self, labels):
-            return np.array([self.labels_int2string[l] for l in labels])
+        return np.array([self.labels_int2string[l] for l in labels])
 
     def encode_labels(self, labels):
         return np.array([self.labels_string2int[l] for l in labels])
 
 class MotorImageryDataset(EEGDataset):
-    def __init__(self, filenames, sample_keys, chunk_len=500, num_chunks=10, ovlp=50, root_path="", gpt_only=True):
+    def __init__(self, task_name, filenames, sample_keys, chunk_len=500, num_chunks=10, ovlp=50, root_path="", gpt_only=True):
         super().__init__(filenames, sample_keys, chunk_len, num_chunks, ovlp, root_path=root_path, gpt_only=gpt_only)
 
         self.data_all = []
@@ -74,10 +103,19 @@ class MotorImageryDataset(EEGDataset):
         self.mi_types = {769: 'left', 770: 'right',
                          771: 'foot', 772: 'tongue', 1023: 'rejected'} # , 783: 'unknown', 1023: 'rejected'
         # Types of motor imagery
-        self.labels_string2int = {'left': 0, 'right': 1,
-                         'foot': 2, 'tongue':3 } #, 'unknown': -1
-        self.labels_int2string = {0: 'left_hand', 1: 'right_hand',
-                         2: 'feet', 3: 'tongue'}
+        if task_name == "Left Hand vs Right Hand MI":
+            self.labels_string2int = {'left_hand': 0, 'right_hand': 1}
+            self.labels_int2string = {0: 'left_hand', 1: 'right_hand'}
+        elif task_name == "Right Hand vs Feet MI":
+            self.labels_string2int = {'right_hand': 0, 'feet': 1}
+            self.labels_int2string = {0: 'right_hand', 1: 'feet'}
+        elif task_name == "Left Hand vs Right Hand vs Feet vs Tongue MI":
+            self.labels_string2int = {'left_hand': 0, 'right_hand': 1, 'feet': 2, 'tongue':3 }
+            self.labels_int2string = {0: 'left_hand', 1: 'right_hand', 2: 'feet', 3: 'tongue'}
+        else:
+            raise ValueError("Invalid task name")
+        self.task_name = task_name
+
         self.Fs = 250  # 250Hz from original paper
         self.P = np.load("./models/NeuroGPT/inputs/tMatrix_value.npy")
 
@@ -121,9 +159,21 @@ class MotorImageryDataset(EEGDataset):
                 # if type_e == 1023:
                 #     continue
                 # classes.append(self.labels_string2int[class_e])
-                if trial_labels[j] == 2 or trial_labels[j] == 3:
-                    continue
-                classes.append(trial_labels[j])
+                label = trial_labels[j]
+                if self.task_name == "Left Hand vs Right Hand MI":
+                    if label == 2 or label == 3:
+                        continue
+                elif self.task_name == "Right Hand vs Feet MI":
+                    if label == 0 or label == 3:
+                        continue
+                    elif label == 2:
+                        label = 1
+                    elif label == 1:
+                        label = 0
+                elif self.task_name == "Left Hand vs Right Hand vs Feet vs Tongue MI":
+                    pass
+
+                classes.append(label)
 
                 start = events_position[0, index]
                 stop = start + events_duration[0, index]

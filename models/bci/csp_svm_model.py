@@ -1,49 +1,52 @@
-from .abstract_model import AbstractModel
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
-from typing import List, Dict, cast
+from ..abstract_model import AbstractModel
+from sklearn.svm import SVC
+from typing import List, Dict, cast, Literal
 import numpy as np
 from mne.decoding import CSP
 from resampy import resample
 from sklearn.utils import shuffle
 
 
-class CSPLDAModel(AbstractModel):
+class CSPSVMModel(AbstractModel):
     def __init__(
         self,
-        n_components: int = 4,
+        kernel : Literal["linear"] = "linear",
+        C=1.0,
+        random_state=42,
+        n_components=4,
         reg=None,
         log=True,
-        resample_rate: int = 200,
-        channels: List[str] = ["C3", "Cz", "C4"], # 'FC3', "FCz", 'FC4', 
+        resample_rate=200,
+        channels=["C3", "Cz", "C4"],
     ):
-        super().__init__("CSP-LDA")
-        self.lda = LDA()
+        super().__init__("CSP-SVM")
+        self.svm = SVC(kernel=kernel, C=C, random_state=random_state)
         self.csp = CSP(n_components=n_components, reg=reg, log=log)
         self.resample_rate = resample_rate
         self.channels = channels
 
     def fit(self, X: List[np.ndarray], y: List[np.ndarray], meta: List[Dict]) -> None:
         [self.validate_meta(m) for m in meta]
+        self._set_channels(meta[0]["task_name"])
         # bring data into the right shape, so resample if needed and only take the C3, Cz, C4 channels
         # TODO handle case if no channel names are provided
         X_prepared = self._prepare_data(X, meta)
         y_prepared = np.concatenate(y, axis=0)
 
-        X_prepared, y_prepared = cast(tuple[np.ndarray, np.ndarray], shuffle(X_prepared, y_prepared, random_state=42))
-        # should be done by the benchmark and not by models
+        X_prepared, y_prepared = cast(tuple[np.ndarray, np.ndarray], shuffle(X_prepared, y_prepared, random_state=42)) # should be done by the benchmark and not by models
 
         # Transform both training and test data using the learned CSP filters
         X_csp = self.csp.fit_transform(X_prepared, y_prepared)
 
         # Fit LDA on CSP-transformed training data
-        self.lda.fit(X_csp, y_prepared)
+        self.svm.fit(X_csp, y_prepared)
 
     def predict(self, X: List[np.ndarray], meta: List[Dict]) -> np.ndarray:
         [self.validate_meta(m) for m in meta]
 
         X_prepared = self._prepare_data(X, meta)
         X_csp = self.csp.transform(X_prepared)
-        return self.lda.predict(X_csp)
+        return self.svm.predict(X_csp)
 
     def _prepare_data(self, X: List[np.ndarray], meta: List[Dict]) -> np.ndarray:
 

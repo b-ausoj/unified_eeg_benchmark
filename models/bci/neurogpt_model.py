@@ -1,4 +1,4 @@
-from .abstract_model import AbstractModel
+from ..abstract_model import AbstractModel
 from typing import List, Dict, cast, Literal
 import numpy as np
 import argparse
@@ -845,16 +845,16 @@ class NeuroGPTModel(AbstractModel):
                     'attention_mask'
                 ], chunk_len=self.config["chunk_len"], num_chunks=self.config["num_chunks"], ovlp=self.config["chunk_ovlp"], root_path=downstream_path, gpt_only= not self.config["use_encoder"])
             """
+            task = meta[0]["task_name"]
 
-            train_dataset = BCIDataset(X, y, meta, sample_keys=[
+            train_dataset = BCIDataset(X, y, meta, task, sample_keys=[
                     'inputs',
                     'attention_mask'
                 ], chunk_len=self.config["chunk_len"], num_chunks=self.config["num_chunks"], ovlp=self.config["chunk_ovlp"], root_path="", gpt_only= not self.config["use_encoder"])
-            validation_dataset = MotorImageryDataset(test_files, sample_keys=[
+            validation_dataset = MotorImageryDataset(task, test_files, sample_keys=[
                     'inputs',
                     'attention_mask'
                 ], chunk_len=self.config["chunk_len"], num_chunks=self.config["num_chunks"], ovlp=self.config["chunk_ovlp"], root_path=downstream_path, gpt_only= not self.config["use_encoder"])
-
         else:
             print("ERROR: Invalid training style")
 
@@ -911,7 +911,9 @@ class NeuroGPTModel(AbstractModel):
     def predict(self, X: List[np.ndarray|List[BaseRaw]], meta: List[Dict]) -> np.ndarray:
         print("inside predict")
 
-        self.test_dataset = BCIDataset(X, None, meta, sample_keys=[
+        task = meta[0]["task_name"]
+
+        self.test_dataset = BCIDataset(X, None, meta, task, sample_keys=[
                     'inputs',
                     'attention_mask'
                 ], chunk_len=self.config["chunk_len"], num_chunks=self.config["num_chunks"], ovlp=self.config["chunk_ovlp"], root_path="", gpt_only= not self.config["use_encoder"])

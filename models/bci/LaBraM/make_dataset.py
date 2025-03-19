@@ -11,8 +11,24 @@ import pickle
 from multiprocessing import Pool
 from sklearn.model_selection import train_test_split
 
+standard_1020 = [
+    'FP1', 'FPZ', 'FP2', 
+    'AF9', 'AF7', 'AF5', 'AF3', 'AF1', 'AFZ', 'AF2', 'AF4', 'AF6', 'AF8', 'AF10', \
+    'F9', 'F7', 'F5', 'F3', 'F1', 'FZ', 'F2', 'F4', 'F6', 'F8', 'F10', \
+    'FT9', 'FT7', 'FC5', 'FC3', 'FC1', 'FCZ', 'FC2', 'FC4', 'FC6', 'FT8', 'FT10', \
+    'T9', 'T7', 'C5', 'C3', 'C1', 'CZ', 'C2', 'C4', 'C6', 'T8', 'T10', \
+    'TP9', 'TP7', 'CP5', 'CP3', 'CP1', 'CPZ', 'CP2', 'CP4', 'CP6', 'TP8', 'TP10', \
+    'P9', 'P7', 'P5', 'P3', 'P1', 'PZ', 'P2', 'P4', 'P6', 'P8', 'P10', \
+    'PO9', 'PO7', 'PO5', 'PO3', 'PO1', 'POZ', 'PO2', 'PO4', 'PO6', 'PO8', 'PO10', \
+    'O1', 'OZ', 'O2', 'O9', 'CB1', 'CB2', \
+    'IZ', 'O10', 'T3', 'T5', 'T4', 'T6', 'M1', 'M2', 'A1', 'A2', \
+    'CFC1', 'CFC2', 'CFC3', 'CFC4', 'CFC5', 'CFC6', 'CFC7', 'CFC8', \
+    'CCP1', 'CCP2', 'CCP3', 'CCP4', 'CCP5', 'CCP6', 'CCP7', 'CCP8', \
+    'T1', 'T2', 'FTT9H', 'TTP7H', 'TPP9H', 'FTT10H', 'TPP8H', 'TPP10H', \
+    "FP1-F7", "F7-T7", "T7-P7", "P7-O1", "FP2-F8", "F8-T8", "T8-P8", "P8-O2", "FP1-F3", "F3-C3", "C3-P3", "P3-O1", "FP2-F4", "F4-C4", "C4-P4", "P4-O2"
+]
 
-def make_dataset(data: np.ndarray, labels: np.ndarray|None, sampling_rate: int, 
+def make_dataset(data: np.ndarray, labels: np.ndarray|None, task_name: str, sampling_rate: int, 
                  ch_names: List[str], target_rate: int = 200, target_channels: Optional[List[str]] = None,
                  l_freq: float = 0.1, h_freq: float = 75.0, train: bool = True) -> LaBraMAbnormalDataset:
     """
@@ -25,14 +41,20 @@ def make_dataset(data: np.ndarray, labels: np.ndarray|None, sampling_rate: int,
     l_freq: int, low cut-off frequency
     h_freq: int, high cut-off frequency
     """
-    print("data shape: ", data.shape)
+    print("\ndata shape: ", data.shape)
+    if len(data) == 0:
+        return LaBraMBCIDataset(data, labels, sampling_rate, ch_names)
     # filter out the channels that are not in the target_channels
     if target_channels is not None:
         ch_names = [ch.upper() for ch in ch_names]
         target_channels = [ch.upper() for ch in target_channels]
         data = data[:, [ch_names.index(ch) for ch in target_channels], :]
     else:
-        target_channels = ch_names
+        # target_channels = ch_names
+        ch_names = [ch.upper() for ch in ch_names]
+        target_channels = list(set([ch.upper() for ch in standard_1020]).intersection(set(ch_names)))
+        data = data[:, [ch_names.index(ch) for ch in target_channels], :]
+
     # bandpass filter
     data = filter_data(data, sfreq=sampling_rate, l_freq=l_freq, h_freq=h_freq, method='fir', verbose=False)
     # notch filter
@@ -40,21 +62,35 @@ def make_dataset(data: np.ndarray, labels: np.ndarray|None, sampling_rate: int,
     # resample data
     data = resample(data, sampling_rate, target_rate, axis=2, filter='kaiser_best')
     
-    # Crop data to have a whole number of seconds
-    n_seconds = data.shape[2] // target_rate
-    n_samples = n_seconds * target_rate
-    data = data[:, :, :n_samples]
+    # Extend data to have a whole number of seconds by padding with zeros
+    n_samples = data.shape[2]
+    n_seconds = 4 # np.ceil(n_samples / target_rate).astype(int)
+    new_n_samples = n_seconds * target_rate
+    if new_n_samples > n_samples:
+        padding = new_n_samples - n_samples
+        data = np.pad(data, ((0, 0), (0, 0), (0, padding)), mode='constant', constant_values=0)
+    elif new_n_samples < n_samples:
+        data = data[:, :, :new_n_samples]
 
     # One hot encode labels if they are not None
     if labels is not None:
-        unique_labels = np.unique(labels)
-        unique_labels.sort()  # Ensure the labels are sorted
-        label_mapping = {label: idx for idx, label in enumerate(unique_labels)}
-        print(label_mapping)
+        if task_name == "Left Hand vs Right Hand MI":
+            label_mapping = {'left_hand': 0, 'right_hand': 1}
+        elif task_name == "Right Hand vs Feet MI":
+            label_mapping = {'right_hand': 0, 'feet': 1}
+        elif task_name == "Left Hand vs Right Hand vs Feet vs Tongue MI":
+            label_mapping = {'left_hand': 0, 'right_hand': 1, 'feet': 2, 'tongue':3 }
+        else:
+            raise ValueError("Invalid task name")
         labels = np.vectorize(label_mapping.get)(labels)
-
-    return LaBraMBCIDataset(data, labels, target_rate, target_channels)
-
+        labels = np.eye(len(label_mapping))[labels]
+        print("labels shape: ", labels.shape)  
+    if train:
+        data_train, data_val, labels_train, labels_val = train_test_split(data, labels, test_size=0.1, random_state=42)
+        return LaBraMBCIDataset(data_train, labels_train, target_rate, target_channels), LaBraMBCIDataset(data_val, labels_val, target_rate, target_channels)
+    else:
+        return LaBraMBCIDataset(data, labels, target_rate, target_channels)
+        
 
 def split_and_dump_pd(params):
         EEG, label, id, dump_folder, target_channels, sampling_rate, target_rate, l_freq, h_freq, ch_names = params
@@ -108,7 +144,7 @@ def make_dataset_pd(data: List[np.ndarray], labels: List[np.ndarray]|None, sampl
         os.makedirs(dump_folder)
     else:
         files = os.listdir(dump_folder)
-        if len(files) > 0:
+        if len(files) > 0 and False:
             print(f"Dataset already exists in {dump_folder}")
             if val_per > 0 and train:
                 files_train, files_val = train_test_split(files, test_size=val_per, random_state=42, shuffle=False)

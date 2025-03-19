@@ -4,7 +4,7 @@ import numpy as np
 from typing import List
 import os
 import pickle
-
+import random
 
 
 class LaBraMBCIDataset(Dataset):
@@ -32,7 +32,7 @@ class LaBraMBCIDataset(Dataset):
             y = self.labels[index]
             return X, y
         else:
-            return X, 0
+            return X, random.randint(0, 1)
 
 class LaBraMPdDataset(Dataset):
     """

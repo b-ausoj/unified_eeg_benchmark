@@ -1,72 +1,62 @@
-from .abstract_model import AbstractModel
+from ..abstract_model import AbstractModel
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
-from typing import List, Dict
+from typing import List, Dict, cast
 import numpy as np
 from resampy import resample
 from sklearn.utils import shuffle
 from pyriemann.estimation import Covariances
 from pyriemann.spatialfilters import CSP
 from sklearn.pipeline import Pipeline
-from pyriemann.classification import FgMDM
-from pyriemann.tangentspace import TangentSpace
-from sklearn.linear_model import LogisticRegression
-from sklearn.svm import SVC
-from sklearn.model_selection import GridSearchCV
 
 
-class TSSVMGridModel(AbstractModel):
+class CSPriemannLDAModel(AbstractModel):
     def __init__(
         self,
+        estimator: str = "oas",
+        nfilter: int = 6,
+        metric: str = "euclid",
+        log=True,
         resample_rate: int = 200,
         channels: List[str] = ["C3", "Cz", "C4"],
     ):
-        super().__init__("TS+SVM (Grid)")
+        super().__init__("Covariances-CSP-LDA")
         self.pipeline = Pipeline(
             [
-                (
-                    "Covariances",
-                    Covariances(estimator="oas"),
-                ),  # Estimate covariance matrices
-                (
-                    "TangentSpace",
-                    TangentSpace(metric="riemann"),
-                ),  # Project into Tangent Space
-                ("SVC", SVC(kernel="linear")),  # Support Vector Classifier
+                ("Covariances", Covariances(estimator=estimator)),
+                ("CSP", CSP(nfilter=nfilter, metric=metric, log=log)),
+                ("LDA", LDA()),
             ]
         )
-        self.param_grid = {"SVC__C": [0.5, 1, 1.5], "SVC__kernel": ["rbf", "linear"]}
-        self.grid_search = GridSearchCV(
-            self.pipeline, self.param_grid, cv=5, scoring="accuracy", n_jobs=-1
-        )
-
         self.resample_rate = resample_rate
         self.channels = channels
 
     def fit(self, X: List[np.ndarray], y: List[np.ndarray], meta: List[Dict]) -> None:
         [self.validate_meta(m) for m in meta]
+        self._set_channels(meta[0]["task_name"])
+        
         # bring data into the right shape, so resample if needed and only take the C3, Cz, C4 channels
         # TODO handle case if no channel names are provided
         X_prepared = self._prepare_data(X, meta)
         y_prepared = np.concatenate(y, axis=0)
 
-        X_prepared, y_prepared = shuffle(X_prepared, y_prepared, random_state=42)  # type: ignore
+        X_prepared, y_prepared = cast(tuple[np.ndarray, np.ndarray], shuffle(X_prepared, y_prepared, random_state=42))
         # should be done by the benchmark and not by models
 
-        self.grid_search.fit(X_prepared, y_prepared)
+        self.pipeline.fit(X_prepared, y_prepared)
 
     def predict(self, X: List[np.ndarray], meta: List[Dict]) -> np.ndarray:
         [self.validate_meta(m) for m in meta]
 
         X_prepared = self._prepare_data(X, meta)
 
-        best_model = self.grid_search.best_estimator_
-
-        return best_model.predict(X_prepared)
+        return self.pipeline.predict(X_prepared)
 
     def _prepare_data(self, X: List[np.ndarray], meta: List[Dict]) -> np.ndarray:
 
         X_resampled = []
         for data, m in zip(X, meta):
+            if data.size == 0:
+                continue
             # resample if needed
             # only take the C3, Cz, C4 channels
             channel_indices = [m["channel_names"].index(ch) for ch in self.channels]

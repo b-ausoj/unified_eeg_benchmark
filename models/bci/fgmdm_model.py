@@ -1,4 +1,4 @@
-from .abstract_model import AbstractModel
+from ..abstract_model import AbstractModel
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from typing import List, Dict, cast
 import numpy as np
@@ -8,17 +8,15 @@ from pyriemann.estimation import Covariances
 from pyriemann.spatialfilters import CSP
 from sklearn.pipeline import Pipeline
 from pyriemann.classification import FgMDM
-from pyriemann.tangentspace import TangentSpace
-from sklearn.linear_model import LogisticRegression
 
 
-class TSLRModel(AbstractModel):
+class FgMDMModel(AbstractModel):
     def __init__(
         self,
         resample_rate: int = 200,
-        channels: List[str] = ["C3", "Cz", "C4"],
+        channels: List[str] = ["C3", "Cz", "C4"]#['AFZ', 'F3', 'F1', 'FZ', 'F2', 'F4', 'FFC5h', 'FFC3h', 'FFC1h', 'FFC2h', 'FFC4h', 'FFC6h', 'FC5', 'FC3', 'FC1', 'FCz', 'FC2', 'FC4', 'FC6', 'FCC5h', 'FCC3h', 'FCC1h', 'FCC2h', 'FCC4h', 'FCC6h', 'C5', 'C3', 'C1', 'Cz', 'C2', 'C4', 'C6', 'CCP5h', 'CCP3h', 'CCP1h', 'CCP2h', 'CCP4h', 'CCP6h', 'CP5', 'CP3', 'CP1', 'CPZ', 'CP2', 'CP4', 'CP6', 'CPP5h', 'CPP3h', 'CPP1h', 'CPP2h', 'CPP4h', 'CPP6h', 'P5', 'P3', 'P1', 'Pz', 'P2', 'P4', 'P6', 'PPO1h', 'PPO2h',  'POz'], #["C3", "Cz", "C4"], # 'FC3', "FCz", 'FC4', 
     ):
-        super().__init__("TS+LR")
+        super().__init__("FgMDM")
         self.pipeline = Pipeline(
             [
                 (
@@ -26,13 +24,9 @@ class TSLRModel(AbstractModel):
                     Covariances(estimator="oas"),
                 ),  # Estimate covariance matrices
                 (
-                    "TangentSpace",
-                    TangentSpace(metric="riemann"),
-                ),  # Project into Tangent Space
-                (
-                    "LogisticRegression",
-                    LogisticRegression(C=1.0),
-                ),  # Logistic Regression classifier
+                    "FgMDM",
+                    FgMDM(metric="riemann"),
+                ),  # Use FgMDM classifier with Riemannian metric
             ]
         )
         self.resample_rate = resample_rate
@@ -40,6 +34,8 @@ class TSLRModel(AbstractModel):
 
     def fit(self, X: List[np.ndarray], y: List[np.ndarray], meta: List[Dict]) -> None:
         [self.validate_meta(m) for m in meta]
+        self._set_channels(meta[0]["task_name"])
+
         # bring data into the right shape, so resample if needed and only take the C3, Cz, C4 channels
         # TODO handle case if no channel names are provided
         X_prepared = self._prepare_data(X, meta)
@@ -55,7 +51,7 @@ class TSLRModel(AbstractModel):
 
         X_prepared = self._prepare_data(X, meta)
 
-        return self.pipeline.predict(X_prepared)
+        return self.pipeline.predict(X_prepared) # type: ignore
 
     def _prepare_data(self, X: List[np.ndarray], meta: List[Dict]) -> np.ndarray:
 

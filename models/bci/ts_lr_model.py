@@ -1,4 +1,4 @@
-from .abstract_model import AbstractModel
+from ..abstract_model import AbstractModel
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from typing import List, Dict, cast
 import numpy as np
@@ -7,24 +7,32 @@ from sklearn.utils import shuffle
 from pyriemann.estimation import Covariances
 from pyriemann.spatialfilters import CSP
 from sklearn.pipeline import Pipeline
+from pyriemann.classification import FgMDM
+from pyriemann.tangentspace import TangentSpace
+from sklearn.linear_model import LogisticRegression
 
 
-class CSPriemannLDAModel(AbstractModel):
+class TSLRModel(AbstractModel):
     def __init__(
         self,
-        estimator: str = "oas",
-        nfilter: int = 6,
-        metric: str = "euclid",
-        log=True,
         resample_rate: int = 200,
         channels: List[str] = ["C3", "Cz", "C4"],
     ):
-        super().__init__("Covariances-CSP-LDA")
+        super().__init__("TS+LR")
         self.pipeline = Pipeline(
             [
-                ("Covariances", Covariances(estimator=estimator)),
-                ("CSP", CSP(nfilter=nfilter, metric=metric, log=log)),
-                ("LDA", LDA()),
+                (
+                    "Covariances",
+                    Covariances(estimator="oas"),
+                ),  # Estimate covariance matrices
+                (
+                    "TangentSpace",
+                    TangentSpace(metric="riemann"),
+                ),  # Project into Tangent Space
+                (
+                    "LogisticRegression",
+                    LogisticRegression(C=1.0),
+                ),  # Logistic Regression classifier
             ]
         )
         self.resample_rate = resample_rate
@@ -32,6 +40,8 @@ class CSPriemannLDAModel(AbstractModel):
 
     def fit(self, X: List[np.ndarray], y: List[np.ndarray], meta: List[Dict]) -> None:
         [self.validate_meta(m) for m in meta]
+        self._set_channels(meta[0]["task_name"])
+
         # bring data into the right shape, so resample if needed and only take the C3, Cz, C4 channels
         # TODO handle case if no channel names are provided
         X_prepared = self._prepare_data(X, meta)

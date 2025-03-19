@@ -1,10 +1,10 @@
-from .abstract_model import AbstractModel
+from ..abstract_model import AbstractModel
 from typing import List, Dict, cast, Literal
 import numpy as np
-from .LaBraM.make_dataset import make_dataset, make_dataset_abnormal, make_dataset_pd
+from .make_dataset import make_dataset, make_dataset_abnormal, make_dataset_pd
 import argparse
 from pathlib import Path
-from .LaBraM import utils
+from .utils import utils
 import torch
 from timm.models import create_model
 import torch.backends.cudnn as cudnn
@@ -20,12 +20,12 @@ import numpy as np
 import time
 import datetime
 import json
-from .LaBraM.optim_factory import create_optimizer, get_parameter_groups, LayerDecayValueAssigner
-from .LaBraM.engine_for_finetuning import train_one_epoch, evaluate
+from .optim_factory import create_optimizer, get_parameter_groups, LayerDecayValueAssigner
+from .engine_for_finetuning import train_one_epoch, evaluate
 from einops import rearrange
 from mne.io import BaseRaw
 from scipy import stats
-from .LaBraM import modeling_finetune # important to load the models
+from .modeling_finetune import modeling_finetune # important to load the models
 
 
 def get_args():
@@ -126,7 +126,7 @@ def get_args():
     parser.add_argument('--disable_weight_decay_on_rel_pos_bias', action='store_true', default=False)
 
     # Dataset parameters
-    parser.add_argument('--nb_classes', default=1, type=int,
+    parser.add_argument('--nb_classes', default=4, type=int,
                         help='number of the classification types')
 
     parser.add_argument('--output_dir', default='/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/models/LaBraM/checkpoints/finetune_tuab_base/',
@@ -295,9 +295,12 @@ class LaBraMModel(AbstractModel):
 
     def fit(self, X: List[np.ndarray|List[BaseRaw]], y: List[np.ndarray|List[str]], meta: List[Dict]) -> None:
         print("inside fit")
+        task_name = meta[0]["task_name"]
         dataset_val_list, ch_names_list_val = None, None
         if isinstance(X[0], np.ndarray):
-            dataset_train_list = [make_dataset(X_, y_, meta_["sampling_frequency"], meta_["channel_names"], train=True) for X_, y_, meta_ in zip(cast(List[np.ndarray], X), cast(List[np.ndarray], y), meta)]
+            datasets = [make_dataset(X_, y_, task_name, meta_["sampling_frequency"], meta_["channel_names"], train=True) for X_, y_, meta_ in zip(cast(List[np.ndarray], X), cast(List[np.ndarray], y), meta)]
+            dataset_train_list = [dataset[0] for dataset in datasets]
+            dataset_val_list = [dataset[1] for dataset in datasets]
         elif isinstance(X[0][0], BaseRaw):
             datasets = [make_dataset_abnormal(X_, y_, train=True, val_per=0.2) for X_, y_, meta_ in zip(cast(List[List[BaseRaw]], X), cast(List[List[str]], y), meta)]
             dataset_train_list = [dataset[0] for dataset in datasets]
@@ -316,8 +319,8 @@ class LaBraMModel(AbstractModel):
             ch_names_list_val = [dataset.ch_names for dataset in dataset_val_list]
 
         ch_names_list = [dataset.ch_names for dataset in dataset_train_list]
-        self.args.nb_classes = 1
-        metrics = ["pr_auc", "roc_auc", "accuracy", "balanced_accuracy"]
+        #self.args.nb_classes = 1
+        metrics = ["accuracy", "balanced_accuracy"]
 
         torch.cuda.empty_cache()
 
@@ -514,8 +517,9 @@ class LaBraMModel(AbstractModel):
     @torch.no_grad()
     def predict(self, X: List[np.ndarray|List[BaseRaw]], meta: List[Dict]) -> np.ndarray:
         print("inside predict")
+        task_name = meta[0]["task_name"]
         if isinstance(X[0], np.ndarray):
-            datasets_test_list = [make_dataset(X_, None, meta_["sampling_frequency"], meta_["channel_names"], train=False) for X_, meta_ in zip(cast(List[np.ndarray], X), meta)]
+            datasets_test_list = [make_dataset(X_, None, task_name, meta_["sampling_frequency"], meta_["channel_names"], train=False) for X_, meta_ in zip(cast(List[np.ndarray], X), meta)]
         elif isinstance(X[0][0], BaseRaw):
             datasets_test_list = [make_dataset_abnormal(X_, None, train=False) for X_, meta_ in zip(cast(List[List[BaseRaw]], X), meta)]
         elif isinstance(X[0][0], np.ndarray):
@@ -526,7 +530,7 @@ class LaBraMModel(AbstractModel):
         datasets_test_list = [dataset for dataset in datasets_test_list if len(dataset) > 0]
         print("datasets length: ", len(datasets_test_list[0]))
         ch_names_list = [dataset.ch_names for dataset in datasets_test_list]
-        self.args.nb_classes = 1
+        #self.args.nb_classes = 1
 
         num_tasks = utils.get_world_size()
         global_rank = utils.get_rank()
@@ -535,7 +539,7 @@ class LaBraMModel(AbstractModel):
         sampler_train_list = []
         for dataset in datasets_test_list:
             sampler_train = DistributedSampler(
-                dataset, num_replicas=num_tasks, rank=sampler_rank, shuffle=True
+                dataset, num_replicas=num_tasks, rank=sampler_rank, shuffle=False
             )
             sampler_train_list.append(sampler_train)
             print("Sampler_test = %s" % str(sampler_train))
@@ -587,7 +591,7 @@ class LaBraMModel(AbstractModel):
                     output = output.cpu()
                 target = target.cpu()
 
-                results = utils.get_metrics(output.numpy(), target.numpy(), ["pr_auc", "roc_auc", "accuracy", "balanced_accuracy"], self.args.nb_classes == 1)
+                results = utils.get_metrics(output.numpy(), target.numpy(), ["accuracy", "balanced_accuracy"], self.args.nb_classes == 1)
                 pred.append(output)
 
                 batch_size = EEG.shape[0]
@@ -601,17 +605,28 @@ class LaBraMModel(AbstractModel):
             .format(losses=metric_logger.loss))
         
         pred = torch.cat(pred, dim=0).numpy()
+        print(pred.shape)
         
-        binary_pred = (pred >= 0.5).astype(int)
-        binary_pred = binary_pred.ravel()
+        # this is for binary classification
+        #binary_pred = (pred >= 0.5).astype(int)
+        #binary_pred = binary_pred.ravel()
+        #mapped_pred = np.where(binary_pred == 0, 'parkinsons', 'no_parkinsons')
         #mapped_pred = np.where(binary_pred == 0, 'abnormal', 'normal')
-        mapped_pred = np.where(binary_pred == 0, 'left_hand', 'right_hand')
+        #mapped_pred = np.where(binary_pred == 0, 'left_hand', 'right_hand')
         
+        # this is for multi-class classification
+        reverse_label_mapping = {0: 'feet', 1: 'left_hand', 2: 'right_hand', 3: 'tongue'}
+        predicted_indices = np.argmax(pred, axis=1)
+        mapped_pred = np.array([reverse_label_mapping[idx] for idx in predicted_indices])
+
         """
+        # for parkinsons
         segment_lengths = [75, 76, 75, 75, 73, 76, 77, 76, 75, 75, 76, 75, 73, 72, 74, 75, 72, 74, 75, 74, 78, 75, 75, 74, 76, 78, 74, 74, 72, 72, 74, 74, 74, 76, 75, 76, 74, 74, 74]
         aggregated_predictions = []
         start_idx = 0
         
+        binary_pred = (pred >= 0.5).astype(int)
+        binary_pred = binary_pred.ravel()
         for length in segment_lengths:
             segment = binary_pred[start_idx:start_idx + length]
             #print(segment)
