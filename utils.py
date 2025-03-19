@@ -65,7 +65,7 @@ def print_classification_results(y_train, y_test, model_names, y_preds, dataset_
             "AUC": (
                 roc_auc_score(one_hot_encode(y_true), one_hot_encode(y_pred), multi_class="ovr")
                 if len(np.unique(y_true)) > 2
-                else roc_auc_score(y_true, y_pred)
+                else (roc_auc_score(y_true, y_pred) if len(y_true) > 0 else 0)
             ),
         }
 
