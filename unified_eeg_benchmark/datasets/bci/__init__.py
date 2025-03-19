@@ -16,3 +16,5 @@ from .zhou2016_m import Zhou2016MDataset
 from .steyrl2016_m import Steyrl2016MDataset
 from .faller2012_m import Faller2012MDataset
 from .scherer2015_m import Scherer2015MDataset
+from .kaya2018 import Kaya2018Dataset
+from .ofner2019 import Ofner2019Dataset

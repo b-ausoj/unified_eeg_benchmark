@@ -10,6 +10,7 @@ from moabb.paradigms import LeftRightImagery
 import moabb.datasets.base as base
 from moabb.paradigms.base import BaseParadigm
 import logging
+import numpy as np
 
 moabb.set_log_level("info")
 warnings.filterwarnings("ignore")
@@ -20,9 +21,6 @@ def _load_data_shin2017a(
 ):
     return paradigm.get_data(dataset=dataset, subjects=subjects)
 
-############
-# doesn't have the channels C3 and C3 so can't use it for now
-############
 
 class Shin2017AMDataset(BaseBCIDataset):
     def __init__(
@@ -43,7 +41,8 @@ class Shin2017AMDataset(BaseBCIDataset):
             target_channels=target_channels,
             target_frequency=target_frequency,
             sampling_frequency=200,
-            channel_names = ["AFp1", "AFp2", "AFF1h", "AFF2h", "AFF5h", "AFF6h", "F3", "F4", "F7", "F8", "FCC3h", "FCC4h", "FCC5h", "FCC6h", "T7", "T8", "Cz", "CCP3h", "CCP4h", "CCP5h", "CCP6h", "Pz", "P3", "P4", "P7", "P8", "PPO1h", "PPO2h", "POO1", "POO2"],
+            # remapped to 10-20/10-10 system (and thus renamed the channels)
+            channel_names = ["AF3", "AF4", "AF7", "AF8", "F5", "F6", "F3", "F4", "F7", "F8", "FC3", "FC4", "FC5", "FC6", "T7", "T8", "Cz", "C3", "C4", "CP5", "CP6", "Pz", "P3", "P4", "P7", "P8", "PO7", "PO8", "PO9", "PO10"],
             preload=preload,
         )
         # fmt: on
@@ -62,13 +61,17 @@ class Shin2017AMDataset(BaseBCIDataset):
         pass
 
     def load_data(self) -> None:
-        Shin2017AM = Shin2017A()
+        Shin2017AM = Shin2017A(accept=True)
         if self.target_classes is None:
             logging.warning("target_classes is None, loading all classes...")
         elif self.target_classes == [Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI]:
             paradigm = LeftRightImagery()
         else:
             raise ValueError("Invalid target classes")
+        if (self.subjects is None) or (len(self.subjects) == 0):
+            self.data = np.array([])
+            self.labels = np.array([])
+            return
         self.data, self.labels, _ = self.cache.cache(_load_data_shin2017a)(
             paradigm, Shin2017AM, self.subjects
         )  # type: ignore

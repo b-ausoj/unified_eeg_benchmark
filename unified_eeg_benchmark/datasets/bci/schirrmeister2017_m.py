@@ -10,6 +10,7 @@ from moabb.datasets import (
 import moabb.datasets.base as base
 from moabb.paradigms import MotorImagery
 import logging
+import numpy as np
 
 moabb.set_log_level("info")
 warnings.filterwarnings("ignore")
@@ -78,6 +79,10 @@ class Schirrmeister2017MDataset(BaseBCIDataset):
         else:
             raise ValueError("Invalid target classes")
 
+        if (self.subjects is None) or (len(self.subjects) == 0):
+            self.data = np.array([])
+            self.labels = np.array([])
+            return
         self.data, self.labels, _ = self.cache.cache(_load_data_schirrmeister2017)(
             paradigm, Schirrmeister2017M, self.subjects
         )  # type: ignore

@@ -82,6 +82,10 @@ class Weibo2013MDataset(BaseBCIDataset):
         else:
             raise ValueError("Invalid target classes")
 
+        if (self.subjects is None) or (len(self.subjects) == 0):
+            self.data = np.array([])
+            self.labels = np.array([])
+            return
         self.data, self.labels, _ = self.cache.cache(_load_data_weibo2013)(
             paradigm, MI_Limb, self.subjects
         )  # type: ignore

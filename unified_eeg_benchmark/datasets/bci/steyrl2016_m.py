@@ -10,6 +10,7 @@ from moabb.paradigms import MotorImagery
 import moabb.datasets.base as base
 from moabb.paradigms.base import BaseParadigm
 import logging
+import numpy as np
 
 moabb.set_log_level("info")
 warnings.filterwarnings("ignore")
@@ -67,6 +68,10 @@ class Steyrl2016MDataset(BaseBCIDataset):
             paradigm = MotorImagery()
         else:
             raise ValueError("Invalid target classes")
+        if (self.subjects is None) or (len(self.subjects) == 0):
+            self.data = np.array([])
+            self.labels = np.array([])
+            return
         self.data, self.labels, _ = self.cache.cache(_load_data_steyrl2016)(
             paradigm, Steyrl2016, self.subjects
         )  # type: ignore

@@ -67,6 +67,10 @@ class Scherer2015MDataset(BaseBCIDataset):
             paradigm = MotorImagery(n_classes=2, events=["right_hand", "feet"])
         else:
             raise ValueError("Invalid target classes")
+        if (self.subjects is None) or (len(self.subjects) == 0):
+            self.data = np.array([])
+            self.labels = np.array([])
+            return
         self.data, self.labels, _ = self.cache.cache(_load_data_scherer2015)(
             paradigm, Scherer2015, self.subjects
         )  # type: ignore

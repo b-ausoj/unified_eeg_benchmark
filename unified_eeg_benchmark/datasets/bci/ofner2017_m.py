@@ -87,6 +87,10 @@ class Ofner2017MDataset(BaseBCIDataset):
             )
         else:
             raise ValueError("Invalid target classes")
+        if (self.subjects is None) or (len(self.subjects) == 0):
+            self.data = np.array([])
+            self.labels = np.array([])
+            return
         self.data, self.labels, _ = self.cache.cache(_load_data_ofner2017)(
             paradigm, Ofner2017M, self.subjects
         )  # type: ignore

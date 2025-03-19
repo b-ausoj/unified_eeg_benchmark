@@ -10,6 +10,7 @@ from moabb.datasets import (
 import moabb.datasets.base as base
 from moabb.paradigms import MotorImagery
 import logging
+import numpy as np
 
 moabb.set_log_level("info")
 warnings.filterwarnings("ignore")
@@ -77,7 +78,11 @@ class Zhou2016MDataset(BaseBCIDataset):
             paradigm = MotorImagery(n_classes=2, events=["right_hand", "feet"])
         else:
             raise ValueError("Invalid target classes")
-
+        
+        if (self.subjects is None) or (len(self.subjects) == 0):
+            self.data = np.array([])
+            self.labels = np.array([])
+            return
         self.data, self.labels, _ = self.cache.cache(_load_data_zhou2016)(
             paradigm, Zhou2016M, self.subjects
         )  # type: ignore

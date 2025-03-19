@@ -79,6 +79,10 @@ class Stieger2021MDataset(BaseBCIDataset):
         else:
             raise ValueError("Invalid target classes")
 
+        if (self.subjects is None) or (len(self.subjects) == 0):
+            self.data = np.array([])
+            self.labels = np.array([])
+            return
         self.data, self.labels, _ = self.cache.cache(_load_data_stieger2021)(
             paradigm, Stieger2021M, self.subjects
         )  # type: ignore
