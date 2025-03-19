@@ -10,15 +10,17 @@ from unified_eeg_benchmark.tasks.bci import (
     PronationvSupinationMITask,
     HandOpenvCloseMITask,
 )   
-from models.csp_svm_model import CSPSVMModel
-from models.csp_lda_model import CSPLDAModel
 from models.abstract_model import AbstractModel
-from models.csp_pyriemann_lda_model import CSPriemannLDAModel
-from models.ts_lr_model import TSLRModel
-from models.ts_svm_grid_model import TSSVMGridModel
-from models.labram_model import LaBraMModel
-from models.fgmdm_model import FgMDMModel
-from models.neurogpt_model import NeuroGPTModel
+from models.bci import (
+    BENDRModel,
+    CSPSVMModel,
+    CSPLDAModel,
+    CSPriemannLDAModel,
+    FgMDMModel,
+    LaBraMModel,
+    NeuroGPTModel,
+    TSLRModel,
+)
 from unified_eeg_benchmark.enums.classes import Classes
 from utils import print_classification_results, generate_classification_plots
 from typing import Sequence
@@ -75,10 +77,18 @@ def benchmark(tasks: Sequence[AbstractBCITask], models: Sequence[AbstractModel])
             model.fit(X_train, y_train, meta_train)
             y_pred = []
             for x, m in zip(X_test, meta_test):
-                y_pred.append(model.predict([x], [m]))
+                if len(x) > 0:
+                    y_pred.append(model.predict([x], [m]))
+                else:
+                    y_pred.append([])
 
             models_names.append(str(model))
             results.append(y_pred)
+        
+        for model_name, y_pred_model in zip(models_names, results):
+            unique, counts = np.unique(np.concatenate(y_pred_model), return_counts=True)
+            distribution = dict(zip(unique, counts))
+            print(f"Distribution for model {model_name}: {distribution}")
         
         print_classification_results(
             y_train, y_test, models_names, results, dataset_names, task.name
@@ -102,9 +112,9 @@ if __name__ == "__main__":
         #CSPriemannLDAModel(),
         #FgMDMModel(),
         #TSLRModel(),
-        #TSSVMGridModel(),
         #LaBraMModel(),
-        NeuroGPTModel(),
+        #NeuroGPTModel(),
+        BENDRModel(),
     ]
     benchmark(tasks, models)
 

@@ -10,6 +10,8 @@ from ...datasets.bci import (
     Schirrmeister2017MDataset,
     Schalk2004MDataset,
     Zhou2016MDataset,
+    Kaya2018Dataset,
+    Shin2017AMDataset,
 )
 from ...enums.classes import Classes
 from sklearn.metrics import f1_score
@@ -25,15 +27,17 @@ class LeftHandvRightHandMITask(AbstractBCITask):
             classes=[Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI],
             datasets=[
                 BCICompIV2aMDataset,
-                #BCICompIV2bMDataset,
+                BCICompIV2bMDataset,
                 Weibo2013MDataset,
-                #Cho2017MDataset,
-                #GrosseWentrup2009MDataset,
+                Cho2017MDataset,
+                #GrosseWentrup2009MDataset, # no channel names
                 #Lee2019MDataset, # some errors in some subjects
-                #Liu2022MDataset,
-                #Schirrmeister2017MDataset,
+                Liu2022MDataset, # gave rather bad results
+                Schirrmeister2017MDataset,
                 Schalk2004MDataset,
-                #Zhou2016MDataset,
+                Zhou2016MDataset,
+                Kaya2018Dataset,
+                Shin2017AMDataset,
             ],
             subjects_split={
                 BCICompIV2aMDataset: {
@@ -73,8 +77,16 @@ class LeftHandvRightHandMITask(AbstractBCITask):
                     Split.TEST: list(range(70, 85)),
                 },
                 Zhou2016MDataset: {
-                    Split.TRAIN: list(range(1, 4)),
-                    Split.TEST: list(range(4, 5)),
+                    Split.TRAIN: [],
+                    Split.TEST: list(range(1, 5)),
+                },
+                Kaya2018Dataset: {
+                    Split.TRAIN: ["B", "C", "E", "F", "G", "H", "I", "J", "K"],
+                    Split.TEST: ["A", "L", "M"],
+                },
+                Shin2017AMDataset: {
+                    Split.TRAIN: list(range(1, 20)),
+                    Split.TEST: list(range(20, 19)),
                 },
             },
         )

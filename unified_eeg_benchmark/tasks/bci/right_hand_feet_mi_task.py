@@ -33,7 +33,7 @@ class RightHandvFeetMITask(AbstractBCITask):
                 Zhou2016MDataset,
                 Faller2012MDataset,
                 Scherer2015MDataset,
-                #Steyrl2016MDataset,
+                #Steyrl2016MDataset, # no channel names
             ],
             subjects_split={
                 Weibo2013MDataset: {

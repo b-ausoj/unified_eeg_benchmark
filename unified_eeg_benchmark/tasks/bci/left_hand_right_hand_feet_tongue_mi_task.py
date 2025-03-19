@@ -1,5 +1,8 @@
 from .abstract_bci_task import AbstractBCITask
-from ...datasets.bci import BCICompIV2aMDataset
+from ...datasets.bci import (
+    BCICompIV2aMDataset,
+    Kaya2018Dataset,
+)
 from ...enums.classes import Classes
 from sklearn.metrics import f1_score
 from ...enums.split import Split
@@ -21,11 +24,16 @@ class LeftHandvRightHandvFeetvTongueMITask(AbstractBCITask):
             ],
             datasets=[
                 BCICompIV2aMDataset,
+                Kaya2018Dataset,
             ],
             subjects_split={
                 BCICompIV2aMDataset: {
                     Split.TRAIN: [1, 2, 3, 4, 5, 6, 7],
                     Split.TEST: [8, 9],
+                },
+                Kaya2018Dataset: {
+                    Split.TRAIN: ["B", "C", "E", "F", "G", "H", "I", "J", "K"], 
+                    Split.TEST: ["A", "L", "M" ], 
                 },
             },
         )

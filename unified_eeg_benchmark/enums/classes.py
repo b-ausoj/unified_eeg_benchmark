@@ -14,3 +14,5 @@ class Classes(Enum):
     RIGHT_HAND_CLOSE_MI = "right_hand_close"
     RIGHT_HAND_OPEN_MI = "right_hand_open"
     FIVE_FINGERS_MI = "five_fingers"
+    RIGHT_PALMAR_GRASP_MI = "right_palmar_grasp"
+    RIGHT_LATERAL_GRASP_MI = "right_lateral_grasp"
