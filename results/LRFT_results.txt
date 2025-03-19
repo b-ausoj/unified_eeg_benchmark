@@ -1,0 +1,51 @@
+Distribution for model CSP-SVM: {'feet': 73, 'left_hand': 2430, 'right_hand': 1253, 'tongue': 2547}
+Distribution for model CSP-LDA: {'feet': 932, 'left_hand': 1494, 'right_hand': 1802, 'tongue': 2075}
+Distribution for model Covariances-CSP-LDA: {'feet': 573, 'left_hand': 1323, 'right_hand': 2266, 'tongue': 2141}
+Distribution for model FgMDM: {'feet': 1474, 'left_hand': 2054, 'right_hand': 964, 'tongue': 1811}
+Distribution for model TS+LR: {'feet': 651, 'left_hand': 1707, 'right_hand': 1634, 'tongue': 2311}
+Distribution for model NeuroGPTModel: {'feet': 1492, 'left_hand': 1777, 'right_hand': 1514, 'tongue': 1520}
+
+======================== Task Overview ========================
+
+     Task: Left Hand vs Right Hand vs Feet vs Tongue MI     
+
+    Dataset  Train Samples  Test Samples Train Class Distribution  Test Class Distribution
+BCICompIV2a           4032          1152 [1008, 1008, 1008, 1008]     [288, 288, 288, 288]
+   Kaya2018          13484          5151 [3295, 3354, 3321, 3514] [1269, 1277, 1272, 1333]
+
+------------------------- CSP-SVM -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Precision   Recall  F1 Score      AUC
+   Combined  0.291131           0.289002   0.289127 0.291131  0.249386 0.526095
+BCICompIV2a  0.290799           0.290799   0.347472 0.290799  0.203504 0.481481
+   Kaya2018  0.291206           0.287476   0.307429 0.291206  0.227907 0.525114
+
+------------------------- CSP-LDA -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Precision   Recall  F1 Score      AUC
+   Combined  0.290814           0.289861   0.290930 0.290814  0.285189 0.526608
+BCICompIV2a  0.272569           0.272569   0.470393 0.272569  0.148098 0.496914
+   Kaya2018  0.294894           0.293014   0.307962 0.294894  0.289147 0.528700
+
+------------------------- Covariances-CSP-LDA -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Precision   Recall  F1 Score      AUC
+   Combined  0.302713           0.301286   0.295070 0.302713  0.283384 0.534307
+BCICompIV2a  0.296007           0.296007   0.223693 0.296007  0.250129 0.487654
+   Kaya2018  0.304213           0.301907   0.302603 0.304213  0.262100 0.534790
+
+------------------------- FgMDM -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Precision   Recall  F1 Score      AUC
+   Combined  0.283357           0.282941   0.285190 0.283357  0.279295 0.521959
+BCICompIV2a  0.250868           0.250868   0.374256 0.250868  0.180397 0.500579
+   Kaya2018  0.290623           0.290720   0.296426 0.290623  0.285709 0.527120
+
+------------------------- TS+LR -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Precision   Recall  F1 Score      AUC
+   Combined  0.300333           0.298842   0.299640 0.300333  0.287938 0.532624
+BCICompIV2a  0.323785           0.323785   0.414080 0.323785  0.254920 0.549190
+   Kaya2018  0.295088           0.294162   0.306265 0.295088  0.283774 0.529457
+
+------------------------- NeuroGPTModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Precision   Recall  F1 Score      AUC
+   Combined  0.489449           0.489700   0.489234 0.489449  0.488613 0.659761
+BCICompIV2a  0.447049           0.447049   0.439437 0.447049  0.435902 0.631366
+   Kaya2018  0.498932           0.499489   0.500311 0.498932  0.497502 0.666253
+
