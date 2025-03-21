@@ -9,8 +9,6 @@ from ...enums.split import Split
 import os
 import json
 
-base_path = "/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/"
-
 
 class LeftHandvRightHandvFeetvTongueMITask(AbstractBCITask):
     def __init__(self):
@@ -24,7 +22,7 @@ class LeftHandvRightHandvFeetvTongueMITask(AbstractBCITask):
             ],
             datasets=[
                 BCICompIV2aMDataset,
-                Kaya2018Dataset,
+                #Kaya2018Dataset,
             ],
             subjects_split={
                 BCICompIV2aMDataset: {

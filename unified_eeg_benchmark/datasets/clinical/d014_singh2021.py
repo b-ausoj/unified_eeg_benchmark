@@ -29,6 +29,7 @@ def _load_data_singh2021(subjects: Sequence[int], target_class: ClinicalClasses,
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=RuntimeWarning)
                 raw = read_raw_brainvision(file_path, preload=True)
+                raw.pick(['eeg'])
             data.append(raw.get_data(units='uV')) # type: ignore
             if target_class == ClinicalClasses.PARKINSONS:
                 labels.append("no_parkinsons")
@@ -41,7 +42,8 @@ def _load_data_singh2021(subjects: Sequence[int], target_class: ClinicalClasses,
             file_path = f"{DATA_PATH}{subject_id}.vhdr"
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=RuntimeWarning)
-                raw = read_raw_brainvision(file_path, preload=True)            
+                raw = read_raw_brainvision(file_path, preload=True)     
+                raw.pick(['eeg'])       
             data.append(raw.get_data(units='uV')) # type: ignore
             if target_class == ClinicalClasses.PARKINSONS:
                 labels.append("parkinsons")
@@ -53,6 +55,8 @@ def _load_data_singh2021(subjects: Sequence[int], target_class: ClinicalClasses,
     labels = np.array(labels)
     if resampling_frequency is not None:
         data = [resample(d, sampling_frequency, resampling_frequency, axis=-1, filter='kaiser_best', parallel=True) for d in data]
+    print("data shape ", data[0].shape)
+    print(f"Data range: min={np.min(data[0])}, max={np.max(data[0])}")
     return data, labels
 
 

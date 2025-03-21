@@ -10,7 +10,6 @@ from mne.io import BaseRaw
 from ...utils.config import get_config_value
 
 
-base_path = "/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/"
 ClassesType = Classes | ClinicalClasses
 DataType = np.ndarray | List[BaseRaw]
 LabelsType = np.ndarray | List[str]
@@ -58,7 +57,6 @@ class BaseDataset(ABC):
             "name": self.name,
         }
 
-        # TODO make this more generic with a config file and parameters
         self.cache = Memory(location=get_config_value("cache"), verbose=0)
 
     @abstractmethod

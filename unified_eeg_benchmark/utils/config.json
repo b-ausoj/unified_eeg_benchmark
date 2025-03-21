@@ -1,0 +1,6 @@
+{
+    "cache": "/scratch/jbuerki/cache/",
+    "data": "/scratch/jbuerki/data/",
+    "log": "/scratch/jbuerki/log/",
+    "tmp": "/scratch/jbuerki/tmp/"
+}

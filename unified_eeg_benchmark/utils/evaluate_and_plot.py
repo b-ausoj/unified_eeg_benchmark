@@ -144,7 +144,7 @@ def generate_classification_plots(y_train, y_test, model_names, y_preds, dataset
     test_distribution = class_distribution(y_test)
     
     # Save class distribution plots
-    save_class_distribution_plots(dataset_names, train_distribution, test_distribution, output_dir)
+    #save_class_distribution_plots(dataset_names, train_distribution, test_distribution, output_dir)
     
     def calculate_metrics(y_true, y_pred):
         encoder = LabelEncoder()

@@ -6,8 +6,9 @@ from ..enums.clinical_classes import ClinicalClasses
 from typing import Dict, Sequence, Tuple, List
 from mne.io import BaseRaw
 import numpy as np
+from ..utils.config import get_config_value
 
-base_path = "/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/"
+
 ClassesType = Classes | ClinicalClasses
 DataType = np.ndarray | List[BaseRaw]
 LabelsType = np.ndarray | List[str]
@@ -24,7 +25,7 @@ class AbstractDataset(ABC):
 
         self.target_classes = target_classes
         self.subjects = subjects
-        self.cache = Memory(location=os.path.join(base_path, "cache"), verbose=0)
+        self.cache = Memory(location=get_config_value("cache"), verbose=0)
 
     @abstractmethod
     def load_data(self):

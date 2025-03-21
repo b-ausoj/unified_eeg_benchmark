@@ -16,8 +16,6 @@ from ...enums.split import Split
 import os
 import json
 
-base_path = "/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/"
-
 
 class RightHandvFeetMITask(AbstractBCITask):
     def __init__(self):

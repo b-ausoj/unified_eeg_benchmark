@@ -6,8 +6,6 @@ from ...enums.split import Split
 from typing import List, Tuple, Dict
 from mne.io import Raw
 
-base_path = "/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/"
-
 
 class EpilepsyClinicalTask(AbstractClinicalTask):
     def __init__(self):

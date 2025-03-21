@@ -17,8 +17,6 @@ from ...enums.classes import Classes
 from sklearn.metrics import f1_score
 from ...enums.split import Split
 
-base_path = "/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/"
-
 
 class LeftHandvRightHandMITask(AbstractBCITask):
     def __init__(self):
