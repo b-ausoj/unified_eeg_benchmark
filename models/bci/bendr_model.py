@@ -17,6 +17,8 @@ from tqdm import tqdm
 import math
 from .BENDR.dn3_ext import ConvEncoderBENDR
 from joblib import Memory
+from ...utils.config import get_config_value
+
 
 def seed_torch(seed=1029):
     random.seed(seed)
@@ -145,8 +147,7 @@ class BENDRModel(AbstractModel):
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = BENDRBCIModel(num_classes=2).to(self.device)
-        base_path = "/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/"
-        self.cache = Memory(location=os.path.join(base_path, "cache"), verbose=0)
+        self.cache = Memory(location=get_config_value("cache"), verbose=0)
 
     def fit(self, X: List[np.ndarray|List[BaseRaw]], y: List[np.ndarray|List[str]], meta: List[Dict]) -> None:
         print("inside fit")

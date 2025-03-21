@@ -30,6 +30,14 @@ class AbstractModel(ABC):
             raise ValueError("Meta information must contain the sampling frequency.")
         if "channel_names" not in meta:
             raise ValueError("Meta information must contain the channel names.")
+    
+    def _set_channels(self, task_name) -> None:
+        if task_name == "Left Hand vs Right Hand MI":
+            self.channels = ["C3", "Cz", "C4"]
+        elif task_name == "Right Hand vs Feet MI":
+            self.channels = ['C3', 'Cz', 'C4']
+        elif task_name == "Left Hand vs Right Hand vs Feet vs Tongue MI":
+            self.channels = ["C3", "Cz", "C4", "Fz", "Pz"]
 
     @abstractmethod
     def fit(self, X: List[np.ndarray], y: List[np.ndarray], meta: List[Dict]) -> None:
