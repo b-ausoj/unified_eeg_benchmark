@@ -17,9 +17,12 @@ from unified_eeg_benchmark.tasks.clinical import (
 from models.csp_lda_cli_unm_model import CSPLDACliUnmModel
 from models.csp_lda_epilepsy_model import CSPLDAEpilepsyModel
 from models.csp_lda_abnormal_model import CSPLDAAbnormalModel
-from models.labram_model import LaBraMModel
+#from models.LaBraM.labram_model_old import LaBraMModel
+from models.clinical import (
+    BrainfeaturesModel,
+)
 from models.abstract_model import AbstractModel
-from utils import print_classification_results, generate_classification_plots
+from .utils.evaluate_and_plot import print_classification_results, generate_classification_plots
 from typing import Sequence
 from tqdm import tqdm
 import logging
@@ -34,15 +37,9 @@ mne.set_log_level("ERROR")
 def benchmark(tasks: Sequence[AbstractClinicalTask], models: Sequence[AbstractModel]):
     for task in tasks:
         logger.info(f"Running benchmark for task {task}")
-        (X_train, y_train, meta_train) = task.get_data(Split.TRAIN)
-        # y_train = [y - 1 for y in y_train]
-        (X_test, y_test, meta_test) = task.get_data(Split.TEST)
-        # y_test = [y - 1 for y in y_test]
+        X_train, y_train, meta_train = task.get_data(Split.TRAIN)
+        X_test, y_test, meta_test = task.get_data(Split.TEST)
 
-        # X_train = [x[:1260] for x in X_train]
-        # y_train = [y[:1260] for y in y_train]
-        # X_test = [x[:320] for x in X_test]
-        # y_test = [y[:320] for y in y_test]
 
         # X is a list of numpy arrays, for each dataset one numpy array
         # each numpy array has dimensions (n_samples, n_channels, n_timepoints)
@@ -52,7 +49,7 @@ def benchmark(tasks: Sequence[AbstractClinicalTask], models: Sequence[AbstractMo
         # each dictionary contains meta information about the samples
         # such as the sampling frequency, the channel names, the labels mapping, etc.
 
-        scoring = task.get_scoring()
+        scoring = task.get_scoring() # TODO rename to metrics and then return the metrics I should use in print and generate the plots
         dataset_names = [m["name"] for m in meta_train]
         models_names = []
         results = []
@@ -74,23 +71,24 @@ def benchmark(tasks: Sequence[AbstractClinicalTask], models: Sequence[AbstractMo
 
 if __name__ == "__main__":
     tasks = [
-        #ParkinsonsClinicalTask(),
+        ParkinsonsClinicalTask(),
         #DepressionClinicalTask(),
         #SchizophreniaClinicalTask(),
         #MTBIClinicalTask(),
-        #OCDClinicalTask(),
+        #OCDClinicalTask(), # error in some data
         #EpilepsyClinicalTask(),
-        AbnormalClinicalTask(),
-        #MedClinicalTask,
-        #BDIClinicalTask,
-        #AgeClinicalTask,
-        #SexClinicalTask,
+        #AbnormalClinicalTask(),
+        #MedClinicalTask, # difficult
+        #BDIClinicalTask, # regression
+        #AgeClinicalTask, # regression
+        #SexClinicalTask, # labels unsure
     ]
     models = [
         #CSPLDACliUnmModel(),
         #CSPLDAEpilepsyModel(),
         #CSPLDAAbnormalModel(),
-        LaBraMModel(),
+        #LaBraMModel(),
+        BrainfeaturesModel(),
     ]
 
     benchmark(tasks, models)
@@ -108,23 +106,3 @@ if __name__ == "__main__":
 #        "csp+svm": CSPSVMModel()
 #    }
 # }
-
-"""
-CustomMITask(
-            classes=[Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI],
-            subjects_split={
-                BCICompIV2aMDataset: {
-                    Split.TRAIN: [1, 2, 3, 4, 5, 6, 7, 8],
-                    Split.TEST: [9],
-                },
-                BCICompIV2bMDataset: {
-                    Split.TRAIN: [1, 2, 3, 4, 5, 6, 7, 8],
-                    Split.TEST: [9],
-                },
-                GrosseWentrup2009MDataset: {
-                    Split.TRAIN: [1],
-                    Split.TEST: [2, 3, 4, 5, 6],
-                },
-            },
-        ),
-"""

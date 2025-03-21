@@ -5,6 +5,8 @@ import numpy as np
 from mne.decoding import CSP
 from resampy import resample
 from sklearn.utils import shuffle
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
 
 
 class CSPLDACliUnmModel(AbstractModel):
@@ -18,8 +20,10 @@ class CSPLDACliUnmModel(AbstractModel):
         #channels: List[str] = ['Fp1', 'Fz', 'F3', 'F7', 'FC5', 'FC1', 'C3', 'T7', 'CP5', 'CP1', 'P3', 'P7', 'O1', 'Oz', 'O2', 'P4', 'P8', 'CP6', 'CP2', 'Cz', 'C4', 'T8', 'FC6', 'FC2', 'F4', 'F8', 'Fp2', 'AF7', 'AF3', 'AFz', 'F1', 'F5', 'FT7', 'FC3', 'FCz', 'C1', 'C5', 'TP7', 'CP3', 'P1', 'P5', 'PO7', 'PO3', 'POz', 'PO4', 'PO8', 'P6', 'P2', 'CP4', 'TP8', 'C6', 'C2', 'FC4', 'FT8', 'F6', 'F2', 'AF4', 'AF8'], # 'Pz', 'CPz'
     ):
         super().__init__('CSP-LDA')
-        self.lda = LDA()
+        #self.lda = LDA()
+        self.lda = RandomForestClassifier(n_estimators=100, random_state=42)
         self.csp = CSP(n_components=n_components, reg=reg, log=log)
+        self.scaler = StandardScaler()
         self.resample_rate = resample_rate
         self.channels = channels
 
@@ -37,7 +41,7 @@ class CSPLDACliUnmModel(AbstractModel):
 
         # Transform both training and test data using the learned CSP filters
         X_csp = self.csp.fit_transform(X_prepared, y_prepared)
-
+        X_csp = self.scaler.fit_transform(X_csp)
         # Fit LDA on CSP-transformed training data
         self.lda.fit(X_csp, y_prepared)
 
@@ -46,9 +50,26 @@ class CSPLDACliUnmModel(AbstractModel):
 
         X_prepared = self._prepare_data(X, meta)
         X_csp = self.csp.transform(X_prepared)
+        X_csp = self.scaler.transform(X_csp)
         return self.lda.predict(X_csp)
+    
+    def _prepare_data(self, X: List[np.ndarray], meta: List[Dict]) -> np.ndarray:
+        
+        # check if all have the same duration i.e. n_timepoints
+        X_prepared = []
+        
+        for data, m in zip(X, meta):
+            ch_names = m['channel_names'] # to upper case
+            ch_names = [ch.upper() for ch in ch_names]
+            channel_indices = [ch_names.index(ch.upper()) for ch in self.channels]
+            X_prepared.append(data[:, channel_indices, :])
+    
+        X_resampled = np.concatenate(X_prepared, axis=0)
+        X_resampled = X_resampled.astype(np.float64)
 
-    def _prepare_data(self, X: List[List[np.ndarray]], meta: List[Dict]) -> np.ndarray:
+        return X_resampled
+
+    def _prepare_data_old(self, X: List[List[np.ndarray]], meta: List[Dict]) -> np.ndarray:
         
         # check if all have the same duration i.e. n_timepoints
         durations = []
