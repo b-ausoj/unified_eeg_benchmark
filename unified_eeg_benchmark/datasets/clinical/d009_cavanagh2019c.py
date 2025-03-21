@@ -1,16 +1,19 @@
 from .base_clinical_dataset import BaseClinicalDataset
 from ...enums.clinical_classes import ClinicalClasses
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Tuple
+from resampy import resample
 import logging
 from scipy.io import loadmat
 import numpy as np
 import pandas as pd
 import glob
+from tqdm import tqdm
+
 
 DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d009_cavanagh2019c/data/"
 
 
-def _load_data_cavanagh2019c(subjects: Sequence[int], target_class: ClinicalClasses):
+def _load_data_cavanagh2019c(subjects: Sequence[int], target_class: ClinicalClasses, sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:
     all_subjects = [i for i in range(3001, 3092) if i != 3053 and i != 3055 and i != 3057]
     mat_raw = loadmat(DATA_PATH + "Scripts/BigAgg_Data.mat", simplify_cells=True)
     df_vars = pd.DataFrame()
@@ -33,7 +36,7 @@ def _load_data_cavanagh2019c(subjects: Sequence[int], target_class: ClinicalClas
 
     data = []
     labels = []
-    for subject in subjects:
+    for subject in tqdm(subjects, desc="Loading data from Cavanagh2019c"):
         subject_id = all_subjects[subject - 1]
         files = glob.glob(f"{DATA_PATH}{subject_id}_*_3AOB.mat")
         for file_path in files:
@@ -50,6 +53,8 @@ def _load_data_cavanagh2019c(subjects: Sequence[int], target_class: ClinicalClas
                 labels.append(df_vars.loc[df_vars['SubID'] == subject_id, 'FemaleEquals1'].values[0])
 
     labels = np.array(labels)
+    if resampling_frequency is not None:
+        data = [resample(d, sampling_frequency, resampling_frequency, axis=-1, filter='kaiser_best', parallel=True) for d in data]
     return data, labels
 
 
@@ -59,7 +64,7 @@ class MTBIOddballD009Dataset(BaseClinicalDataset):
         target_class: ClinicalClasses,
         subjects: Sequence[int],
         target_channels: Optional[Sequence[str]] = None,
-        target_frequency: Optional[int] = None,
+        target_frequency: Optional[int] = 200,
         preload: bool = True,
     ):
         # fmt: off
@@ -90,4 +95,7 @@ class MTBIOddballD009Dataset(BaseClinicalDataset):
 
     def load_data(self) -> None:
         
-        self.data, self.labels = self.cache.cache(_load_data_cavanagh2019c)(self.subjects, self.target_classes[0]) # type: ignore
+        self.data, self.labels = self.cache.cache(_load_data_cavanagh2019c)(self.subjects, self.target_classes[0], self._sampling_frequency, self._target_frequency) # type: ignore
+        if self._target_frequency is not None:
+            self._sampling_frequency = self._target_frequency
+            self.meta["sampling_frequency"] = self._sampling_frequency

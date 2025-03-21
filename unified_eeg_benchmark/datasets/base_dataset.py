@@ -7,6 +7,8 @@ from ..enums.paradigm import Paradigm
 from typing import Dict, Sequence, Tuple, Optional, Set, List
 import numpy as np
 from mne.io import BaseRaw
+from ...utils.config import get_config_value
+
 
 base_path = "/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/"
 ClassesType = Classes | ClinicalClasses
@@ -57,7 +59,7 @@ class BaseDataset(ABC):
         }
 
         # TODO make this more generic with a config file and parameters
-        self.cache = Memory(location=os.path.join(base_path, "cache"), verbose=0)
+        self.cache = Memory(location=get_config_value("cache"), verbose=0)
 
     @abstractmethod
     def load_data(self) -> None:

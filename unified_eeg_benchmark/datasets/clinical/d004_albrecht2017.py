@@ -1,16 +1,18 @@
 from .base_clinical_dataset import BaseClinicalDataset
 from ...enums.clinical_classes import ClinicalClasses
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Tuple
 import logging
 from scipy.io import loadmat
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
+from resampy import resample
 
 
 DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d004_albrecht2017/data/Cost Conflict in Schizophrenia/"
 
 
-def _load_data_albrecht2017(subjects: Sequence[int], target_class: ClinicalClasses):
+def _load_data_albrecht2017(subjects: Sequence[int], target_class: ClinicalClasses, sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:
     all_subjects = [i for i in range(101, 181) if i != 106 and i != 118 and i != 148 and i != 175]
     df_vars = pd.read_csv(DATA_PATH + 'DeID_Dems.csv')
     sz_ids = df_vars.loc[df_vars['group'] == 'SZ', ['subno']].values
@@ -23,7 +25,7 @@ def _load_data_albrecht2017(subjects: Sequence[int], target_class: ClinicalClass
 
     data = []
     labels = []
-    for subject in subjects:
+    for subject in tqdm(subjects, desc="Loading data from Albrecht2017"):
         subject_id = all_subjects[subject - 1]
         file_path = f"{DATA_PATH}CCunproc/CC_EEG_s{subject_id}_{'P' if subject_id < 149 else 'N'}.mat"
         mat = loadmat(file_path, simplify_cells=True)
@@ -40,6 +42,8 @@ def _load_data_albrecht2017(subjects: Sequence[int], target_class: ClinicalClass
             labels.append(df_vars.loc[df_vars['id']==subject_id, ['Sex']].values[0][0])
 
     labels = np.array(labels)
+    if resampling_frequency is not None:
+        data = [resample(d, sampling_frequency, resampling_frequency, axis=-1, filter='kaiser_best', parallel=True) for d in data]
     return data, labels
 
 
@@ -49,7 +53,7 @@ class SchizophreniaConflictD004Dataset(BaseClinicalDataset):
         target_class: ClinicalClasses,
         subjects: Sequence[int],
         target_channels: Optional[Sequence[str]] = None,
-        target_frequency: Optional[int] = None,
+        target_frequency: Optional[int] = 200,
         preload: bool = True,
     ):
         # fmt: off
@@ -80,5 +84,7 @@ class SchizophreniaConflictD004Dataset(BaseClinicalDataset):
 
     def load_data(self) -> None:
         
-        self.data, self.labels = self.cache.cache(_load_data_albrecht2017)(self.subjects, self.target_classes[0]) # type: ignore
-        print("data shape: ", self.data[0].shape)
+        self.data, self.labels = self.cache.cache(_load_data_albrecht2017)(self.subjects, self.target_classes[0], self._sampling_frequency, self._target_frequency) # type: ignore
+        if self._target_frequency is not None:
+            self._sampling_frequency = self._target_frequency
+            self.meta["sampling_frequency"] = self._sampling_frequency

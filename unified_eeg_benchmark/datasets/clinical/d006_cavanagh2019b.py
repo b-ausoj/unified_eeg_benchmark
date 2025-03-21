@@ -1,23 +1,25 @@
 from .base_clinical_dataset import BaseClinicalDataset
 from ...enums.clinical_classes import ClinicalClasses
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Tuple
+from resampy import resample
 import logging
 from scipy.io import loadmat
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 
 DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d006_cavanagh2019b/data/Depression PS Task/"
 
 
-def _load_data_cavanagh2019b(subjects: Sequence[int], target_class: ClinicalClasses):
+def _load_data_cavanagh2019b(subjects: Sequence[int], target_class: ClinicalClasses, sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:
     all_subjects = [str(i) for i in range(507, 629) if i != 544 and i != 599 and i != 600]
     df_vars = pd.read_excel(DATA_PATH + "Scripts from Manuscript/Data_4_Import.xlsx")
-    dep_ids = df_vars.loc[df_vars['BDI']>=13.0, ['id']].values
+    dep_ids = df_vars.loc[df_vars['BDI']>=7.0, ['id']].values
 
     data = []
     labels = []
-    for subject in subjects:
+    for subject in tqdm(subjects, desc="Loading data from Cavanagh2019b"):
         subject_id = all_subjects[subject - 1]
         file_path = f"{DATA_PATH}Data/{subject_id}.mat"
         mat = loadmat(file_path, simplify_cells=True)
@@ -33,6 +35,8 @@ def _load_data_cavanagh2019b(subjects: Sequence[int], target_class: ClinicalClas
             labels.append(df_vars.loc[df_vars['id']==int(subject_id), ['sex']].values[0][0])
 
     labels = np.array(labels)
+    if resampling_frequency is not None:
+        data = [resample(d, sampling_frequency, resampling_frequency, axis=-1, filter='kaiser_best', parallel=True) for d in data]
     return data, labels
 
 
@@ -42,7 +46,7 @@ class DepressionRLD006Dataset(BaseClinicalDataset):
         target_class: ClinicalClasses,
         subjects: Sequence[int],
         target_channels: Optional[Sequence[str]] = None,
-        target_frequency: Optional[int] = None,
+        target_frequency: Optional[int] = 200,
         preload: bool = True,
     ):
         # fmt: off
@@ -73,4 +77,8 @@ class DepressionRLD006Dataset(BaseClinicalDataset):
 
     def load_data(self) -> None:
         
-        self.data, self.labels = self.cache.cache(_load_data_cavanagh2019b)(self.subjects, self.target_classes[0])
+        self.data, self.labels = self.cache.cache(_load_data_cavanagh2019b)(self.subjects, self.target_classes[0], self._sampling_frequency, self._target_frequency) # type: ignore
+        if self._target_frequency is not None:
+            self._sampling_frequency = self._target_frequency
+            self.meta["sampling_frequency"] = self._sampling_frequency
+        

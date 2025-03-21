@@ -1,17 +1,20 @@
 from .base_clinical_dataset import BaseClinicalDataset
 from ...enums.clinical_classes import ClinicalClasses
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Tuple
 import logging
 from scipy.io import loadmat
+from mne.filter import filter_data, notch_filter
+from resampy import resample
 import numpy as np
 import pandas as pd
 import warnings
+from tqdm import tqdm
 
 
 DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d007_brown2020/data/PD RewP/"
 
 
-def _load_data_brown2020(subjects: Sequence[int], target_class: ClinicalClasses):
+def _load_data_brown2020(subjects: Sequence[int], target_class: ClinicalClasses, sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:
     with warnings.catch_warnings(record=True):
         warnings.simplefilter("ignore")
         df_vars = pd.read_excel(DATA_PATH + 'MEASURES.xlsx', sheet_name='Sheet1', header=None)
@@ -24,7 +27,7 @@ def _load_data_brown2020(subjects: Sequence[int], target_class: ClinicalClasses)
 
     data = []
     labels = []
-    for subject in subjects:
+    for subject in tqdm(subjects, desc="Loading data from Brown2020"):
         if subject <= 28:
             subject_id = pd_subjects[subject - 1]
             subj_int = int(subject_id)
@@ -58,6 +61,8 @@ def _load_data_brown2020(subjects: Sequence[int], target_class: ClinicalClasses)
                 labels.append("no_parkinsons")
             
     labels = np.array(labels)
+    if resampling_frequency is not None:
+        data = [resample(d, sampling_frequency, resampling_frequency, axis=-1, filter='kaiser_best', parallel=True) for d in data]
     return data, labels
 
 
@@ -67,7 +72,7 @@ class ParkinsonsRLTaskD007Dataset(BaseClinicalDataset):
         target_class: ClinicalClasses,
         subjects: Sequence[int],
         target_channels: Optional[Sequence[str]] = None,
-        target_frequency: Optional[int] = None,
+        target_frequency: Optional[int] = 200,
         preload: bool = True,
     ):
         # fmt: off
@@ -98,4 +103,7 @@ class ParkinsonsRLTaskD007Dataset(BaseClinicalDataset):
 
     def load_data(self) -> None:
         
-        self.data, self.labels = self.cache.cache(_load_data_brown2020)(self.subjects, self.target_classes[0]) # type: ignore
+        self.data, self.labels = self.cache.cache(_load_data_brown2020)(self.subjects, self.target_classes[0], self._sampling_frequency, self._target_frequency) # type: ignore
+        if self._target_frequency is not None:
+            self._sampling_frequency = self._target_frequency
+            self.meta["sampling_frequency"] = self._sampling_frequency

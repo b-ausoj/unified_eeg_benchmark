@@ -1,6 +1,7 @@
 from .base_clinical_dataset import BaseClinicalDataset
 from ...enums.clinical_classes import ClinicalClasses
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Tuple
+from resampy import resample
 import logging
 from scipy.io import loadmat
 import numpy as np
@@ -8,18 +9,20 @@ import pandas as pd
 import glob
 from mne.io import read_raw_brainvision
 import warnings
+from tqdm import tqdm
+
 
 DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d013_anjum2020/data/Data and Code/Dataset/IowaDataset/"
 
 
-def _load_data_anjum2020(subjects: Sequence[int], target_class: ClinicalClasses):
+def _load_data_anjum2020(subjects: Sequence[int], target_class: ClinicalClasses, sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:
     ctr_subjects = ["Control1021", "Control1041", "Control1061", "Control1081", "Control1101", "Control1111", "Control1191", "Control1201", "Control1211", "Control1231", "Control1291", "Control1351", "Control1381", "Control1411"]
     pd_subjects = ["PD1001", "PD1021", "PD1031", "PD1061", "PD1091", "PD1101", "PD1151", "PD1201", "PD1251", "PD1261", "PD1311", "PD1571", "PD1661", "PD1681"]
     df_vars = pd.read_excel(DATA_PATH + 'DataIowa.xlsx', sheet_name='ALL')
 
     data = []
     labels = []
-    for subject in subjects:
+    for subject in tqdm(subjects, desc="Loading data from Anjum2020"):
         if subject < len(ctr_subjects) + 1:
             subject_id = ctr_subjects[subject - 1]
             file_path = f"{DATA_PATH}Raw data/{subject_id}.vhdr"
@@ -27,7 +30,7 @@ def _load_data_anjum2020(subjects: Sequence[int], target_class: ClinicalClasses)
                 warnings.simplefilter("ignore", category=RuntimeWarning)
                 raw = read_raw_brainvision(file_path, preload=True)
             raw.pick(['eeg'])
-            data.append(raw.get_data()) # type: ignore
+            data.append(raw.get_data(units='uV')) # type: ignore
             if target_class == ClinicalClasses.PARKINSONS:
                 labels.append("no_parkinsons")
             elif target_class == ClinicalClasses.AGE:
@@ -41,15 +44,17 @@ def _load_data_anjum2020(subjects: Sequence[int], target_class: ClinicalClasses)
                 warnings.simplefilter("ignore", category=RuntimeWarning)
                 raw = read_raw_brainvision(file_path, preload=True)
             raw.pick(['eeg'])
-            data.append(raw.get_data()) # type: ignore
+            data.append(raw.get_data(units='uV')) # type: ignore
             if target_class == ClinicalClasses.PARKINSONS:
                 labels.append("parkinsons")
             elif target_class == ClinicalClasses.AGE:
                 labels.append(df_vars.loc[df_vars['Rest']==subject_id, ['Age']].values[0][0])
             elif target_class == ClinicalClasses.SEX:
                 labels.append(df_vars.loc[df_vars['Rest']==subject_id, ['Gender']].values[0][0])
-            
+    
     labels = np.array(labels)
+    if resampling_frequency is not None:
+        data = [resample(d, sampling_frequency, resampling_frequency, axis=-1, filter='kaiser_best', parallel=True) for d in data]
     return data, labels
 
 
@@ -59,7 +64,7 @@ class PDLPCRestD013Dataset(BaseClinicalDataset):
         target_class: ClinicalClasses,
         subjects: Sequence[int],
         target_channels: Optional[Sequence[str]] = None,
-        target_frequency: Optional[int] = None,
+        target_frequency: Optional[int] = 200,
         preload: bool = True,
     ):
         # fmt: off
@@ -90,4 +95,7 @@ class PDLPCRestD013Dataset(BaseClinicalDataset):
 
     def load_data(self) -> None:
         
-        self.data, self.labels = self.cache.cache(_load_data_anjum2020)(self.subjects, self.target_classes[0]) # type: ignore
+        self.data, self.labels = self.cache.cache(_load_data_anjum2020)(self.subjects, self.target_classes[0], self._sampling_frequency, self._target_frequency)
+        if self._target_frequency is not None:
+            self._sampling_frequency = self._target_frequency
+            self.meta["sampling_frequency"] = self._sampling_frequency

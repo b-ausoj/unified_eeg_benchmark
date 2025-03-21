@@ -1,15 +1,18 @@
 from .base_clinical_dataset import BaseClinicalDataset
 from ...enums.clinical_classes import ClinicalClasses
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Tuple
 import logging
 from scipy.io import loadmat
+from mne.filter import filter_data, notch_filter
+from resampy import resample
 import numpy as np
+from tqdm import tqdm
 
 
 DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d001_cavanagh2017a/data/"
 
 
-def _load_data_cavanagh2017a(subjects: Sequence[int]):
+def _load_data_cavanagh2017a(subjects: Sequence[int], sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:
     # subjects 1-25 have parkinsons, 26-53 don't have parkinsons
     # the ones with parkinsons have two recordings
     pd_subjects = ["804", "805", "806", "807", "808", "809", "810", "811", "813", "814", "815", "816", "817", "818", "819", "820", "821", "822", "823", "824", "825", "826", "827", "828", "829"]
@@ -17,14 +20,15 @@ def _load_data_cavanagh2017a(subjects: Sequence[int]):
 
     data = []
     labels = []
-    for subject in subjects:
+    for subject in tqdm(subjects, desc="Loading data from Cavanagh2017a"):
         if subject <= 25:
             subject_id = pd_subjects[subject - 1]
             
             if (subject_id != "810"):
                 file_name_1 = DATA_PATH + subject_id + "_1_PDDys_ODDBALL.mat"
                 mat_1 = loadmat(file_name_1, simplify_cells=True)
-                data.append(mat_1['EEG']['data'])
+                eeg_data = mat_1['EEG']['data']
+                data.append(eeg_data)
                 labels.append("parkinsons")
 
             file_name_2 = DATA_PATH + subject_id + "_2_PDDys_ODDBALL.mat"
@@ -39,7 +43,11 @@ def _load_data_cavanagh2017a(subjects: Sequence[int]):
             data.append(mat['EEG']['data'])
             labels.append("no_parkinsons")
 
+    data = [np.reshape(subject_data, (subject_data.shape[0], -1)) for subject_data in data]
     labels = np.array(labels)
+
+    if resampling_frequency is not None:
+        data = [resample(d, sampling_frequency, resampling_frequency, axis=-1, filter='kaiser_best', parallel=True) for d in data]
     return data, labels
 
 
@@ -54,7 +62,7 @@ class ParkinsonsOddballD001Dataset(BaseClinicalDataset):
         target_class: ClinicalClasses,
         subjects: Sequence[int],
         target_channels: Optional[Sequence[str]] = None,
-        target_frequency: Optional[int] = None,
+        target_frequency: Optional[int] = 200,
         preload: bool = True,
     ):
         # fmt: off
@@ -85,7 +93,7 @@ class ParkinsonsOddballD001Dataset(BaseClinicalDataset):
 
     def load_data(self) -> None:
         
-        self.data, self.labels = self.cache.cache(_load_data_cavanagh2017a)(self.subjects) # type: ignore
-        # have to reshape the data to (n_subjects, n_channels, n_timepoints) right now it is (n_subjects, n_channels, n_trials, n_timepoints)
-        self.data = [np.reshape(subject_data, (subject_data.shape[0], -1)) for subject_data in self.data]
-        #print("data shape: ", self.data[0].shape)
+        self.data, self.labels = self.cache.cache(_load_data_cavanagh2017a)(self.subjects, self._sampling_frequency ,self._target_frequency) # type: ignore
+        if self._target_frequency is not None:
+            self._sampling_frequency = self._target_frequency
+            self.meta["sampling_frequency"] = self._sampling_frequency

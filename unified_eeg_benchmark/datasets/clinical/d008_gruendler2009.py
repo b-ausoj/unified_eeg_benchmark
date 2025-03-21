@@ -1,17 +1,20 @@
 from .base_clinical_dataset import BaseClinicalDataset
 from ...enums.clinical_classes import ClinicalClasses
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Tuple
+from resampy import resample
 import logging
 from scipy.io import loadmat
 import numpy as np
 import pandas as pd
 from mne.io import read_raw_cnt
 import warnings
+from tqdm import tqdm
+
 
 DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d008_gruendler2009/data/OCI Flankers/"
 
 
-def _load_data_gruendler2009(subjects: Sequence[int], target_class: ClinicalClasses):
+def _load_data_gruendler2009(subjects: Sequence[int], target_class: ClinicalClasses, sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:
     all_subjects = [i for i in range(901, 961) if i != 902 and i != 910 and i != 913 and i != 918 and i != 920 and i != 923 and i != 928 and i != 942 and i != 943 and i != 944 and i != 947 and i != 949 and i != 951 and i != 954 and i != 955]
     df_vars = pd.read_excel(DATA_PATH + 'Info.xlsx', sheet_name='SELECT', skiprows=[47, 48, 49, 50])
     ocd_list = df_vars.loc[df_vars['OCI'] >= 21.0, ['ID']].values.flatten().astype(int)
@@ -20,7 +23,7 @@ def _load_data_gruendler2009(subjects: Sequence[int], target_class: ClinicalClas
 
     data = []
     labels = []
-    for subject in subjects:
+    for subject in tqdm(subjects, desc="Loading data from Gründler2009"):
         subject_id = all_subjects[subject - 1]
         file_path = f"{DATA_PATH}EEG Data/{subject_id}flankers{'' if subject_id < 945 else '_ready'}.cnt"
         targets_df = values_df.loc[values_df['ID'] == subject_id]
@@ -46,6 +49,8 @@ def _load_data_gruendler2009(subjects: Sequence[int], target_class: ClinicalClas
             labels.append(targets_df['Sex'].values[0])
 
     labels = np.array(labels)
+    if resampling_frequency is not None:
+        data = [resample(d, sampling_frequency, resampling_frequency, axis=-1, filter='kaiser_best', parallel=True) for d in data]
     return data, labels
 
 
@@ -55,7 +60,7 @@ class OCDFlankersD008Dataset(BaseClinicalDataset):
         target_class: ClinicalClasses,
         subjects: Sequence[int],
         target_channels: Optional[Sequence[str]] = None,
-        target_frequency: Optional[int] = None,
+        target_frequency: Optional[int] = 200,
         preload: bool = True,
     ):
         # fmt: off
@@ -86,5 +91,7 @@ class OCDFlankersD008Dataset(BaseClinicalDataset):
 
     def load_data(self) -> None:
         
-        self.data, self.labels = self.cache.cache(_load_data_gruendler2009)(self.subjects, self.target_classes[0]) # type: ignore
-        print("data shape: ", self.data[0].shape)
+        self.data, self.labels = self.cache.cache(_load_data_gruendler2009)(self.subjects, self.target_classes[0], self._sampling_frequency, self._target_frequency) # type: ignore
+        if self._target_frequency is not None:
+            self._sampling_frequency = self._target_frequency
+            self.meta["sampling_frequency"] = self._sampling_frequency

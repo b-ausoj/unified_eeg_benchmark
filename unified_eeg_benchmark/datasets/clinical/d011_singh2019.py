@@ -1,6 +1,7 @@
 from .base_clinical_dataset import BaseClinicalDataset
 from ...enums.clinical_classes import ClinicalClasses
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Tuple
+from resampy import resample
 import logging
 from scipy.io import loadmat
 import numpy as np
@@ -8,11 +9,13 @@ import pandas as pd
 import glob
 from mne.io import read_raw_brainvision
 import warnings
+from tqdm import tqdm
+
 
 DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d011_singh2019/data/PD Gait/"
 
 
-def _load_data_singh2019(subjects: Sequence[int], target_class: ClinicalClasses):
+def _load_data_singh2019(subjects: Sequence[int], target_class: ClinicalClasses, sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:
     ctr_subjects = [1129, 1139, 1149, 1159, 1169, 1179, 1199, 1209, 1229, 1239, 1249, 1359, 1369]
     pd_subjects = [1099, 1159, 1169, 1199, 1209, 1219, 1239, 1299, 1329, 1339, 1349, 1369, 1389, 1089, 1129, 1149, 1229, 1249, 1259, 1279, 1309, 1319, 1359, 1469, 1539, 1559]
     df_vars = pd.read_csv(DATA_PATH + 'ALL_data_Modeling.csv', sep='\t')
@@ -21,7 +24,7 @@ def _load_data_singh2019(subjects: Sequence[int], target_class: ClinicalClasses)
 
     data = []
     labels = []
-    for subject in subjects:
+    for subject in tqdm(subjects, desc="Loading data from Singh2019"):
         if subject < len(ctr_subjects) + 1:
             subject_id = ctr_subjects[subject - 1]
             file_path = f"{DATA_PATH}ALL_DATA/RAW_DATA/Control{subject_id}.vhdr"
@@ -47,6 +50,8 @@ def _load_data_singh2019(subjects: Sequence[int], target_class: ClinicalClasses)
             elif target_class == ClinicalClasses.AGE:
                 labels.append(df_vars.loc[df_vars['id_unique']==subject_id, ['Age']].values[0][0])
     labels = np.array(labels)
+    if resampling_frequency is not None:
+        data = [resample(d, sampling_frequency, resampling_frequency, axis=-1, filter='kaiser_best', parallel=True) for d in data]
     return data, labels
 
 
@@ -56,7 +61,7 @@ class PDGaitD011Dataset(BaseClinicalDataset):
         target_class: ClinicalClasses,
         subjects: Sequence[int],
         target_channels: Optional[Sequence[str]] = None,
-        target_frequency: Optional[int] = None,
+        target_frequency: Optional[int] = 200,
         preload: bool = True,
     ):
         # fmt: off
@@ -87,4 +92,7 @@ class PDGaitD011Dataset(BaseClinicalDataset):
 
     def load_data(self) -> None:
         
-        self.data, self.labels = self.cache.cache(_load_data_singh2019)(self.subjects, self.target_classes[0]) # type: ignore
+        self.data, self.labels = self.cache.cache(_load_data_singh2019)(self.subjects, self.target_classes[0], self._sampling_frequency, self._target_frequency) # type: ignore
+        if self._target_frequency is not None:
+            self._sampling_frequency = self._target_frequency
+            self.meta["sampling_frequency"] = self._sampling_frequency

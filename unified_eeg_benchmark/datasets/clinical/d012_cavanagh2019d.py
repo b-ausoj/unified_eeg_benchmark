@@ -1,23 +1,26 @@
 from .base_clinical_dataset import BaseClinicalDataset
 from ...enums.clinical_classes import ClinicalClasses
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Tuple
+from resampy import resample
 import logging
 from scipy.io import loadmat
 import numpy as np
 import pandas as pd
 import glob
+from tqdm import tqdm
+
 
 DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d012_cavanagh2019d/data/mTBI Rest/"
 
 
-def _load_data_cavanagh2019d(subjects: Sequence[int], target_class: ClinicalClasses):
+def _load_data_cavanagh2019d(subjects: Sequence[int], target_class: ClinicalClasses, sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:
     all_subjects = [i for i in range(3001, 3092) if i != 3053 and i != 3055 and i != 3057]
     df_vars = pd.read_excel(DATA_PATH + 'Quex.xlsx', sheet_name='S1', skiprows=0)
     mtbi_list = df_vars.loc[df_vars['ControlEquals1']!=1, ['SubID']].values.astype(int).flatten()
     
     data = []
     labels = []
-    for subject in subjects:
+    for subject in tqdm(subjects, desc="Loading data from Cavanagh2019d"):
         subject_id = all_subjects[subject - 1]
         files = glob.glob(f"{DATA_PATH}Data/{subject_id}_*_Rest.mat")
         for file_path in files:
@@ -34,6 +37,8 @@ def _load_data_cavanagh2019d(subjects: Sequence[int], target_class: ClinicalClas
                 labels.append(df_vars.loc[df_vars['SubID'] == subject_id, 'FemaleEquals1'].values[0])
 
     labels = np.array(labels)
+    if resampling_frequency is not None:
+        data = [resample(d, sampling_frequency, resampling_frequency, axis=-1, filter='kaiser_best', parallel=True) for d in data]
     return data, labels
 
 
@@ -43,7 +48,7 @@ class MTBIRestD012Dataset(BaseClinicalDataset):
         target_class: ClinicalClasses,
         subjects: Sequence[int],
         target_channels: Optional[Sequence[str]] = None,
-        target_frequency: Optional[int] = None,
+        target_frequency: Optional[int] = 200,
         preload: bool = True,
     ):
         # fmt: off
@@ -74,4 +79,7 @@ class MTBIRestD012Dataset(BaseClinicalDataset):
 
     def load_data(self) -> None:
         
-        self.data, self.labels = self.cache.cache(_load_data_cavanagh2019d)(self.subjects, self.target_classes[0]) # type: ignore
+        self.data, self.labels = self.cache.cache(_load_data_cavanagh2019d)(self.subjects, self.target_classes[0], self._sampling_frequency, self._target_frequency) # type: ignore
+        if self._target_frequency is not None:
+            self._sampling_frequency = self._target_frequency
+            self.meta["sampling_frequency"] = self._sampling_frequency
