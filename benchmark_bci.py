@@ -22,7 +22,7 @@ from models.bci import (
     TSLRModel,
 )
 from unified_eeg_benchmark.enums.classes import Classes
-from utils import print_classification_results, generate_classification_plots
+from .utils.evaluate_and_plot import print_classification_results, generate_classification_plots
 from typing import Sequence
 from tqdm import tqdm
 import logging
