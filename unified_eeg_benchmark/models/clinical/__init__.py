@@ -1,1 +1,5 @@
-from .brainfeatures_model import BrainfeaturesModel
+from .brainfeatures_lda_model import BrainfeaturesLDAModel
+from .brainfeatures_svm_model import BrainfeaturesSVMModel
+from .brainfeatures_rf_model import BrainfeaturesRFModel
+from .brainfeatures_dt_model import BrainfeaturesDTModel
+from .labram_model import LaBraMModel

@@ -1,5 +1,4 @@
-from brainfeatures.preprocessing.rules import (remove_start, remove_end,
-                                               take_part, resample, clip_values)
+from .rules import (remove_start, remove_end, take_part, resample, clip_values)
 
 
 default_preproc_params = {
