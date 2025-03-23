@@ -1,0 +1,25 @@
+
+======================== Task Overview ========================
+     Task: Left Hand vs Right Hand vs Feet vs Tongue MI     
+    Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
+BCICompIV2a           4032          1152 [1008, 1008, 1008, 1008]    [288, 288, 288, 288]
+------------------------- CSP-SVM -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Precision   Recall  F1 Score      AUC
+   Combined  0.408854           0.408854   0.549135 0.408854  0.372642 0.605903
+BCICompIV2a  0.408854           0.408854   0.549135 0.408854  0.372642 0.605903
+------------------------- CSP-LDA -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Precision   Recall  F1 Score      AUC
+   Combined  0.388021           0.388021    0.53699 0.388021   0.35333 0.592014
+BCICompIV2a  0.388021           0.388021    0.53699 0.388021   0.35333 0.592014
+------------------------- Covariances-CSP-LDA -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Precision   Recall  F1 Score      AUC
+   Combined  0.385417           0.385417   0.505874 0.385417  0.343027 0.590278
+BCICompIV2a  0.385417           0.385417   0.505874 0.385417  0.343027 0.590278
+------------------------- FgMDM -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Precision   Recall  F1 Score      AUC
+   Combined  0.377604           0.377604   0.493508 0.377604  0.333057 0.585069
+BCICompIV2a  0.377604           0.377604   0.493508 0.377604  0.333057 0.585069
+------------------------- TS+LR -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Precision  Recall  F1 Score     AUC
+   Combined   0.41059            0.41059   0.493832 0.41059   0.38567 0.60706
+BCICompIV2a   0.41059            0.41059   0.493832 0.41059   0.38567 0.60706
