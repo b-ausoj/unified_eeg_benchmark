@@ -59,6 +59,8 @@ class AbstractClinicalTask(ABC):
         ]
 
         X, y, meta = map(list, zip(*data))
+        for m in meta:
+            m['task_name'] = self.name
         return X, y, meta
 
     def __str__(self):

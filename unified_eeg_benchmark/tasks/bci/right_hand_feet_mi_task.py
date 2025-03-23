@@ -9,6 +9,7 @@ from ...datasets.bci import (
     Faller2012MDataset,
     Steyrl2016MDataset,
     Scherer2015MDataset,
+    Kaya2018Dataset,
 )
 from ...enums.classes import Classes
 from sklearn.metrics import f1_score
@@ -32,6 +33,7 @@ class RightHandvFeetMITask(AbstractBCITask):
                 Faller2012MDataset,
                 Scherer2015MDataset,
                 #Steyrl2016MDataset, # no channel names
+                Kaya2018Dataset,
             ],
             subjects_split={
                 Weibo2013MDataset: {
@@ -69,6 +71,10 @@ class RightHandvFeetMITask(AbstractBCITask):
                 Steyrl2016MDataset: {
                     Split.TRAIN: list(range(1, 11)),
                     Split.TEST: list(range(11, 15)),
+                },
+                Kaya2018Dataset: {
+                    Split.TRAIN: ["B", "C", "E", "F", "G", "H", "I", "J", "K"],
+                    Split.TEST: ["A", "L", "M"],
                 },
             },
         )

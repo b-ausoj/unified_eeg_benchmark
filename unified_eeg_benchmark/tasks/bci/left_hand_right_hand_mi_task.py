@@ -35,7 +35,7 @@ class LeftHandvRightHandMITask(AbstractBCITask):
                 Schalk2004MDataset,
                 Zhou2016MDataset,
                 Kaya2018Dataset,
-                Shin2017AMDataset,
+                #Shin2017AMDataset, # not same channels, did some remapping but still not good
             ],
             subjects_split={
                 BCICompIV2aMDataset: {
@@ -84,7 +84,7 @@ class LeftHandvRightHandMITask(AbstractBCITask):
                 },
                 Shin2017AMDataset: {
                     Split.TRAIN: list(range(1, 20)),
-                    Split.TEST: list(range(20, 19)),
+                    Split.TEST: list(range(20, 29)),
                 },
             },
         )

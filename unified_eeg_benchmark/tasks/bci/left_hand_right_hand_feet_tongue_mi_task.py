@@ -22,7 +22,7 @@ class LeftHandvRightHandvFeetvTongueMITask(AbstractBCITask):
             ],
             datasets=[
                 BCICompIV2aMDataset,
-                #Kaya2018Dataset,
+                Kaya2018Dataset,
             ],
             subjects_split={
                 BCICompIV2aMDataset: {
