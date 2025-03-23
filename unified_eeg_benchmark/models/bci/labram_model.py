@@ -32,6 +32,8 @@ from tqdm import tqdm
 import math
 from joblib import Memory
 from ...utils.config import get_config_value
+from datetime import datetime
+import matplotlib.pyplot as plt
 
 
 def seed_torch(seed=1029):
@@ -62,7 +64,7 @@ class LaBraMBCIModel(nn.Module):
     def __init__(self, num_classes):
         super().__init__()
         
-        checkpoint = torch.load("/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/models/LaBraM/checkpoints/labram-base.pth")
+        checkpoint = torch.load("/itet-stor/jbuerki/home/unified_eeg_benchmark/unified_eeg_benchmark/models/bci/LaBraM/checkpoints/labram-base.pth")
         new_checkpoint = {}
         for k,v in checkpoint['model'].items():
             if k.startswith('student.'):
@@ -227,31 +229,65 @@ class LaBraMModel(AbstractModel):
         train_loader_list = [torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, num_workers=0, shuffle=True) for train_dataset in dataset_train_list]
         valid_loader_list = [torch.utils.data.DataLoader(valid_dataset, batch_size=batch_size, num_workers=0, shuffle=False) for valid_dataset in dataset_val_list]
         
-        max_epochs = 10
+        max_epochs = 20
         steps_per_epoch = math.ceil(sum([len(train_loader) for train_loader in train_loader_list]))
         max_lr = 4e-4
         
         
         # Set up optimizer and OneCycleLR scheduler
-        optimizer = torch.optim.AdamW(list(self.model.head.parameters()) + list(self.model.feature.parameters()), lr=1e-5, weight_decay=0.01)
+        optimizer = torch.optim.AdamW(list(self.model.head.parameters()) + list(self.model.feature.parameters()), lr=6e-6, weight_decay=0.01)
         scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=max_lr, steps_per_epoch=steps_per_epoch, epochs=max_epochs, pct_start=0.2)
         
-        #best_val_loss = float('inf')
-        #best_model_state = None
-        
+
+        best_val_loss = float('inf')
+        best_model_state = None
+        train_losses = []
+        train_accuracies = []
+        val_losses = []
+        val_accuracies = []
+
         # Training loop
         for epoch in range(1, max_epochs + 1):
-            print(f"Epoch {epoch}/{max_epochs}")
+            print(f"Epoch {epoch}/{max_epochs} with LR: {scheduler.get_last_lr()}")
+
+            epoch_train_loss = 0
+            epoch_train_acc = 0
+            num_train_batches = 0
+            
             for train_loader, ch_names in zip(train_loader_list, ch_names_list_train):
                 input_chans = utils.get_input_chans(ch_names)
                 train_loss, train_acc = train_epoch(self.model, train_loader, optimizer, scheduler, self.device, input_chans)
+                epoch_train_loss += train_loss
+                epoch_train_acc += train_acc
+                num_train_batches += 1
                 print(f"  Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.4f}")
+
+            # Averaging over the training batches
+            avg_train_loss = epoch_train_loss / num_train_batches
+            avg_train_acc = epoch_train_acc / num_train_batches
+            
+            train_losses.append(avg_train_loss)
+            train_accuracies.append(avg_train_acc)
+            
+            epoch_val_loss = 0
+            epoch_val_acc = 0
+            num_val_batches = 0
             
             for valid_loader, ch_names in zip(valid_loader_list, ch_names_list_val):
                 input_chans = utils.get_input_chans(ch_names)
                 val_loss, val_acc, val_metrics = validate_epoch(self.model, valid_loader, self.device, input_chans)
+                epoch_val_loss += val_loss
+                epoch_val_acc += val_acc
+                num_val_batches += 1
                 print(f"  Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.4f}")
                 print("  Val Metrics:", val_metrics)
+            
+            # Averaging over the validation batches
+            avg_val_loss = epoch_val_loss / num_val_batches
+            avg_val_acc = epoch_val_acc / num_val_batches
+            
+            val_losses.append(avg_val_loss)
+            val_accuracies.append(avg_val_acc)
             
             # Optionally save the best model based on validation loss
             #if val_loss < best_val_loss:
@@ -261,6 +297,38 @@ class LaBraMModel(AbstractModel):
         # Load the best model (if saved)
         #if best_model_state is not None:
         #    self.model.load_state_dict(best_model_state)
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # Format the current date and time
+
+        # Create a filename using task_name and timestamp
+        filename = f"{task_name}_{timestamp}.png"
+
+        # Plotting Training and Validation Losses, Accuracies, and Learning Rate
+        plt.figure(figsize=(15, 5))
+
+        # Plotting Loss and Learning Rate
+        plt.subplot(1, 2, 1)
+        plt.plot(range(1, max_epochs + 1), train_losses, label='Train Loss')
+        plt.plot(range(1, max_epochs + 1), val_losses, label='Validation Loss')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.title('Loss vs Epochs')
+        plt.legend(loc='upper right')
+
+        # Plotting Accuracy
+        plt.subplot(1, 2, 2)
+        plt.plot(range(1, max_epochs + 1), train_accuracies, label='Train Accuracy')
+        plt.plot(range(1, max_epochs + 1), val_accuracies, label='Validation Accuracy')
+        plt.title('Accuracy vs Epochs')
+        plt.xlabel('Epochs')
+        plt.ylabel('Accuracy')
+        plt.legend()
+
+        # Adjust layout
+        plt.tight_layout()
+
+        # Save the plot to a file
+        plt.savefig(filename)
     
 
     @torch.no_grad()

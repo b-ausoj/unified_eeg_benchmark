@@ -43,7 +43,10 @@ def make_dataset(data: np.ndarray, labels: np.ndarray|None, task_name: str, samp
     """
     print("\ndata shape: ", data.shape)
     if len(data) == 0:
-        return LaBraMBCIDataset(data, labels, sampling_rate, ch_names)
+        if train:
+            return LaBraMBCIDataset(data, labels, sampling_rate, ch_names), LaBraMBCIDataset(data, labels, sampling_rate, ch_names)
+        else:
+            return LaBraMBCIDataset(data, labels, sampling_rate, ch_names)
     # filter out the channels that are not in the target_channels
     if target_channels is not None:
         ch_names = [ch.upper() for ch in ch_names]

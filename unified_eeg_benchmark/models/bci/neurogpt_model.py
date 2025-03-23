@@ -115,7 +115,7 @@ def get_args() -> argparse.ArgumentParser:
     parser.add_argument(
         '--dst-data-path',
         metavar='DIR',
-        default="./models/NeuroGPT/bci2a_eeg_npz/",
+        default="/itet-stor/jbuerki/home/unified_eeg_benchmark/unified_eeg_benchmark/models/bci/NeuroGPT/bci2a_eeg_npz/",
         type=str,
         help='path to training data directory '
              '(default: data/upstream)'
@@ -133,7 +133,7 @@ def get_args() -> argparse.ArgumentParser:
         '--pretrained-model',
         metavar='DIR',
         type=str,
-        default='./models/NeuroGPT/pretrained_model/pytorch_model.bin',
+        default='/itet-stor/jbuerki/home/unified_eeg_benchmark/unified_eeg_benchmark/models/bci/NeuroGPT/pretrained_model/pytorch_model.bin',
         help='checkpoint used to initialize model weights '
              '(default: none)'
     )
@@ -876,7 +876,7 @@ class NeuroGPTModel(AbstractModel):
             run_name=self.config["run_name"],
             output_dir=self.config["log_dir"],
             train_dataset=train_dataset,
-            validation_dataset=validation_dataset,
+            validation_dataset=train_dataset,
             per_device_train_batch_size=self.config["per_device_training_batch_size"],
             per_device_eval_batch_size=self.config["per_device_validation_batch_size"],
             dataloader_num_workers=self.config["num_workers"],
@@ -920,7 +920,7 @@ class NeuroGPTModel(AbstractModel):
 
         if self.test_dataset is not None:
             test_prediction = self.trainer.predict(self.test_dataset)
-            print(test_prediction)
+            #print(test_prediction)
             pd.DataFrame(
                 test_prediction.metrics,
                 index=[0]
@@ -960,7 +960,7 @@ class NeuroGPTModel(AbstractModel):
             pred = test_prediction.label_ids
 
         pred = self.test_dataset.decode_predictions(pred)
-        print(pred)
-        print(pred.shape)
+        #print(pred)
+        #print(pred.shape)
         return pred
         

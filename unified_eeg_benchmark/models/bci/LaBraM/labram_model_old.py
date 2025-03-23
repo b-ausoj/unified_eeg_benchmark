@@ -114,7 +114,7 @@ def get_args():
                         help='Do not random erase first (clean) augmentation split')
 
     # * Finetuning params
-    parser.add_argument('--finetune', default='/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/models/LaBraM/checkpoints/labram-base.pth',
+    parser.add_argument('--finetune', default='/itet-stor/jbuerki/home/unified_eeg_benchmark/models/LaBraM/checkpoints/labram-base.pth',
                         help='finetune from checkpoint')
     parser.add_argument('--model_key', default='model|module', type=str)
     parser.add_argument('--model_prefix', default='', type=str)
@@ -129,9 +129,9 @@ def get_args():
     parser.add_argument('--nb_classes', default=4, type=int,
                         help='number of the classification types')
 
-    parser.add_argument('--output_dir', default='/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/models/LaBraM/checkpoints/finetune_tuab_base/',
+    parser.add_argument('--output_dir', default='/itet-stor/jbuerki/home/unified_eeg_benchmark/models/LaBraM/checkpoints/finetune_tuab_base/',
                         help='path where to save, empty for no saving')
-    parser.add_argument('--log_dir', default='/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/log/finetune_tuab_base',
+    parser.add_argument('--log_dir', default='/itet-stor/jbuerki/home/unified_eeg_benchmark/log/finetune_tuab_base',
                         help='path where to tensorboard log')
     parser.add_argument('--device', default='cuda',
                         help='device to use for training / testing')

@@ -36,7 +36,7 @@ class BENDRBCIModel(nn.Module):
     def __init__(self, num_classes):
         super().__init__()
         encoder = ConvEncoderBENDR(20, encoder_h=512, dropout=0., projection_head=False)
-        encoder.load("/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/models/BENDR/checkpoints/encoder.pt")
+        encoder.load("/itet-stor/jbuerki/home/unified_eeg_benchmark/unified_eeg_benchmark/models/bci/BENDR/checkpoints/encoder.pt")
 
         self.model = encoder
         self.scale_param    = torch.nn.Parameter(torch.tensor(1.))

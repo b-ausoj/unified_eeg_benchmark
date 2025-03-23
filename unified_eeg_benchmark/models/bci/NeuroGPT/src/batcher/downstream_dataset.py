@@ -5,6 +5,7 @@ from .base import EEGDataset
 from scipy.io import loadmat
 from scipy.signal import butter, filtfilt
 from resampy import resample
+from tqdm import tqdm
 
 
 class BCIDataset(EEGDataset):
@@ -12,7 +13,7 @@ class BCIDataset(EEGDataset):
         super().__init__([], sample_keys, chunk_len, num_chunks, ovlp, root_path=root_path, gpt_only=gpt_only)
 
         self.Fs = 250  # 250Hz from original paper
-        self.P = np.load("./models/NeuroGPT/inputs/tMatrix_value.npy")
+        self.P = np.load("/itet-stor/jbuerki/home/unified_eeg_benchmark/unified_eeg_benchmark/models/bci/NeuroGPT/inputs/tMatrix_value.npy")
 
         self.channels = ["Fz", "FC3", "FC1", "FCz", "FC2", "FC4", "C5", "C3", "C1", "Cz", "C2", "C4", "C6", "CP3", "CP1", "CPz", "CP2", "CP4", "P1", "Pz", "P2", "POz"]
         
@@ -32,12 +33,12 @@ class BCIDataset(EEGDataset):
         if labels is None:
             self.labels = None
         else:
-            self.labels = np.concatenate([self.encode_labels(l) for l in labels], axis=0)
+            self.labels = np.concatenate([self.encode_labels(l) for l in labels if len(l) > 0], axis=0)
                 
         # print(len(trials)) # 1
         # print(trials[0].shape) (256, 22, 1001)
         #self.trials = trials[0][:, :, :1000]
-        self.trials = np.concatenate([self.preprocess_trials(trial, m) for trial, m in zip(trials, meta)], axis=0)
+        self.trials = np.concatenate([self.preprocess_trials(trial, m) for trial, m in tqdm(zip(trials, meta), total=len(trials)) if len(trial) > 0], axis=0)
         self.num_trials_per_sub = [len(trial) for trial in trials]
         print(self.trials.shape) # (x, 22, 100)
 
@@ -52,7 +53,7 @@ class BCIDataset(EEGDataset):
 
     def preprocess_trials(self, trial, meta):
         # reorder channels and select subset
-        print(trial.shape) # (256, 22, 1001)
+        #print(trial.shape) # (256, 22, 1001)
         chs = meta["channel_names"]
         required_channels = self.channels
         channel_indices = []
@@ -63,7 +64,7 @@ class BCIDataset(EEGDataset):
                 channel_indices.append(None)
 
         trial_data = []
-        print(channel_indices.count(None)) # 0
+        #print(channel_indices.count(None)) # 0
         for idx, ch in zip(channel_indices, required_channels):
             if idx is not None:
                 trial_data.append(trial[:, idx, :])  # Select the data for that channel
@@ -71,7 +72,7 @@ class BCIDataset(EEGDataset):
                 trial_data.append(np.zeros((trial.shape[0], trial.shape[2])))  # Shape (n_samples, n_timepoints)
 
         trial = np.array(trial_data).transpose(1, 0, 2)  # Shape (n_samples, n_channels, n_timepoints)
-        print(trial.shape) # (22, 256, 1001)    
+        #print(trial.shape) # (22, 256, 1001)    
         
         #trial = trial[:, [chs.index(ch) for ch in self.channels], :]
 
@@ -117,7 +118,7 @@ class MotorImageryDataset(EEGDataset):
         self.task_name = task_name
 
         self.Fs = 250  # 250Hz from original paper
-        self.P = np.load("./models/NeuroGPT/inputs/tMatrix_value.npy")
+        self.P = np.load("/itet-stor/jbuerki/home/unified_eeg_benchmark/unified_eeg_benchmark/models/bci/NeuroGPT/inputs/tMatrix_value.npy")
 
         self.trials, self.labels, self.num_trials_per_sub = self.get_trials_all()
 
