@@ -41,12 +41,12 @@ class RightHandvFeetMITask(AbstractBCITask):
                     Split.TEST: [9, 10],
                 },
                 Schirrmeister2017MDataset: {
-                    Split.TRAIN: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-                    Split.TEST: [12, 13, 14],
+                    Split.TRAIN: list(range(1, 12)),
+                    Split.TEST: list(range(12, 15)),
                 },
                 Schalk2004MDataset: {
-                    Split.TRAIN: list(range(1, 10)),
-                    Split.TEST: list(range(10, 15)),
+                    Split.TRAIN: list(range(1, 88)),
+                    Split.TEST: list(range(89, 92)) + list(range(93, 100)) + list(range(101, 110)),
                 },
                 BCICompIV2aMDataset: {
                     Split.TRAIN: [1, 2, 3, 4, 5, 6, 7],
@@ -57,8 +57,8 @@ class RightHandvFeetMITask(AbstractBCITask):
                     Split.TEST: [7, 8],
                 },
                 Zhou2016MDataset: {
-                    Split.TRAIN: list(range(1, 4)),
-                    Split.TEST: list(range(4, 5)),
+                    Split.TRAIN: [],
+                    Split.TEST: list(range(1, 5)),
                 },
                 Faller2012MDataset: {
                     Split.TRAIN: list(range(1, 10)),

@@ -49,7 +49,7 @@ def _load_data_kaya2018(task: str, subjects: Sequence[str]):
     neu = "neu20001"
     if task == "leftright":
         print("Loading left vs right hand data...")
-        paradigms = ["CLA", "HaLT"] # 
+        paradigms = ["CLA"] # 
         relevant_events = [1, 2]
         translate = translate_CLA_HaLT_Event
     elif task == "rightfeet":
@@ -132,7 +132,7 @@ class Kaya2018Dataset(BaseBCIDataset):
     - data is a np.ndarray of shape (n_trials, n_channels, n_timepoints)
     - labels is a np.ndarray of shape (n_trials,)
     - doi: https://doi.org/10.6084/m9.figshare.c.3917698.v1
-    - subjects: total 13 
+    - subjects: 13 
     - 5F (8): A, B, C, E, F, G, H, I
     - CLA (7): A, B, C, D, E, F, J
     - HaLT (12): A, B, C, E, F, G, H, I, J, K, L, M

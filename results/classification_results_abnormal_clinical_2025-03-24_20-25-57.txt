@@ -1,0 +1,9 @@
+
+======================== Task Overview ========================
+                  Task: abnormal_clinical                   
+      Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
+TUEG Abnormal            499            49               [241, 258]                [21, 28]
+------------------------- Brainfeatures-LDA -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Precision   Recall  F1 Score      AUC
+     Combined  0.755102           0.761905   0.767619 0.755102  0.756331 0.761905
+TUEG Abnormal  0.755102           0.761905   0.767619 0.755102  0.756331 0.761905

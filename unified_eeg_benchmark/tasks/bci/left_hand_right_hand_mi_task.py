@@ -71,8 +71,8 @@ class LeftHandvRightHandMITask(AbstractBCITask):
                     Split.TEST: list(range(12, 15)),
                 },
                 Schalk2004MDataset: {
-                    Split.TRAIN: list(range(1, 70)),
-                    Split.TEST: list(range(70, 85)),
+                    Split.TRAIN: list(range(1, 88)),
+                    Split.TEST: list(range(89, 92)) + list(range(93, 100)) + list(range(101, 110)),
                 },
                 Zhou2016MDataset: {
                     Split.TRAIN: [],

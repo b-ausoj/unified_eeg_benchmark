@@ -88,3 +88,4 @@ class Schalk2004MDataset(BaseBCIDataset):
         self.data, self.labels, _ = self.cache.cache(_load_data_schalk2004)(
             paradigm, Schalk2004, self.subjects
         )  # type: ignore
+        

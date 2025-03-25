@@ -1,0 +1,13 @@
+
+======================== Task Overview ========================
+                  Task: epilepsy_clinical                   
+      Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
+TUEG Epilepsy            150            50                 [75, 75]                [25, 25]
+------------------------- Brainfeatures-LDA -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Precision  Recall  F1 Score  AUC
+     Combined      0.58               0.58   0.586806    0.58  0.571603 0.58
+TUEG Epilepsy      0.58               0.58   0.586806    0.58  0.571603 0.58
+------------------------- BENDR Model -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Precision  Recall  F1 Score  AUC
+     Combined      0.46               0.46   0.458333    0.46  0.454545 0.46
+TUEG Epilepsy      0.46               0.46   0.458333    0.46  0.454545 0.46

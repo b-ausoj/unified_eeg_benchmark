@@ -2,5 +2,18 @@
     "cache": "/scratch/jbuerki/cache/",
     "data": "/scratch/jbuerki/data/",
     "log": "/scratch/jbuerki/log/",
-    "tmp": "/scratch/jbuerki/tmp/"
+    "tmp": "/scratch/jbuerki/tmp/",
+    "d014": "/itet-stor/jbuerki/deepeye_storage/foundation_clinical/CLI_UNM_D014/",
+    "d013": "/itet-stor/jbuerki/deepeye_storage/foundation_clinical/CLI_UNM_D013/",
+    "d012": "/itet-stor/jbuerki/deepeye_storage/foundation_clinical/CLI_UNM_D012/",
+    "d011": "/itet-stor/jbuerki/deepeye_storage/foundation_clinical/CLI_UNM_D011/",
+    "d009": "/itet-stor/jbuerki/deepeye_storage/foundation_clinical/CLI_UNM_D009/",
+    "d008": "/itet-stor/jbuerki/deepeye_storage/foundation_clinical/CLI_UNM_D008/",
+    "d007": "/itet-stor/jbuerki/deepeye_storage/foundation_clinical/CLI_UNM_D007/",
+    "d006": "/itet-stor/jbuerki/deepeye_storage/foundation_clinical/CLI_UNM_D006/",
+    "d005": "/itet-stor/jbuerki/deepeye_storage/foundation_clinical/CLI_UNM_D005/",
+    "d004": "/itet-stor/jbuerki/deepeye_storage/foundation_clinical/CLI_UNM_D004/",
+    "d003": "/itet-stor/jbuerki/deepeye_storage/foundation_clinical/CLI_UNM_D003/",
+    "d002": "/itet-stor/jbuerki/deepeye_storage/foundation_clinical/CLI_UNM_D002/",
+    "d001": "/itet-stor/jbuerki/deepeye_storage/foundation_clinical/CLI_UNM_D001/"
 }

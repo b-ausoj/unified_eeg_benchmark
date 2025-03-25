@@ -10,6 +10,7 @@ from moabb.paradigms import MotorImagery
 import moabb.datasets.base as base
 from moabb.paradigms.base import BaseParadigm
 import logging
+import numpy as np
 
 moabb.set_log_level("info")
 warnings.filterwarnings("ignore")

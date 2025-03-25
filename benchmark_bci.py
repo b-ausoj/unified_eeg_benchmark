@@ -10,8 +10,8 @@ from unified_eeg_benchmark.tasks.bci import (
     PronationvSupinationMITask,
     HandOpenvCloseMITask,
 )   
-from models.abstract_model import AbstractModel
-from models.bci import (
+from unified_eeg_benchmark.models.abstract_model import AbstractModel
+from unified_eeg_benchmark.models.bci import (
     BENDRModel,
     CSPSVMModel,
     CSPLDAModel,
@@ -22,7 +22,7 @@ from models.bci import (
     TSLRModel,
 )
 from unified_eeg_benchmark.enums.classes import Classes
-from .utils.evaluate_and_plot import print_classification_results, generate_classification_plots
+from unified_eeg_benchmark.utils.evaluate_and_plot import print_classification_results, generate_classification_plots
 from typing import Sequence
 from tqdm import tqdm
 import logging
@@ -98,22 +98,22 @@ def benchmark(tasks: Sequence[AbstractBCITask], models: Sequence[AbstractModel])
 
 if __name__ == "__main__":
     tasks = [
-        LeftHandvRightHandMITask(),
+        #LeftHandvRightHandMITask(),
         #RightHandvFeetMITask(),
-        #LeftHandvRightHandvFeetvTongueMITask(),
+        LeftHandvRightHandvFeetvTongueMITask(),
         #FleExtSupProCloOpnMITask(),
         #FlexionvExtensionMITask(),
         #HandOpenvCloseMITask(),
         #PronationvSupinationMITask(),
     ]
     models = [
-        #CSPSVMModel(),
-        #CSPLDAModel(),
-        #CSPriemannLDAModel(),
-        #FgMDMModel(),
-        #TSLRModel(),
-        #LaBraMModel(),
-        #NeuroGPTModel(),
+        CSPSVMModel(),
+        CSPLDAModel(),
+        CSPriemannLDAModel(),
+        FgMDMModel(),
+        TSLRModel(),
+        LaBraMModel(),
+        NeuroGPTModel(),
         BENDRModel(),
     ]
     benchmark(tasks, models)

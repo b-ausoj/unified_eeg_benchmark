@@ -17,7 +17,10 @@ def one_hot_encode(y):
         y_reshaped = np.array(y).reshape(-1, 1)
         return encoder.fit_transform(y_reshaped)
 
-def print_classification_results(y_train, y_test, model_names, y_preds, dataset_names, task_name):
+from datetime import datetime
+
+def print_classification_results(
+        y_train, y_test, model_names, y_preds, dataset_names, task_name, save_to_file=False):
     # Assuming y_train and y_test are lists of numpy arrays
 
     # Gather basic statistics
@@ -45,11 +48,11 @@ def print_classification_results(y_train, y_test, model_names, y_preds, dataset_
     }
     task_table = pd.DataFrame(task_data)
 
-    # Display the task overview
-    print("\n" + "=" * 24 + " Task Overview " + "=" * 24 + "\n")
-    print(f"{'Task: ' + task_name:^60}\n")
-    print(task_table.to_string(index=False))
-    print()
+    output = ""
+    output += "\n" + "=" * 24 + " Task Overview " + "=" * 24 + "\n"
+    output += f"{'Task: ' + task_name:^60}\n"
+    output += task_table.to_string(index=False)
+    output += "\n"
 
     # Function to calculate metrics
     def calculate_metrics(y_true, y_pred):
@@ -71,7 +74,7 @@ def print_classification_results(y_train, y_test, model_names, y_preds, dataset_
 
     # Iterate over models and create tables
     for model_name, y_pred in zip(model_names, y_preds):
-        print("-" * 25 + f" {model_name} " + "-" * 25)
+        output += "-" * 25 + f" {model_name} " + "-" * 25 + "\n"
 
         # Overall metrics
         combined_y_test = np.concatenate(y_test)
@@ -95,9 +98,20 @@ def print_classification_results(y_train, y_test, model_names, y_preds, dataset_
             columns=["Dataset", "Accuracy", "Balanced Accuracy", "Precision", "Recall", "F1 Score", "AUC"],
         )
 
-        # Display the table
-        print(metrics_table.to_string(index=False))
-        print()
+        # Append table to output
+        output += metrics_table.to_string(index=False)
+        output += "\n"
+
+    # Print the results to the console
+    print(output)
+
+    # Save results to a file if specified
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    filename = f"results/classification_results_{task_name}_{timestamp}.txt"
+    with open(filename, 'w') as f:
+        f.write(output)
+    print(f"Results saved to {filename}")
+
 
 def save_class_distribution_plots(dataset_names, train_distribution, test_distribution, output_dir="plots"):
     os.makedirs(output_dir, exist_ok=True)

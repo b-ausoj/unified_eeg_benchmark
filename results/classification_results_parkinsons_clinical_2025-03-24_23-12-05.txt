@@ -1,0 +1,19 @@
+
+======================== Task Overview ========================
+                 Task: parkinsons_clinical                  
+             Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
+       Cavanagh2017a             37            39                 [14, 23]                [13, 26]
+       Cavanagh2017b             28            28                 [14, 14]                [14, 14]
+           Singh2018             28            28                 [14, 14]                [14, 14]
+           Brown2020             42            42                 [14, 28]                [14, 28]
+D011Singh2019Dataset             31             8                 [10, 21]                  [3, 5]
+           Anjum2020             22             6                 [11, 11]                  [3, 3]
+------------------------- BENDR Model -------------------------
+             Dataset  Accuracy  Balanced Accuracy  Precision   Recall  F1 Score      AUC
+            Combined  0.582781           0.523224   0.550990 0.582781  0.537752 0.523224
+       Cavanagh2017a  0.641026           0.557692   0.614815 0.641026  0.621212 0.557692
+       Cavanagh2017b  0.535714           0.535714   0.759259 0.535714  0.408130 0.535714
+           Singh2018  0.500000           0.500000   0.250000 0.500000  0.333333 0.500000
+           Brown2020  0.595238           0.535714   0.587975 0.595238  0.591293 0.535714
+D011Singh2019Dataset  0.750000           0.733333   0.750000 0.750000  0.750000 0.733333
+           Anjum2020  0.500000           0.500000   0.500000 0.500000  0.485714 0.500000
