@@ -49,7 +49,7 @@ def _load_data_kaya2018(task: str, subjects: Sequence[str]):
     neu = "neu20001"
     if task == "leftright":
         print("Loading left vs right hand data...")
-        paradigms = ["CLA"] # 
+        paradigms = ["CLA"] 
         relevant_events = [1, 2]
         translate = translate_CLA_HaLT_Event
     elif task == "rightfeet":
@@ -192,9 +192,11 @@ class Kaya2018Dataset(BaseBCIDataset):
         elif set(self.target_classes) == set(
             [Classes.LEFT_HAND_MI, Classes.RIGHT_HAND_MI]
         ):
-            task = "leftright" # TODO add the ones from HaLT
+            task = "leftright"
         elif set(self.target_classes) == set([Classes.RIGHT_HAND_MI, Classes.FEET_MI]):
-            task = "rightfeet" # TODO adjust code to remove left and tongue
+            task = "rightfeet"
+        elif set(self.target_classes) == set([Classes.FIVE_FINGERS_MI]):
+            task = "5F"
         else:
             raise ValueError("Invalid target classes")
 
