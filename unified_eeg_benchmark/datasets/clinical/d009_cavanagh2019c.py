@@ -1,5 +1,6 @@
 from .base_clinical_dataset import BaseClinicalDataset
 from ...enums.clinical_classes import ClinicalClasses
+from ...enums.split import Split
 from typing import Optional, Sequence, Tuple
 from resampy import resample
 import logging
@@ -8,16 +9,27 @@ import numpy as np
 import pandas as pd
 import glob
 from tqdm import tqdm
+from ...utils.config import get_config_value
+import os
 
 
+#DATA_PATH = os.path.join(get_config_value("d009"), "data/")
 DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d009_cavanagh2019c/data/"
 
 
-def _load_data_cavanagh2019c(subjects: Sequence[int], target_class: ClinicalClasses, sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:
+def _load_data_cavanagh2019c(split: Split, subjects: Sequence[int], target_class: ClinicalClasses, sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:
     all_subjects = [i for i in range(3001, 3092) if i != 3053 and i != 3055 and i != 3057]
     mat_raw = loadmat(DATA_PATH + "Scripts/BigAgg_Data.mat", simplify_cells=True)
     df_vars = pd.DataFrame()
     df_vars_q = pd.DataFrame()
+
+    train_subjects = ['3001', '3002', '3003', '3004', '3005', '3007', '3009', '3010', '3013', '3062', '3014', '3015', '3016', '3018', '3019', '3020', '3021', '3023', '3024', '3025', '3026', '3027', '3028', '3029', '3030', '3032', '3033', '3034', '3035', '3036', '3037', '3038', '3039', '3041', '3043', '3044', '3045', '3046', '3047', '3049', '3050', '3051', '3052', '3054', '3056', '3058', '3060', '3068', '3070', '3072', '3076', '3078', '3082', '3084', '3086', '3088', '3090', '3092']
+    test_subjects = ['3006', '3008', '3011', '3012', '3017', '3031', '3040', '3042', '3048', '3074', '3080', '3064', '3066']
+
+    if split == Split.TRAIN:
+        subjects = train_subjects
+    elif split == Split.TEST:
+        subjects = test_subjects
 
     df_vars['SubID'] = mat_raw['DEMO']['ID'][:, 0]
     df_vars['ControlEquals1'] = mat_raw['DEMO']['Group_CTL1'][:, 0]
@@ -37,11 +49,13 @@ def _load_data_cavanagh2019c(subjects: Sequence[int], target_class: ClinicalClas
     data = []
     labels = []
     for subject in tqdm(subjects, desc="Loading data from Cavanagh2019c"):
-        subject_id = all_subjects[subject - 1]
+        subject_id = int(subject)
         files = glob.glob(f"{DATA_PATH}{subject_id}_*_3AOB.mat")
         for file_path in files:
             mat = loadmat(file_path, simplify_cells=True)
-            data.append(mat["EEG"]["data"].reshape(60, -1))
+            signals = mat["EEG"]["data"]
+            signals = signals.reshape(60, -1)
+            data.append(signals)
             if target_class == ClinicalClasses.MTBI:
                 labels.append(subject_id in mtbi_list)
             elif target_class == ClinicalClasses.BDI:
@@ -64,8 +78,8 @@ class MTBIOddballD009Dataset(BaseClinicalDataset):
         target_class: ClinicalClasses,
         subjects: Sequence[int],
         target_channels: Optional[Sequence[str]] = None,
-        target_frequency: Optional[int] = 200,
-        preload: bool = True,
+        target_frequency: Optional[int] = 250,
+        preload: bool = False,
     ):
         # fmt: off
         super().__init__(
@@ -88,14 +102,36 @@ class MTBIOddballD009Dataset(BaseClinicalDataset):
         }
 
         if preload:
-            self.load_data()
+            self.load_data(split=Split.TRAIN)
 
     def _download(self, subject: int):
         pass
 
-    def load_data(self) -> None:
+    def load_data(self, split) -> None:
         
-        self.data, self.labels = self.cache.cache(_load_data_cavanagh2019c)(self.subjects, self.target_classes[0], self._sampling_frequency, self._target_frequency) # type: ignore
+        self.data, self.labels = self.cache.cache(_load_data_cavanagh2019c)(split, self.subjects, self.target_classes[0], self._sampling_frequency, self._target_frequency) # type: ignore
         if self._target_frequency is not None:
             self._sampling_frequency = self._target_frequency
             self.meta["sampling_frequency"] = self._sampling_frequency
+        """
+        print("data shape ", self.data[0].shape)
+        print(f"Data range: min={np.min(self.data[0])}, max={np.max(self.data[0])}")
+        import matplotlib.pyplot as plt
+
+        plt.figure(figsize=(10, 6))
+        self.data = [np.clip(d, -1000, 1000) for d in self.data]
+        data_to_plot =  self.data #[self.data[i] for i in [1,11,21]] 
+        plt.hist([d.flatten() for d in data_to_plot], bins=100, alpha=0.75, label=[f'Subject {i+1}' for i in range(len(data_to_plot))])
+        plt.yscale('log')
+        plt.xlabel('EEG Signal Value (uV)')
+        plt.ylabel('Frequency')
+        plt.title('Distribution of EEG Signal Values')
+        plt.legend(loc='upper right')
+        plt.grid(True)
+        plt.savefig('eeg_signal_distribution_d009.png')
+        plt.close()
+        """
+
+    def get_data(self, split: Split):
+        self.load_data(split)
+        return self.data, self.labels, self.meta

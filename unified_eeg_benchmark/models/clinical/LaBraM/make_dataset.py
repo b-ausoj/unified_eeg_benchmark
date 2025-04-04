@@ -44,7 +44,6 @@ def make_dataset(data: List[np.ndarray], labels: np.ndarray|None, task_name: str
     l_freq: int, low cut-off frequency
     h_freq: int, high cut-off frequency
     """
-    print("\ndata len: ", len(data))
     if len(data) == 0:
         return LaBraMClinicalDataset(data, labels, sampling_rate, ch_names)
     # filter out the channels that are not in the target_channels
@@ -58,6 +57,8 @@ def make_dataset(data: List[np.ndarray], labels: np.ndarray|None, task_name: str
         target_channels = list(set([ch.upper() for ch in standard_1020]).intersection(set(ch_names)))
         data = [d[[ch_names.index(ch) for ch in target_channels], :] for d in data]
 
+    # cut to max 5 minutes and remove first 30 seconds
+    data = [d[:, 30*sampling_rate:int(5.5*60*sampling_rate)] for d in data]
     # set to real floating (not float32)
     data = [d.astype(np.float64) for d in data]
     # bandpass filter
@@ -137,7 +138,7 @@ def make_dataset_abnormal(data: List[BaseRaw], labels: List[str]|None, task_name
         labels = np.eye(len(label_mapping))[labels]
         print("labels shape: ", labels.shape)
         
-    if val_per > 0 and train:
+    if val_per > 0 and train and False:
         processed_signals_train, processed_signals_val, labels_train, labels_val = train_test_split(processed_signals, labels, test_size=val_per, random_state=42)
         train_dataset = LaBraMClinicalDataset(processed_signals_train, labels_train, target_rate, target_channels)
         val_dataset = LaBraMClinicalDataset(processed_signals_val, labels_val, target_rate, target_channels)
@@ -176,83 +177,3 @@ standard_channels = [
     "EEG P4-REF",
     "EEG O2-REF",
 ]
-
-def split_and_dump_abnormal(params):
-        raw, label, id, dump_folder, target_rate, l_freq, h_freq = params
-
-        try:
-            if drop_channels is not None:
-                useless_chs = []
-                for ch in drop_channels:
-                    if ch in raw.ch_names:
-                        useless_chs.append(ch)
-                raw.drop_channels(useless_chs)
-            if chOrder_standard is not None and len(chOrder_standard) == len(raw.ch_names):
-                raw.reorder_channels(chOrder_standard)
-            if raw.ch_names != chOrder_standard:
-                raise Exception("channel order is wrong!")
-
-            raw.load_data()
-            raw.filter(l_freq=l_freq, h_freq=h_freq)
-            raw.notch_filter(50.0)
-            raw.resample(target_rate, n_jobs=1)
-
-            channeled_data = cast(np.ndarray, raw.get_data(units='uV'))
-        except:
-            print(f"Error in {raw}")
-            raw.close()
-            return []
-        all_paths = []
-        for i in range(channeled_data.shape[1] // 2000):
-            dump_path = os.path.join(
-                dump_folder, id + "_" + str(i) + ".pkl"
-            )
-            all_paths.append(dump_path)
-            if not label is None:
-                pickle.dump(
-                    {"X": channeled_data[:, i * 2000 : (i + 1) * 2000], "y": 0 if label == "abnormal" else 1},
-                    open(dump_path, "wb"),
-                )
-            else:
-                pickle.dump(
-                    {"X": channeled_data[:, i * 2000 : (i + 1) * 2000], "y": None},
-                    open(dump_path, "wb"),
-                )
-                break
-        raw.close()
-        return all_paths
-
-def make_dataset_abnormal(data: List[BaseRaw], labels: List[str]|None, 
-                          target_rate: int = 200, target_channels: Optional[List[str]] = None, 
-                          l_freq: float = 0.1, h_freq: float = 75.0, train: bool = True, val_per: float = 0.2) -> LaBraMAbnormalDataset:
-    
-    root = "/itet-stor/jbuerki/net_scratch/unified_eeg_benchmark/data/tueg_abnormal/"
-    dump_folder = os.path.join(root, "train" if train else "test")
-    if not os.path.exists(dump_folder):
-        os.makedirs(dump_folder)
-    else:
-        files = os.listdir(dump_folder)
-        if len(files) > 0:
-            print(f"Dataset already exists in {dump_folder}")
-            if val_per > 0 and train:
-                files_train, files_val = train_test_split(files, test_size=val_per, random_state=42)
-                train_dataset = LaBraMAbnormalDataset([os.path.join(dump_folder, f) for f in files_train], target_rate, chOrder_standard, train)
-                val_dataset = LaBraMAbnormalDataset([os.path.join(dump_folder, f) for f in files_val], target_rate, chOrder_standard, train)
-                return train_dataset, val_dataset
-            else:
-                return LaBraMAbnormalDataset([os.path.join(dump_folder, f) for f in files], target_rate, chOrder_standard, train)
-
-    parameters = [(data[i], labels[i] if not labels is None else None, str(i), dump_folder, target_rate, l_freq, h_freq) for i in range(len(data))]
-
-    with Pool(24) as pool:
-        files = list(tqdm(pool.imap(split_and_dump_abnormal, parameters), total=len(parameters)))
-    
-    files = [f for sublist in files for f in sublist]
-    
-    if val_per > 0 and train:
-        files_train, files_val = train_test_split(files, test_size=val_per, random_state=42)
-        train_dataset = LaBraMAbnormalDataset(files, target_rate, chOrder_standard, train)
-        val_dataset = LaBraMAbnormalDataset(files, target_rate, chOrder_standard, train)
-        return train_dataset, val_dataset
-    else:
-        return LaBraMAbnormalDataset(files, target_rate, chOrder_standard, train)

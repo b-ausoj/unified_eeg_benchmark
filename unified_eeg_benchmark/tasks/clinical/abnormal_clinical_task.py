@@ -19,10 +19,12 @@ class AbnormalClinicalTask(AbstractClinicalTask):
                 TUEGAbnormalDataset: {
                     #Split.TRAIN: list(range(1, 1001)),
                     #Split.TEST: list(range(1001, 1201)),
-                    Split.TRAIN: list(range(1, 500)), # subject mapping is different here, fix this
-                    Split.TEST: list(range(1, 50)), # subject mapping is different here, fix this
+                    #Split.TRAIN: list(range(1, 500)), # subject mapping is different here, fix this
+                    #Split.TEST: list(range(1, 50)), # subject mapping is different here, fix this
+                    Split.TRAIN: [-1],
+                    Split.TEST: [-1],
                 },
-            },
+            },  
         )
 
     def get_data(
@@ -51,6 +53,8 @@ class AbnormalClinicalTask(AbstractClinicalTask):
         ]
 
         X, y, meta = map(list, zip(*data))
+        for m in meta:
+            m["task_name"] = self.name
         return X, y, meta
 
     def get_scoring(self):

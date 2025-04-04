@@ -8,8 +8,11 @@ import numpy as np
 import pandas as pd
 import glob
 from tqdm import tqdm
+from ...utils.config import get_config_value
+import os
 
 
+#DATA_PATH = os.path.join(get_config_value("d012"), "data/mTBI Rest/")
 DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d012_cavanagh2019d/data/mTBI Rest/"
 
 
@@ -25,7 +28,11 @@ def _load_data_cavanagh2019d(subjects: Sequence[int], target_class: ClinicalClas
         files = glob.glob(f"{DATA_PATH}Data/{subject_id}_*_Rest.mat")
         for file_path in files:
             mat = loadmat(file_path, simplify_cells=True)
-            data.append(mat["EEG"]["data"].reshape(60, -1))
+            signals = mat["EEG"]["data"]
+            signals = signals.reshape(60, -1)
+            signals = signals[:, sampling_frequency * 30:-sampling_frequency * 30]
+            signals = np.clip(signals, -800, 800)
+            data.append(signals)
             if target_class == ClinicalClasses.MTBI:
                 labels.append(subject_id in mtbi_list)
             elif target_class == ClinicalClasses.BDI:
@@ -83,3 +90,22 @@ class MTBIRestD012Dataset(BaseClinicalDataset):
         if self._target_frequency is not None:
             self._sampling_frequency = self._target_frequency
             self.meta["sampling_frequency"] = self._sampling_frequency
+        
+        """
+        print("data shape ", self.data[0].shape)
+        print(f"Data range: min={np.min(self.data[0])}, max={np.max(self.data[0])}")
+        import matplotlib.pyplot as plt
+
+        plt.figure(figsize=(10, 6))
+        self.data = [np.clip(d, -1000, 1000) for d in self.data]
+        data_to_plot =  self.data #[self.data[i] for i in [1,11,21]] 
+        plt.hist([d.flatten() for d in data_to_plot], bins=100, alpha=0.75, label=[f'Subject {i+1}' for i in range(len(data_to_plot))])
+        plt.yscale('log')
+        plt.xlabel('EEG Signal Value (uV)')
+        plt.ylabel('Frequency')
+        plt.title('Distribution of EEG Signal Values')
+        plt.legend(loc='upper right')
+        plt.grid(True)
+        plt.savefig('eeg_signal_distribution_d012.png')
+        plt.close()
+        """

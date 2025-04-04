@@ -21,7 +21,7 @@ def _load_data_tueg_abnormal(subjects: Sequence[int], split: Split, preload: boo
     The subjects are randomly mapped to the corresponding files in the dataset. (Improve me!)
 
     Args:
-        subjects (Sequence[int]): A list of subject indices (1-indexed) to load data for.
+        subjects (Sequence[int]): A list of subject indices (1-indexed) to load data for. If [-1], all subjects are loaded.
         split (Split): The split for which to load the data.
         preload (bool): If True, preloads EEG data into memory.
 
@@ -38,7 +38,8 @@ def _load_data_tueg_abnormal(subjects: Sequence[int], split: Split, preload: boo
 
     files = glob.glob(os.path.join(DATA_PATH, "train" if split == Split.TRAIN else "eval", "**", "*.edf"), recursive=True)
     files = cast(List[str], shuffle(files, random_state=42))
-    files = [files[i] for i in subjects]
+    if not -1 in subjects:
+        files = [files[i] for i in subjects]
 
     for file in files:
         raw = read_raw_edf(file, verbose="error", preload=preload)
@@ -51,9 +52,27 @@ def _load_data_tueg_abnormal(subjects: Sequence[int], split: Split, preload: boo
 
 class TUEGAbnormalDataset(BaseClinicalDataset):
     """
-    - self.data is a list of `RawEDF` EEG recordings (List[BaseRaw])
-    - self.labels is a list of labels (`"abnormal"` or `"normal"`) (List[str])
-    - 2785 train recordings, 280 test recordings
+    Subjects:
+    |----------------------------------------------|
+    | Description |  Normal  | Abnormal |  Total   |
+    |-------------+----------+----------+----------|
+    | Evaluation  |      148 |      105 |      253 |
+    |-------------+----------+----------+----------|
+    | Train       |    1,237 |      893 |    2,130 |
+    |-------------+----------+----------+----------|
+    | Total       |    1,385 |      998 |    2,383 |
+    |----------------------------------------------|
+    
+    Sessions:
+    |----------------------------------------------|
+    | Description |  Normal  | Abnormal |  Total   |
+    |-------------+----------+----------+----------|
+    | Evaluation  |      150 |      126 |      276 |
+    |-------------+----------+----------+----------|
+    | Train       |    1,371 |    1,346 |    2,717 |
+    |-------------+----------+----------+----------|
+    | Total       |    1,521 |    1,472 |    2,993 |
+    |----------------------------------------------|
     """
     def __init__(
         self,

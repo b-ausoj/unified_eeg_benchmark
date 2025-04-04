@@ -1,5 +1,6 @@
 from .base_clinical_dataset import BaseClinicalDataset
 from ...enums.clinical_classes import ClinicalClasses
+from ...enums.split import Split
 from typing import Optional, Sequence, Tuple
 import logging
 from scipy.io import loadmat
@@ -12,40 +13,55 @@ from tqdm import tqdm
 DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d001_cavanagh2017a/data/"
 
 
-def _load_data_cavanagh2017a(subjects: Sequence[int], sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:
+def _load_data_cavanagh2017a(split: Split, subjects: Sequence[int], sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:
     # subjects 1-25 have parkinsons, 26-53 don't have parkinsons
     # the ones with parkinsons have two recordings
     pd_subjects = ["804", "805", "806", "807", "808", "809", "810", "811", "813", "814", "815", "816", "817", "818", "819", "820", "821", "822", "823", "824", "825", "826", "827", "828", "829"]
     no_pd_subjects = ["890", "891", "892", "893", "894", "895", "896", "897", "898", "899", "900", "901", "902", "903", "904", "905", "906", "907", "908", "909", "910", "911", "912", "913", "914", "8010", "8060", "8070"]
 
+    train_subjects = ["804", "805", "806", "807", "808", "809", "810", "811", "813", "814", "815", "816", "817", "818", "819", "820", "821", "890", "891", "893", "894", "895", "896", "899", "900", "903", "905", "906", "908", "909", "910", "911", "912", "913", "914", "8010", "8060"]
+    test_subjects = ["822", "823", "824", "825", "826", "827", "828", "829", "892", "897", "898", "901", "902", "904", "907", "8070"]
+
+    if split == Split.TRAIN:
+        subjects = train_subjects
+    else:
+        subjects = test_subjects
+    print("Loading data from Cavanagh2017a")
     data = []
     labels = []
     for subject in tqdm(subjects, desc="Loading data from Cavanagh2017a"):
-        if subject <= 25:
-            subject_id = pd_subjects[subject - 1]
-            
-            if (subject_id != "810"):
-                file_name_1 = DATA_PATH + subject_id + "_1_PDDys_ODDBALL.mat"
+        if subject in pd_subjects:
+            if subject != "810":
+                file_name_1 = DATA_PATH + subject + "_1_PDDys_ODDBALL.mat"
                 mat_1 = loadmat(file_name_1, simplify_cells=True)
-                eeg_data = mat_1['EEG']['data']
-                data.append(eeg_data)
+                signals = mat_1['EEG']['data']
+                if np.max(signals) > 1000 or np.min(signals) < -1000:
+                    print(f"Large values in subject {subject}: signal range out of bounds (min={np.min(signals)}, max={np.max(signals)})")
+                data.append(signals)
                 labels.append("parkinsons")
 
-            file_name_2 = DATA_PATH + subject_id + "_2_PDDys_ODDBALL.mat"
+            file_name_2 = DATA_PATH + subject + "_2_PDDys_ODDBALL.mat"
             mat_2 = loadmat(file_name_2, simplify_cells=True)
-            data.append(mat_2['EEG']['data'])
+            signals = mat_2['EEG']['data']
+            if np.max(signals) > 1000 or np.min(signals) < -1000:
+                print(f"Large values in subject {subject}: signal range out of bounds (min={np.min(signals)}, max={np.max(signals)})")
+            data.append(signals)
             labels.append("parkinsons")
         
         else:
-            subject_id = no_pd_subjects[subject - 26]
-            file_name = DATA_PATH + subject_id + "_1_PDDys_ODDBALL.mat"
+            file_name = DATA_PATH + subject + "_1_PDDys_ODDBALL.mat"
             mat = loadmat(file_name, simplify_cells=True)
-            data.append(mat['EEG']['data'])
+            signals = mat['EEG']['data']
+            if np.max(signals) > 1000 or np.min(signals) < -1000:
+                print(f"Large values in subject {subject}: signal range out of bounds (min={np.min(signals)}, max={np.max(signals)})")
+            data.append(signals)
             labels.append("no_parkinsons")
 
+    print("Number of subjects: ", len(subjects))
+    print("Number of data: ", len(data))
     data = [np.reshape(subject_data, (subject_data.shape[0], -1)) for subject_data in data]
     labels = np.array(labels)
-
+    
     if resampling_frequency is not None:
         data = [resample(d, sampling_frequency, resampling_frequency, axis=-1, filter='kaiser_best', parallel=True) for d in data]
     return data, labels
@@ -62,8 +78,8 @@ class ParkinsonsOddballD001Dataset(BaseClinicalDataset):
         target_class: ClinicalClasses,
         subjects: Sequence[int],
         target_channels: Optional[Sequence[str]] = None,
-        target_frequency: Optional[int] = 200,
-        preload: bool = True,
+        target_frequency: Optional[int] = 250,
+        preload: bool = False,
     ):
         # fmt: off
         super().__init__(
@@ -86,14 +102,36 @@ class ParkinsonsOddballD001Dataset(BaseClinicalDataset):
         }
 
         if preload:
-            self.load_data()
+            self.load_data(split=Split.TRAIN)
 
     def _download(self, subject: int):
         pass
 
-    def load_data(self) -> None:
+    def load_data(self, split) -> None:
         
-        self.data, self.labels = self.cache.cache(_load_data_cavanagh2017a)(self.subjects, self._sampling_frequency ,self._target_frequency) # type: ignore
+        self.data, self.labels = self.cache.cache(_load_data_cavanagh2017a)(split, self.subjects, self._sampling_frequency, self._target_frequency) # type: ignore
         if self._target_frequency is not None:
             self._sampling_frequency = self._target_frequency
             self.meta["sampling_frequency"] = self._sampling_frequency
+
+        """
+        print("data shape ", self.data[0].shape)
+        print(f"Data range: min={np.min(self.data[0])}, max={np.max(self.data[0])}")
+        import matplotlib.pyplot as plt
+
+        plt.figure(figsize=(10, 6))
+        data_to_plot =  self.data #[self.data[i] for i in [1,11,21]] 
+        plt.hist([d.flatten() for d in data_to_plot], bins=100, alpha=0.75, label=[f'Subject {i+1}' for i in range(len(data_to_plot))])
+        plt.yscale('log')
+        plt.xlabel('EEG Signal Value (uV)')
+        plt.ylabel('Frequency')
+        plt.title('Distribution of EEG Signal Values')
+        plt.legend(loc='upper right')
+        plt.grid(True)
+        plt.savefig('eeg_signal_distribution_d001.png')
+        plt.close()
+        """   
+        
+    def get_data(self, split: Split):
+        self.load_data(split)
+        return self.data, self.labels, self.meta

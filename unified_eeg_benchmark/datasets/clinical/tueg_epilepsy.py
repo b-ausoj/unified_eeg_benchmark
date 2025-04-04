@@ -25,11 +25,9 @@ def _load_data_tueg_epilepsy(subjects: Sequence[int], preload: bool) -> Tuple[Li
 
     Returns:
         Tuple:
-            - List[List[Raw]]: A nested list where each outer list corresponds to a subject, 
-              and each inner list contains `Raw` EEG recordings for that subject.
-            - List[str]: A list containing labels (`"epilepsy"` or `"no_epilepsy"`) for each subject.
-            - List[List[str]]: A nested list where each outer list corresponds to a subject, 
-              and each inner list contains montage types for each EEG recording.
+            - List[Raw]: A list containing `Raw` EEG recordings.
+            - List[str]: A list containing labels (`"epilepsy"` or `"no_epilepsy"`) for each EEG recording.
+            - List[str]: A list containing montage types for each EEG recording.
     """
     
     # even subjects have epilepsy, odd subjects don't have epilepsy
@@ -51,22 +49,31 @@ def _load_data_tueg_epilepsy(subjects: Sequence[int], preload: bool) -> Tuple[Li
             sub_folder = "01_no_epilepsy"
             label = "no_epilepsy"
 
-        subject_data = []
-        subject_montage_type = []
         files = glob.glob(os.path.join(DATA_PATH, sub_folder, subject_id, "**", "*.edf"), recursive=True)
         for file in files:
             raw = read_raw_edf(file, verbose="error", preload=preload)
-            subject_data.append(raw)
-            subject_montage_type.append(os.path.basename(os.path.dirname(file)))
-
-        data.append(subject_data)
-        labels.append(label)
-        montage_type.append(subject_montage_type)
+            if raw.times[-1] < 60:
+                raw.close()
+                continue
+            if len(raw.info["ch_names"]) < 19:
+                raw.close()
+                continue
+            data.append(raw)
+            labels.append(label)
+            montage_type.append(os.path.basename(os.path.dirname(file)))
         
     return data, labels, montage_type
 
 
 class TUEGEpilepsyDataset(BaseClinicalDataset):
+    """
+    The dataset contains EEG recordings of subjects with and without epilepsy.
+        Subjects are mapped to the corresponding files in the dataset using the 
+        following rule: even-numbered subjects have epilepsy, while odd-numbered 
+        subjects do not.
+    - Epilepsy: 100 Subjects with a total of 1785 Recordings
+    - Control: 100 Subjects with a total of 513 Recordings
+    """
     def __init__(
         self,
         target_class: ClinicalClasses,
@@ -100,7 +107,7 @@ class TUEGEpilepsyDataset(BaseClinicalDataset):
             self.load_data()
 
     def _download(self, subject: int):
-        pass
+        print("Please download the TUEG Epilepsy dataset from https://isip.piconepress.com/projects/nedc/html/tuh_eeg/")
 
     def load_data(self) -> None:
         
@@ -117,9 +124,8 @@ class TUEGEpilepsyDataset(BaseClinicalDataset):
     
         Returns:
             Tuple:
-                - List[List[Raw]]: A nested list where each outer list corresponds to a subject, 
-                and each inner list contains `Raw` EEG recordings for that subject.
-                - List[str]: A list containing labels (`"epilepsy"` or `"no_epilepsy"`) for each subject.
+                - List[Raws]: `Raw` EEG recordings.
+                - List[str]: Labels (`"epilepsy"` or `"no_epilepsy"`) for each EEG recording.
                 - Dict: Metadata containing montage types for each EEG signal.
         """
 

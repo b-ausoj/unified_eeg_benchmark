@@ -20,6 +20,22 @@ class SchizophreniaClinicalTask(AbstractClinicalTask):
                 },
             }
         )
+        
+    def get_data(
+        self, split: Split
+    ):
+        data = [
+            dataset(
+                target_class=self.clinical_class,
+                subjects=self.subjects_split[dataset][split],
+            ).get_data(split)
+            for dataset in self.datasets
+        ]
+
+        X, y, meta = map(list, zip(*data))
+        for m in meta:
+            m["task_name"] = self.name
+        return X, y, meta
 
     def get_scoring(self):
         return lambda y, y_pred: f1_score(y, y_pred.ravel())

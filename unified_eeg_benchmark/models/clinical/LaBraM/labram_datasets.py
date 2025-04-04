@@ -29,7 +29,7 @@ class LaBraMClinicalDataset(Dataset):
             y = self.labels[index]
             return X, y
         else:
-            return X, random.randint(0, 1)
+            return X, 0
 
 
 class LaBraMAbnormalDataset(Dataset):

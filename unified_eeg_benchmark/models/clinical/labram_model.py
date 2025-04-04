@@ -2,51 +2,27 @@ from ..abstract_model import AbstractModel
 from typing import List, Dict, cast, Literal
 import numpy as np
 from .LaBraM.make_dataset import make_dataset, make_dataset_abnormal
-import argparse
-import logging
-import socket
-from pathlib import Path
+from .LaBraM.make_dataset_2 import make_dataset as make_dataset_2
+from .LaBraM.utils_2 import calc_class_weights, map_label_reverse, LaBraMDataset2
 from .LaBraM import utils
 import torch
 from timm.models import create_model
-import torch.backends.cudnn as cudnn
-from timm.utils import ModelEma
-from timm.utils import NativeScaler
-from collections import OrderedDict
-from torch.utils.data import DataLoader
-from timm.loss import LabelSmoothingCrossEntropy, SoftTargetCrossEntropy
-from torch.utils.data.distributed import DistributedSampler
-import os
 import random
 import numpy as np
-import time
-from datetime import datetime
-import json
 from .LaBraM.optim_factory import create_optimizer, get_parameter_groups, LayerDecayValueAssigner
 from .LaBraM.engine_for_finetuning import train_one_epoch, evaluate
 from einops import rearrange
 from mne.io import BaseRaw
-from scipy import stats
 from .LaBraM import modeling_finetune # important to load the models
 import torch.nn as nn
 import torch
+from torch.utils.data import DataLoader
 from tqdm import tqdm
-import math
-from joblib import Memory
 from ...utils.config import get_config_value
 import gc
+from collections import Counter
+import logging
 
-
-def seed_torch(seed=1029):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)  # if using multi-GPU
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True
-
-seed_torch(7)
 
 class LinearWithConstraint(nn.Linear):
     def __init__(self, *args, doWeightNorm = True, max_norm=1, **kwargs):
@@ -62,9 +38,10 @@ class LinearWithConstraint(nn.Linear):
         return super(LinearWithConstraint, self).forward(x)
 
 class LaBraMBCIModel(nn.Module):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes, device, chunks):
         super().__init__()
-        
+        self.device = device
+        self.chunks = chunks
         checkpoint = torch.load("/itet-stor/jbuerki/home/unified_eeg_benchmark/unified_eeg_benchmark/models/clinical/LaBraM/checkpoints/labram-base.pth")
         new_checkpoint = {}
         for k,v in checkpoint['model'].items():
@@ -87,83 +64,126 @@ class LaBraMBCIModel(nn.Module):
         model.load_state_dict(new_checkpoint, strict=False)
         for blk in model.blocks:
             for p in blk.parameters():
-                p.requires_grad = True
+                p.requires_grad = False
         self.feature = model
-        self.head = LinearWithConstraint(200, num_classes, max_norm=1)  # This layer follows the features
+        self.head = nn.Linear(200, num_classes) #LinearWithConstraint(200, num_classes, max_norm=1)  # This layer follows the features
         self.loss_fn = nn.CrossEntropyLoss()
 
-    def forward(self, x, input_chans, window_size=1000, overlap=0.25):
+    def forward(self, x, input_chans):
         B, C, T = x.shape
+
+        if self.chunks is not None and self.chunks <= 10:
+            x = x.to(self.device)
+            if T % 200 != 0: 
+                x = x[:,:,0:T-T%200]
+                T = T - T % 200
+            x = x.reshape((B, C, T // 200, 200))
+            x = x / 100
+            
+            pred = self.feature.forward_features(x, input_chans=input_chans, return_all_tokens=False)
+
+            pred = self.head(pred.flatten(1))
+            return x, pred
+
+        if len(input_chans) <= 24:
+            chunk_length = 2000
+        elif len(input_chans) <= 32:
+            chunk_length = 1600
+        elif len(input_chans) <= 50:
+            chunk_length = 1000
+        elif len(input_chans) <= 64:
+            chunk_length = 800
+        else:
+            raise ValueError("Unsupported input channel configuration: {}".format(input_chans))
+
+        n_chunks = T // chunk_length
+        if n_chunks < 1:
+            raise ValueError(
+                "Recording too short: expected at least one chunk of length {}, got T={}".format(chunk_length, T)
+            )
+        # Crop extra samples to have only full chunks
+        T_new = n_chunks * chunk_length
+        x = x[:, :, :T_new]  # shape: (B, C, T_new)
+
+        # Reshape to split recording into chunks:
+        x = x.reshape(B, C, n_chunks, chunk_length)
+        x = x.permute(0, 2, 1, 3)  # shape: (B, n_chunks, C, chunk_length)
+
+        # Merge batch and chunks dimensions to process all chunks together:
+        x = x.reshape(B * n_chunks, C, chunk_length)
+        
+        # Tokenize each chunk: each token is 200 samples.
+        tokens = x.reshape(B * n_chunks, C, chunk_length // 200, 200)
+        tokens = tokens / 100.0
+
+        tokens = tokens.to(self.device)
+
+        # Extract features for each chunk using the pre-trained feature extractor.
+        # Expected output shape: (B * n_chunks, feature_dim)
+        chunk_features = self.feature.forward_features(tokens, input_chans=input_chans, return_all_tokens=False)
+        feature_dim = chunk_features.shape[-1]
+        
+        # Reshape back to separate recordings and chunks: (B, n_chunks, feature_dim)
+        chunk_features = chunk_features.view(B, n_chunks, feature_dim)
+        
+        # Aggregate features across chunks by averaging (mean pooling)
+        aggregated_features = chunk_features.mean(dim=1)  # shape: (B, feature_dim)
+
+        # Get the recording-level prediction from the head.
+        logits = self.head(aggregated_features)
+        
+        return aggregated_features, logits
+
+"""
         if T % 200 != 0: 
             x = x[:,:,0:T-T%200]
             T = T - T % 200        
         x = x / 100
 
-        windows = self.sliding_window(x, window_size=window_size, overlap=overlap)
-        
-        min_val = x.min().item()
-        max_val = x.max().item()
-        #print(f"EEG values range: [{min_val}, {max_val}]")
-
         #pred = self.feature.forward_features(x, input_chans=input_chans, return_all_tokens=False)
         #pred = self.head(pred.flatten(1))
-        
         predictions = []
-        for window in windows:
+        for window in self.sliding_window(x, window_size=window_size, overlap=overlap):
             B, C, window_size = window.shape
             window = window.reshape((B, C, window_size // 200, 200))
+            
             pred = self.feature.forward_features(window, input_chans=input_chans, return_all_tokens=False)
             pred = self.head(pred.flatten(1))
             predictions.append(pred.unsqueeze(0))  # [1, B, num_classes]
+            del window, pred  # Delete tensors no longer needed
+            torch.cuda.empty_cache()  # Clear cached memory on GPU
         
         # Average predictions from all windows
         predictions = torch.cat(predictions, dim=0)  # Shape: [num_windows, B, num_classes]
         avg_pred = predictions.mean(dim=0)  # Average across all windows
-         
+        
         return x, avg_pred
     
     def sliding_window(self, x, window_size=1000, overlap=0.25):
-        """
-        Split long EEG recordings into overlapping windows.
-        
-        Parameters:
-        - x: EEG data of shape [batch_size, channels, time]
-        - window_size: size of each window (e.g., 1000 samples i.e. 5 seconds)
-        - overlap: overlap between windows (e.g., 0.25 for 25% overlap)
-        
-        Returns:
-        - windows: A tensor of shape [num_windows, batch_size, channels, window_size]
-        """
         B, C, T = x.shape
         stride = int(window_size * (1 - overlap))
         
-        windows = []
         for start in range(0, T - window_size + 1, stride):
             end = start + window_size
             window = x[:, :, start:end]
-            windows.append(window)
-        
-        return torch.stack(windows, dim=0)  # Shape: [num_windows, B, C, window_size]
-
+            yield window  # Yield each window one by one
+"""
 
 def train_epoch(model, dataloader, optimizer, scheduler, device, input_chans):
     model.train()
-    running_loss = 0.0
-    running_corrects = 0
-    total_samples = 0
+    running_loss, running_corrects, total_samples = 0.0, 0, 0
 
-    optimizer.zero_grad(set_to_none=True)
     for batch in tqdm(dataloader, desc="Training", leave=True):
         x, y = batch
-        x = x.to(device)
+        # x = x.to(device) will be done in the model
         y = y.to(device).argmax(dim=1)
         
+        optimizer.zero_grad(set_to_none=True)
         _, logits = model(x, input_chans)
         loss = model.loss_fn(logits, y)
         loss.backward()
         optimizer.step()
-        scheduler.step()  # update the learning rate
-        optimizer.zero_grad(set_to_none=True)
+        scheduler.step()
         
         running_loss += loss.item() * x.size(0)
         preds = torch.argmax(logits, dim=1)
@@ -189,7 +209,7 @@ def validate_epoch(model, dataloader, device, input_chans):
     with torch.no_grad():
         for batch in tqdm(dataloader, desc="Validation", leave=True):
             x, y = batch
-            x = x.to(device)
+            #x = x.to(device) will be done in the model
             y = y.to(device).argmax(dim=1)
             
             _, logits = model(x, input_chans)
@@ -222,184 +242,152 @@ def validate_epoch(model, dataloader, device, input_chans):
 def inference(model, dataloader, device, input_chans):
     model.eval()
     predictions = []
+    indices = []
     with torch.no_grad():
         for batch in tqdm(dataloader, desc="Testing", leave=True):
-            x, _ = batch
-            x = x.to(device)
+            x, idx  = batch
+            # x = x.to(device) will be done in the model
             _, logits = model(x, input_chans)
             preds = torch.argmax(logits, dim=1)
             predictions.append(preds.cpu())
+            indices.append(idx)
 
-            del x, logits  # Delete tensors no longer needed
+            del x, idx, logits  # Delete tensors no longer needed
             torch.cuda.empty_cache()  # Clear cached memory on GPU
-    predictions = torch.cat(predictions, dim=0)
-    return predictions
-
-
-MAX_NUM_OF_MEM_EVENTS_PER_SNAPSHOT: int = 100000
-
-def start_record_memory_history() -> None:
-   if not torch.cuda.is_available():
-       print("CUDA unavailable. Not recording memory history")
-       return
-
-   print("Starting snapshot record_memory_history")
-   torch.cuda.memory._record_memory_history(
-       max_entries=MAX_NUM_OF_MEM_EVENTS_PER_SNAPSHOT
-   )
-
-def stop_record_memory_history() -> None:
-   if not torch.cuda.is_available():
-       print("CUDA unavailable. Not recording memory history")
-       return
-
-   print("Stopping snapshot record_memory_history")
-   torch.cuda.memory._record_memory_history(enabled=None)
-
-def export_memory_snapshot() -> None:
-   if not torch.cuda.is_available():
-       print("CUDA unavailable. Not exporting memory snapshot")
-       return
-
-   # Prefix for file names.
-   host_name = socket.gethostname()
-   timestamp = datetime.now().strftime("%b_%d_%H_%M_%S")
-   file_prefix = f"{host_name}_{timestamp}"
-
-   try:
-       print(f"Saving snapshot to local file: {file_prefix}.pickle")
-       torch.cuda.memory._dump_snapshot(f"{file_prefix}.pickle")
-   except Exception as e:
-       print(f"Failed to capture memory snapshot {e}")
-       return
-
+    predictions = torch.cat(predictions, dim=0).cpu()
+    indices = torch.cat(indices, dim=0).cpu()
+    return predictions, indices
 
 class LaBraMModel(AbstractModel):
     def __init__(
         self,
     ):
         super().__init__("LaBraMModel")
-        print("inside init")
+        print("inside init LaBraMModel")
         assert torch.cuda.is_available(), "CUDA is not available"
-        
-        start_record_memory_history()
 
+        self.chunk_len_s = None
+        self.use_cache = True
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = LaBraMBCIModel(num_classes=2).to(self.device)
-        self.cache = Memory(location=get_config_value("cache"), verbose=0)
+        self.model = LaBraMBCIModel(num_classes=2, device=self.device, chunks=self.chunk_len_s).to(self.device)
 
     def fit(self, X: List[np.ndarray|List[BaseRaw]], y: List[np.ndarray|List[str]], meta: List[Dict]) -> None:
         print("inside fit")
         task_name = meta[0]["task_name"]
-        if "Abnormal" in meta[0]["name"]:
-            dataset_train_list = [self.cache.cache(make_dataset_abnormal)(X_, None, task_name, train=True) for X_, meta_ in zip(cast(List[BaseRaw], X), meta)]
+        
+        class_weights = torch.tensor(calc_class_weights(y)).to(self.device)
+        print("class_weights", class_weights)
+        self.model.loss_fn = torch.nn.CrossEntropyLoss(weight=class_weights)
+        
+        dataset_train  = make_dataset_2(X, y, meta, task_name, self.name, self.chunk_len_s, is_train=True, use_cache=self.use_cache)
+    
+        val_split = 0.2
+        if val_split is not None:
+            dataset_train, dataset_val = dataset_train.split_train_val(val_split)
         else:
-            dataset_train_list = [self.cache.cache(make_dataset)(X_, y_, task_name, meta_["sampling_frequency"], meta_["channel_names"], train=True) for X_, y_, meta_ in zip(cast(List[np.ndarray], X), cast(List[np.ndarray], y), meta)]
-        #dataset_train_list = [dataset[0] for dataset in datasets]
-        dataset_val_list = None # dataset_train_list #[dataset[1] for dataset in datasets]
+            dataset_val = None
+        
         del X, y, meta
         gc.collect()
-
-        dataset_train_list = [dataset for dataset in dataset_train_list if len(dataset) > 0]        
-        ch_names_list_train = [dataset.ch_names for dataset in dataset_train_list]
-        if dataset_val_list is not None:
-            dataset_val_list = [dataset for dataset in dataset_val_list if len(dataset) > 0]
-            ch_names_list_val = [dataset.ch_names for dataset in dataset_val_list]
-
         torch.cuda.empty_cache()
 
-        batch_size = 1
-        train_loader_list = [torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, num_workers=0, shuffle=True) for train_dataset in dataset_train_list]
-        if dataset_val_list is not None:
-            valid_loader_list = [torch.utils.data.DataLoader(valid_dataset, batch_size=batch_size, num_workers=0, shuffle=False) for valid_dataset in dataset_val_list]
-        else:
-            valid_loader_list = None
+        ch_names_train = dataset_train.ch_names
+        if dataset_val is not None:
+            ch_names_val = dataset_val.ch_names
 
-        max_epochs = 2
-        steps_per_epoch = math.ceil(sum([len(train_loader) for train_loader in train_loader_list]))
+
+        if self.chunk_len_s is None:
+            batch_size = 1
+        else: 
+            batch_size = 64
+        train_loader = DataLoader(dataset_train, batch_size=batch_size, num_workers=0, shuffle=True, pin_memory=True)
+        if dataset_val is not None:
+            valid_loader = DataLoader(dataset_val, batch_size=batch_size, num_workers=0, shuffle=False, pin_memory=True)
+        else:
+            valid_loader = None
+
+        max_epochs = 30
+        steps_per_epoch = len(train_loader)
         max_lr = 4e-4
         
         
         # Set up optimizer and OneCycleLR scheduler
-        optimizer = torch.optim.AdamW(list(self.model.head.parameters()) + list(self.model.feature.parameters()), lr=1e-5, weight_decay=0.01)
+        optimizer = torch.optim.AdamW(
+            list(self.model.head.parameters()) + 
+            list(self.model.feature.parameters()), 
+            lr=1e-6, 
+            weight_decay=0.01)
         scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=max_lr, steps_per_epoch=steps_per_epoch, epochs=max_epochs, pct_start=0.2)
         
-        #best_val_loss = float('inf')
-        #best_model_state = None
-
+        best_val_loss = float('inf')
+        best_model_state = None
 
         # Training loop
-        try:
-            for epoch in range(1, max_epochs + 1):
-                print(f"Epoch {epoch}/{max_epochs}")
-                for train_loader, ch_names in zip(train_loader_list, ch_names_list_train):
-                
-                    input_chans = utils.get_input_chans(ch_names)
-                    train_loss, train_acc = train_epoch(self.model, train_loader, optimizer, scheduler, self.device, input_chans)
-                    print(f"  Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.4f}")
-                
-                    gc.collect()
-                    torch.cuda.empty_cache()
+        for epoch in range(1, max_epochs + 1):
+            print(f"Epoch {epoch}/{max_epochs}")
+            input_chans = utils.get_input_chans(ch_names_train)
+            train_loss, train_acc = train_epoch(self.model, train_loader, optimizer, scheduler, self.device, input_chans)
+            current_lr = optimizer.param_groups[0]["lr"]
+            print(f"  Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.4f} | LR: {current_lr:.6f}")
 
-                if valid_loader_list is not None:
-                    for valid_loader, ch_names in zip(valid_loader_list, ch_names_list_val):
-                        input_chans = utils.get_input_chans(ch_names)
-                        val_loss, val_acc, val_metrics = validate_epoch(self.model, valid_loader, self.device, input_chans)
-                        print(f"  Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.4f}")
-                        print("  Val Metrics:", val_metrics)
-            
-            # Optionally save the best model based on validation loss
-            #if val_loss < best_val_loss:
-            #    best_val_loss = val_loss
-            #    best_model_state = self.model.state_dict()
+            if valid_loader is not None:
+                input_chans = utils.get_input_chans(ch_names_val)
+                val_loss, val_acc, val_metrics = validate_epoch(self.model, valid_loader, self.device, input_chans)
+                print(f"  Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.4f}")
+                print("  Val Metrics:", val_metrics)
+        
+                # Optionally save the best model based on validation loss
+                if val_loss < best_val_loss:
+                    best_val_loss = val_loss
+                    best_model_state = self.model.state_dict()
         
         # Load the best model (if saved)
-        #if best_model_state is not None:
-        #    self.model.load_state_dict(best_model_state)
-        finally:
-            stop_record_memory_history()
-            export_memory_snapshot()
+        if best_model_state is not None:
+            self.model.load_state_dict(best_model_state)
 
     @torch.no_grad()
     def predict(self, X: List[np.ndarray|List[BaseRaw]], meta: List[Dict]) -> np.ndarray:
         print("inside predict")
         task_name = meta[0]["task_name"]
-        if "TUEG" in meta[0]["name"]:
-            dataset_test_list = [self.cache.cache(make_dataset_abnormal)(X_, None, task_name, train=False) for X_, meta_ in zip(cast(List[np.ndarray], X), meta)]
-        else:
-            dataset_test_list = [self.cache.cache(make_dataset)(X_, None, task_name, meta_["sampling_frequency"], meta_["channel_names"], train=False) for X_, meta_ in zip(cast(List[np.ndarray], X), meta)]
-        dataset_test_list = [dataset for dataset in dataset_test_list if len(dataset) > 0]
-        print("datasets length: ", len(dataset_test_list[0]))
-        ch_names_list = [dataset.ch_names for dataset in dataset_test_list]
+        dataset_test  = make_dataset_2(X, None, meta, task_name, self.name, self.chunk_len_s, is_train=False, use_cache=self.use_cache)
+        ch_names = dataset_test.ch_names
+        
+        if len(dataset_test) == 0:
+            return np.array([])
+        
         # Inference on test set
 
-        batch_size = 1
-        test_loader_list = [torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, num_workers=0, shuffle=False) for test_dataset in dataset_test_list]
+        if self.chunk_len_s is None:
+            batch_size = 1
+        else: 
+            batch_size = 64
+        test_loader = DataLoader(dataset_test, batch_size=batch_size, num_workers=0, shuffle=False, pin_memory=True)
 
-        predictions = []
-        for test_loader, ch_names in zip(test_loader_list, ch_names_list):
-            input_chans = utils.get_input_chans(ch_names)
-            predictions.append(inference(self.model, test_loader, self.device, input_chans).cpu())
+        input_chans = utils.get_input_chans(ch_names)
+        predictions, indices_mapping = inference(self.model, test_loader, self.device, input_chans)
         
-        predictions = torch.cat(predictions, dim=0).numpy()
+        predictions = predictions.numpy()
+        indices_mapping = indices_mapping.numpy()
         print(predictions.shape)
+        print(indices_mapping.shape)
 
-        if task_name == "parkinsons_clinical":
-            reverse_label_mapping = {0: 'parkinsons', 1: 'no_parkinsons'}
-        elif task_name == "schizophrenia_clinical":
-            reverse_label_mapping = {0: 'schizophrenia', 1: 'no_schizophrenia'}
-        elif task_name == "depression_clinical":
-            reverse_label_mapping = {0: 'depression', 1: 'no_depression'}
-        elif task_name == "mtbi_clinical":
-            reverse_label_mapping = {0: True, 1: False}
-        elif task_name == "ocd_clinical":
-            reverse_label_mapping = {0: 'ocd', 1: 'no_ocd'}
-        elif task_name == "abnormal_clinical":
-            reverse_label_mapping = {0: 'abnormal', 1: 'normal'}
-        elif task_name == "epilepsy_clinical":
-            reverse_label_mapping = {0: 'epilepsy', 1: 'no_epilepsy'}
-        mapped_pred = np.array([reverse_label_mapping[idx] for idx in predictions])
+        if self.chunk_len_s is not None:
+            # Aggregate predictions by majority voting for each unique index
+            unique_indices = np.unique(indices_mapping)
+            aggregated_predictions = []
+
+            for idx in unique_indices:
+                # Get all predictions corresponding to the current index
+                idx_predictions = predictions[indices_mapping == idx]
+                # Perform majority voting
+                most_common_prediction = Counter(idx_predictions).most_common(1)[0][0]
+                aggregated_predictions.append(most_common_prediction)
+
+            # Convert to numpy array
+            predictions = np.array(aggregated_predictions)
+
+        mapped_pred = np.array([map_label_reverse(pred, task_name) for pred in predictions])
         
-        print(mapped_pred.shape)
+        print(mapped_pred)
         return mapped_pred
         

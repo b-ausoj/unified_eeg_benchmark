@@ -1,5 +1,6 @@
 from .base_clinical_dataset import BaseClinicalDataset
 from ...enums.clinical_classes import ClinicalClasses
+from ...enums.split import Split
 from typing import Optional, Sequence, Tuple
 from resampy import resample
 import logging
@@ -10,53 +11,85 @@ import glob
 from mne.io import read_raw_brainvision
 import warnings
 from tqdm import tqdm
+from ...utils.config import get_config_value
+import os
+import random
 
 
+#DATA_PATH = os.path.join(get_config_value("d014"), "data/PD Interval Timing NPJ/")
 DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d014_singh2021/data/PD Interval Timing NPJ/"
 
 
-def _load_data_singh2021(subjects: Sequence[int], target_class: ClinicalClasses, sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:
-    ctr_subjects = ["Control1025", "Control1035", "Control1055", "Control1065", "Control1075", "Control1085", "Control1095", "Control1105", "Control1115", "Control1125", "Control1135", "Control1145", "Control1155", "Control1175", "Control1185", "Control1195", "Control1205", "Control1215", "Control1225", "Control1235", "Control1245", "Control1255", "Control1265", "Control1275", "Control1285", "Control1295", "Control1305", "Control1315", "Control1325", "Control1335", "Control1345", "Control1365", "Control1375", "Control1385", "Control1395", "Control1405", "Control1415"]
-    pd_subjects = ["PD1005", "PD1015", "PD1025", "PD1035", "PD1045", "PD1055", "PD1065", "PD1075", "PD1085", "PD1095", "PD1105", "PD1115", "PD1125", "PD1135", "PD1145", "PD1155", "PD1165", "PD1175", "PD1185", "PD1195", "PD1215", "PD1225", "PD1235", "PD1245", "PD1265", "PD1275", "PD1285", "PD1295", "PD1305", "PD1315", "PD1325", "PD1335", "PD1365", "PD1375", "PD1385", "PD1395", "PD1405", "PD1415", "PD1425", "PD1435", "PD1445", "PD1455", "PD1465", "PD1475", "PD1485", "PD1505", "PD1515", "PD1525", "PD1535", "PD1555", "PD1565", "PD1575", "PD1585", "PD1595", "PD1605", "PD1615", "PD1625", "PD1635", "PD1645", "PD1655", "PD1665", "PD1675", "PD1685", "PD1695", "PD1705", "PD1715", "PD1725", "PD1735", "PD1745", "PD1755", "PD1765", "PD1775", "PD1785", "PD1795"]
+def _load_data_singh2021(split: Split, subjects: Sequence[int], target_class: ClinicalClasses, sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:
+    ctr_subjects = ['Control1135', 'Control1195', 'Control1065', 'Control1275', 'Control1205', 'Control1025', 'Control1055', 'Control1225', 'Control1375', 'Control1295', 'Control1345', 'Control1115', 'Control1405', 'Control1155', 'Control1265', 'Control1035', 'Control1385', 'Control1255', 'Control1335', 'Control1175', 'Control1305', 'Control1235', 'Control1415', 'Control1125', 'Control1095', 'Control1315', 'Control1395', 'Control1365', 'Control1325', 'Control1105', 'Control1185', 'Control1245', 'Control1085', 'Control1285', 'Control1215', 'Control1075', 'Control1145']
+    pd_subjects = ['PD1575', 'PD1525', 'PD1305', 'PD1445', 'PD1765', 'PD1025', 'PD1705', 'PD1625', 'PD1785', 'PD1615', 'PD1235', 'PD1555', 'PD1795', 'PD1045', 'PD1405', 'PD1285', 'PD1265', 'PD1385', 'PD1085', 'PD1325', 'PD1145', 'PD2515', 'PD1185', 'PD1055', 'PD1655', 'PD1375', 'PD2625', 'PD1175', 'PD1645', 'PD1245', 'PD1515', 'PD1585', 'PD1115', 'PD1125', 'PD1095', 'PD1015', 'PD3625', 'PD1165', 'PD1535', 'PD3445', 'PD1475', 'PD1395', 'PD1425', 'PD1485', 'PD1745', 'PD1635', 'PD1735', 'PD1335', 'PD1075', 'PD1215', 'PD1005', 'PD1755', 'PD1275', 'PD1565', 'PD1225', 'PD3515', 'PD1695', 'PD3565', 'PD1455', 'PD1595', 'PD2855', 'PD1685', 'PD1605', 'PD2815', 'PD2845', 'PD2565', 'PD1065', 'PD2445', 'PD1465', 'PD1775', 'PD1435', 'PD1105', 'PD1365', 'PD1195', 'PD1505', 'PD1725', 'PD1845', 'PD1035', 'PD1865', 'PD1835', 'PD2835', 'PD1315', 'PD2865', 'PD1415', 'PD1855', 'PD1295', 'PD1715', 'PD1155', 'PD1675', 'PD1815', 'PD1135', 'PD1665']
+    # I removed the ones with outlier values
+    ctr_subjects = ['Control1135', 'Control1195', 'Control1065', 'Control1275', 'Control1205', 'Control1025', 'Control1055', 'Control1225', 'Control1375', 'Control1295', 'Control1115', 'Control1405', 'Control1155', 'Control1265', 'Control1035', 'Control1385', 'Control1255', 'Control1335', 'Control1175', 'Control1305', 'Control1235', 'Control1415', 'Control1125', 'Control1095', 'Control1315', 'Control1395', 'Control1325', 'Control1185', 'Control1245', 'Control1085', 'Control1285', 'Control1215', 'Control1075']
+    pd_subjects = ['PD1575', 'PD1525', 'PD1305', 'PD1445', 'PD1765', 'PD1025', 'PD1705', 'PD1625', 'PD1785', 'PD1615', 'PD1235', 'PD1555', 'PD1795', 'PD1045', 'PD1405', 'PD1265', 'PD1385', 'PD1325', 'PD1145', 'PD2515', 'PD1185', 'PD1055', 'PD1655', 'PD1375', 'PD2625', 'PD1175', 'PD1645', 'PD1245', 'PD1515', 'PD1585', 'PD1115', 'PD1125', 'PD1095', 'PD3625', 'PD1165', 'PD1535', 'PD1425', 'PD1485', 'PD1745', 'PD1635', 'PD1735', 'PD1335', 'PD1075', 'PD1215', 'PD1005', 'PD1565', 'PD1225', 'PD3515', 'PD1695', 'PD3565', 'PD1595', 'PD2855', 'PD1605', 'PD2815', 'PD2845', 'PD2565', 'PD1065', 'PD2445', 'PD1465', 'PD1775', 'PD1435', 'PD1365', 'PD1505', 'PD1725', 'PD1845', 'PD1035', 'PD1865', 'PD2835', 'PD1315', 'PD2865', 'PD1415', 'PD1855', 'PD1295', 'PD1715', 'PD1155', 'PD1675', 'PD1815', 'PD1135', 'PD1665']
+    
     df_vars = pd.read_excel(DATA_PATH + 'Copy of IntervalTiming_Subj_Info_AIE.xlsx', sheet_name='MAIN')
 
+    rng = random.Random(42)
+    rng.shuffle(ctr_subjects)
+    rng.shuffle(pd_subjects)
+
+    train_ctr = int(0.7 * len(ctr_subjects))
+    train_pd = int(0.7 * len(pd_subjects))
+
+    train_subjects = ctr_subjects[:train_ctr] + pd_subjects[:train_pd]
+    test_subjects = ctr_subjects[train_ctr:] + pd_subjects[train_pd:]
+
+    if split == Split.TRAIN:
+        subjects = train_subjects
+    else:
+        subjects = test_subjects
+
+    rng.shuffle(subjects)
+
+    print("Singh2021")
     data = []
     labels = []
     for subject in tqdm(subjects, desc="Loading data from Singh2021"):
-        if subject < len(ctr_subjects) + 1:
-            subject_id = ctr_subjects[subject - 1]
-            file_path = f"{DATA_PATH}{subject_id}.vhdr"
+        if subject in ctr_subjects:
+            file_path = f"{DATA_PATH}{subject}.vhdr"
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=RuntimeWarning)
                 raw = read_raw_brainvision(file_path, preload=True)
                 raw.pick(['eeg'])
-            data.append(raw.get_data(units='uV')) # type: ignore
+            signals = raw.get_data(units='uV') / 10
+            if np.min(signals) < -1000 or np.max(signals) > 1000:
+                print(f"Skipping subject {subject} due to abnormal signal values: min={np.min(signals)}, max={np.max(signals)}")
+                continue
+            data.append(signals)
             if target_class == ClinicalClasses.PARKINSONS:
                 labels.append("no_parkinsons")
             elif target_class == ClinicalClasses.AGE:
-                labels.append(df_vars.loc[df_vars['Rest']==subject_id, ['Age']].values[0][0])
+                labels.append(df_vars.loc[df_vars['Rest']==subject, ['Age']].values[0][0])
             elif target_class == ClinicalClasses.SEX:
-                labels.append(df_vars.loc[df_vars['Rest']==subject_id, ['Gender']].values[0][0])
+                labels.append(df_vars.loc[df_vars['Rest']==subject, ['Gender']].values[0][0])
         else:
-            subject_id = pd_subjects[subject - len(ctr_subjects) - 1]
-            file_path = f"{DATA_PATH}{subject_id}.vhdr"
+            file_path = f"{DATA_PATH}{subject}.vhdr"
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=RuntimeWarning)
                 raw = read_raw_brainvision(file_path, preload=True)     
                 raw.pick(['eeg'])       
-            data.append(raw.get_data(units='uV')) # type: ignore
+            signals = raw.get_data(units='uV') / 10
+            if np.min(signals) < -1000 or np.max(signals) > 1000:
+                print(f"Skipping subject {subject} due to abnormal signal values: min={np.min(signals)}, max={np.max(signals)}")
+                continue
+            data.append(signals)
             if target_class == ClinicalClasses.PARKINSONS:
                 labels.append("parkinsons")
             elif target_class == ClinicalClasses.AGE:
-                labels.append(df_vars.loc[df_vars['Rest']==subject_id, ['Age']].values[0][0])
+                labels.append(df_vars.loc[df_vars['Rest']==subject, ['Age']].values[0][0])
             elif target_class == ClinicalClasses.SEX:
-                labels.append(df_vars.loc[df_vars['Rest']==subject_id, ['Gender']].values[0][0])
-            
+                labels.append(df_vars.loc[df_vars['Rest']==subject, ['Gender']].values[0][0])
+    
+    print("Number of subjects: ", len(subjects))
+    print("Number of data: ", len(data))
     labels = np.array(labels)
     if resampling_frequency is not None:
         data = [resample(d, sampling_frequency, resampling_frequency, axis=-1, filter='kaiser_best', parallel=True) for d in data]
-    print("data shape ", data[0].shape)
-    print(f"Data range: min={np.min(data[0])}, max={np.max(data[0])}")
     return data, labels
 
 
@@ -66,8 +99,8 @@ class PDIntervalTimingD014Dataset(BaseClinicalDataset):
         target_class: ClinicalClasses,
         subjects: Sequence[int],
         target_channels: Optional[Sequence[str]] = None,
-        target_frequency: Optional[int] = 200,
-        preload: bool = True,
+        target_frequency: Optional[int] = 250,
+        preload: bool = False,
     ):
         # fmt: off
         super().__init__(
@@ -90,14 +123,34 @@ class PDIntervalTimingD014Dataset(BaseClinicalDataset):
         }
 
         if preload:
-            self.load_data()
+            self.load_data(split=Split.TRAIN)
 
     def _download(self, subject: int):
         pass
 
-    def load_data(self) -> None:
+    def load_data(self, split) -> None:
         
-        self.data, self.labels = self.cache.cache(_load_data_singh2021)(self.subjects, self.target_classes[0], self._sampling_frequency, self._target_frequency) # type: ignore
+        self.data, self.labels = self.cache.cache(_load_data_singh2021)(split, self.subjects, self.target_classes[0], self._sampling_frequency, self._target_frequency) # type: ignore
         if self._target_frequency is not None:
             self._sampling_frequency = self._target_frequency
             self.meta["sampling_frequency"] = self._sampling_frequency
+        """
+        print("data shape ", self.data[0].shape)
+        print(f"Data range: min={np.min(self.data[0])}, max={np.max(self.data[0])}")
+        import matplotlib.pyplot as plt
+
+        plt.figure(figsize=(10, 6))
+        data_to_plot =  self.data #[self.data[i] for i in [1,11,21]] 
+        plt.hist([d.flatten() for d in data_to_plot], bins=100, alpha=0.75, label=[f'Subject {i+1}' for i in range(len(data_to_plot))])
+        plt.yscale('log')
+        plt.xlabel('EEG Signal Value (uV)')
+        plt.ylabel('Frequency')
+        plt.title('Distribution of EEG Signal Values')
+        plt.legend(loc='upper right')
+        plt.grid(True)
+        plt.savefig('eeg_signal_distribution_d014.png')
+        plt.close()
+        """
+    def get_data(self, split: Split):
+        self.load_data(split)
+        return self.data, self.labels, self.meta

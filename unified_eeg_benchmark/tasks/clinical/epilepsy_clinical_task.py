@@ -17,10 +17,10 @@ class EpilepsyClinicalTask(AbstractClinicalTask):
             ],
             subjects_split={
                 TUEGEpilepsyDataset: {
-                    #Split.TRAIN: list(range(1, 101)),
-                    #Split.TEST: list(range(101, 201)),
-                    Split.TRAIN: list(range(1, 11)),
-                    Split.TEST: list(range(11, 21)),
+                    Split.TRAIN: list(range(1, 151)),
+                    Split.TEST: list(range(151, 201)),
+                    #Split.TRAIN: list(range(1, 11)),
+                    #Split.TEST: list(range(11, 21)),
                 },
             },
         )
