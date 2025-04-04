@@ -38,6 +38,10 @@ class AbstractModel(ABC):
             self.channels = ['C3', 'Cz', 'C4']
         elif task_name == "Left Hand vs Right Hand vs Feet vs Tongue MI":
             self.channels = ["C3", "Cz", "C4", "Fz", "Pz"]
+        elif task_name == "Five Fingers MI":
+            self.channels = ["Fp1", "Fp2", "F3", "F4", "C3", "C4", "P3", "P4", "O1", "O2", "A1", "A2", "F7", "F8", "T3", "T4", "T5", "T6", "Fz", "Cz", "Pz"]
+        else:
+            raise ValueError("Invalid task name: ", task_name)
 
     @abstractmethod
     def fit(self, X: List[np.ndarray], y: List[np.ndarray], meta: List[Dict]) -> None:
