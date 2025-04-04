@@ -1,9 +1,0 @@
-
-======================== Task Overview ========================
-                  Task: abnormal_clinical                   
-      Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
-TUEG Abnormal            499            49               [241, 258]                [21, 28]
-------------------------- BENDR Model -------------------------
-      Dataset  Accuracy  Balanced Accuracy  Precision   Recall  F1 Score      AUC
-     Combined  0.714286           0.708333   0.714286 0.714286  0.714286 0.708333
-TUEG Abnormal  0.714286           0.708333   0.714286 0.714286  0.714286 0.708333
