@@ -5,22 +5,18 @@ import torch
 import os
 import random
 import numpy as np
-import pandas as pd
 from mne.io import BaseRaw
 from torch import manual_seed
-from .NeuroGPT.src.batcher.downstream_dataset import MotorImageryDataset, BCIDataset
 from .NeuroGPT.src.encoder.conformer_braindecode import EEGConformer
 from .NeuroGPT.src.decoder.make_decoder import make_decoder
 from .NeuroGPT.src.embedder.make import make_embedder
 from .NeuroGPT.src.decoder.unembedder import make_unembedder
 from .NeuroGPT.src.trainer.make import make_trainer
-from .NeuroGPT.src.utils import cv_split_bci
 from .NeuroGPT.src.model import Model
-from sklearn.model_selection import train_test_split
 from .LaBraM.make_dataset_2 import make_dataset as make_dataset_2
 from .LaBraM.utils_2 import calc_class_weights, map_label_reverse
-from joblib import Memory
 from ...utils.config import get_config_value
+import logging
 
 
 def make_model(model_config: Dict=None, class_weights: List[float]=None) -> Model:
@@ -123,6 +119,8 @@ class NeuroGPTModel(AbstractModel):
     ):
         super().__init__("NeuroGPTModel")
         assert torch.cuda.is_available(), "CUDA is not available"
+        logging.info("Initializing NeuroGPTModel")
+
         self.use_cache = True
         self.chunk_len_s = None
 
