@@ -10,6 +10,8 @@ from sklearn.metrics import (
     recall_score,
     f1_score,
     roc_auc_score,
+    average_precision_score,
+    cohen_kappa_score,
 )
 
 def one_hot_encode(y):
@@ -20,7 +22,7 @@ def one_hot_encode(y):
 from datetime import datetime
 
 def print_classification_results(
-        y_train, y_test, model_names, y_preds, dataset_names, task_name, save_to_file=False):
+        y_train, y_test, model_names, y_preds, dataset_names, task_name, metrics):
     # Assuming y_train and y_test are lists of numpy arrays
 
     # Gather basic statistics
@@ -62,14 +64,18 @@ def print_classification_results(
         return {
             "Accuracy": accuracy_score(y_true, y_pred),
             "Balanced Accuracy": balanced_accuracy_score(y_true, y_pred),
-            "Precision": precision_score(y_true, y_pred, average="weighted"),
-            "Recall": recall_score(y_true, y_pred, average="weighted"),
-            "F1 Score": f1_score(y_true, y_pred, average="weighted"),
-            "AUC": (
-                roc_auc_score(one_hot_encode(y_true), one_hot_encode(y_pred), multi_class="ovr")
-                if len(np.unique(y_true)) > 2
-                else (roc_auc_score(y_true, y_pred) if len(y_true) > 0 else 0)
+            "Weighted F1": f1_score(y_true, y_pred, average="weighted"),
+            "ROC AUC": (
+            roc_auc_score(one_hot_encode(y_true), one_hot_encode(y_pred), multi_class="ovr")
+            if len(np.unique(y_true)) > 2
+            else (roc_auc_score(y_true, y_pred) if len(y_true) > 0 else 0)
             ),
+            "Average Precision": (
+            average_precision_score(y_true, y_pred)
+            if len(np.unique(y_true)) == 2
+            else average_precision_score(one_hot_encode(y_true), one_hot_encode(y_pred), average="macro")
+            ),
+            "Cohen Kappa": cohen_kappa_score(y_true, y_pred),
         }
 
     # Iterate over models and create tables
@@ -95,7 +101,7 @@ def print_classification_results(
         # Create a DataFrame for tabular formatting
         metrics_table = pd.DataFrame(
             results,
-            columns=["Dataset", "Accuracy", "Balanced Accuracy", "Precision", "Recall", "F1 Score", "AUC"],
+            columns=["Dataset", "Accuracy", "Balanced Accuracy", "Weighted F1", "ROC AUC", "Average Precision", "Cohen Kappa"],
         )
 
         # Append table to output
@@ -142,7 +148,7 @@ def save_evaluation_plots(model_names, dataset_names, all_metrics, task_name, ou
         plt.savefig(os.path.join(output_dir, f"metrics_{model_name}_{task_name}.png"))
         plt.close()
 
-def generate_classification_plots(y_train, y_test, model_names, y_preds, dataset_names, task_name, output_dir="plots"):
+def generate_classification_plots(y_train, y_test, model_names, y_preds, dataset_names, task_name, metrics, output_dir="plots"):
     train_samples = [len(y) for y in y_train]
     test_samples = [len(y) for y in y_test]
     
