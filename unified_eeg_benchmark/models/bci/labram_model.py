@@ -1,51 +1,26 @@
 from ..abstract_model import AbstractModel
 from typing import List, Dict, cast, Literal
 import numpy as np
-from .LaBraM.make_dataset import make_dataset, make_dataset_abnormal, make_dataset_pd
-import argparse
-from pathlib import Path
+from .LaBraM.make_dataset import make_dataset
+from .LaBraM.utils_2 import calc_class_weights, reverse_map_label, n_unique_labels
 from .LaBraM import utils
 import torch
 from timm.models import create_model
-import torch.backends.cudnn as cudnn
-from timm.utils import ModelEma
-from timm.utils import NativeScaler
-from collections import OrderedDict
-from torch.utils.data import DataLoader
-from timm.loss import LabelSmoothingCrossEntropy, SoftTargetCrossEntropy
-from torch.utils.data.distributed import DistributedSampler
-import os
 import random
 import numpy as np
-import time
 import datetime
-import json
-from .LaBraM.optim_factory import create_optimizer, get_parameter_groups, LayerDecayValueAssigner
-from .LaBraM.engine_for_finetuning import train_one_epoch, evaluate
-from einops import rearrange
 from mne.io import BaseRaw
-from scipy import stats
 from .LaBraM import modeling_finetune # important to load the models
 import torch.nn as nn
 import torch
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 import math
 from joblib import Memory
 from ...utils.config import get_config_value
 from datetime import datetime
+import logging
 import matplotlib.pyplot as plt
-
-
-def seed_torch(seed=1029):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)  # if using multi-GPU
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True
-
-seed_torch(7)
 
 class LinearWithConstraint(nn.Linear):
     def __init__(self, *args, doWeightNorm = True, max_norm=1, **kwargs):
@@ -88,7 +63,7 @@ class LaBraMBCIModel(nn.Module):
             for p in blk.parameters():
                 p.requires_grad = True
         self.feature = model
-        self.head = LinearWithConstraint(200, num_classes, max_norm=1)  # This layer follows the features
+        self.head = nn.Linear(200, num_classes) #LinearWithConstraint(200, num_classes, max_norm=1)  # This layer follows the features
         self.loss_fn = nn.CrossEntropyLoss()
 
     def forward(self, x, input_chans):
@@ -99,27 +74,14 @@ class LaBraMBCIModel(nn.Module):
         x = x.reshape((B, C, T // 200, 200))
         x = x / 100
         
-        #min_val = x.min().item()
-        #max_val = x.max().item()
-        #print(f"EEG values range: [{min_val}, {max_val}]")
-
         pred = self.feature.forward_features(x, input_chans=input_chans, return_all_tokens=False)
-        # pred has the dim [B, 89, 200]
-        #cls = pred[:, 0, :]
-        #tokens = pred[:, 1:, :]
-        # cls has the dim [B, 200]
-        # tokens has the dim [B, 88, 200]
-        # take the mean of the tokens, resuls in [B, 200]
-        #tokens = tokens.mean(dim=1)
-        #pred = torch.cat([cls, tokens], dim=1)
+
         pred = self.head(pred.flatten(1))
         return x, pred
 
 def train_epoch(model, dataloader, optimizer, scheduler, device, input_chans):
     model.train()
-    running_loss = 0.0
-    running_corrects = 0
-    total_samples = 0
+    running_loss, running_corrects, total_samples = 0.0, 0, 0
     
     for batch in tqdm(dataloader, desc="Training", leave=False):
         x, y = batch
@@ -184,8 +146,7 @@ def inference(model, dataloader, device, input_chans):
     model.eval()
     predictions = []
     with torch.no_grad():
-        for batch in tqdm(dataloader, desc="Testing", leave=False):
-            x, _ = batch
+        for x in tqdm(dataloader, desc="Testing", leave=False):
             x = x.to(device)
             _, logits = model(x, input_chans)
             preds = torch.argmax(logits, dim=1)
@@ -199,21 +160,26 @@ class LaBraMModel(AbstractModel):
         self,
     ):
         super().__init__("LaBraMModel")
-        print("inside init")
+        print("inside init of LaBraMModel")
         assert torch.cuda.is_available(), "CUDA is not available"
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = LaBraMBCIModel(num_classes=2).to(self.device)
         self.cache = Memory(location=get_config_value("cache"), verbose=0)
 
 
     def fit(self, X: List[np.ndarray|List[BaseRaw]], y: List[np.ndarray|List[str]], meta: List[Dict]) -> None:
-        print("inside fit")
+        print("inside fit of LaBraMModel")
+        logging.info("inside fit of LaBraMModel")
         task_name = meta[0]["task_name"]
-        datasets = [self.cache.cache(make_dataset)(X_, y_, task_name, meta_["sampling_frequency"], meta_["channel_names"], train=True) for X_, y_, meta_ in zip(cast(List[np.ndarray], X), cast(List[np.ndarray], y), meta)]
+
+        num_classes = n_unique_labels(task_name)
+        self.model = LaBraMBCIModel(num_classes=num_classes).to(self.device)
+
+        datasets = [self.cache.cache(make_dataset)(X_, y_, task_name, meta_["sampling_frequency"], meta_["channel_names"], train=True, split_size=0.15)
+                for X_, y_, meta_ in tqdm(zip(cast(List[np.ndarray], X), cast(List[np.ndarray], y), meta),
+                              desc="Creating datasets", total=len(meta))]
         dataset_train_list = [dataset[0] for dataset in datasets]
         dataset_val_list = [dataset[1] for dataset in datasets]
-        del X, y, meta
 
         dataset_train_list = [dataset for dataset in dataset_train_list if len(dataset) > 0]        
         ch_names_list_train = [dataset.ch_names for dataset in dataset_train_list]
@@ -221,21 +187,28 @@ class LaBraMModel(AbstractModel):
             dataset_val_list = [dataset for dataset in dataset_val_list if len(dataset) > 0]
             ch_names_list_val = [dataset.ch_names for dataset in dataset_val_list]
 
-
+        class_weights = torch.tensor(calc_class_weights(y, task_name)).to(self.device)
+        print("class_weights", class_weights)
+        self.model.loss_fn = torch.nn.CrossEntropyLoss(weight=class_weights)
+        del X, y, meta
 
         torch.cuda.empty_cache()
 
         batch_size = 64
-        train_loader_list = [torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, num_workers=0, shuffle=True) for train_dataset in dataset_train_list]
-        valid_loader_list = [torch.utils.data.DataLoader(valid_dataset, batch_size=batch_size, num_workers=0, shuffle=False) for valid_dataset in dataset_val_list]
+        train_loader_list = [DataLoader(train_dataset, batch_size=batch_size, num_workers=0, shuffle=True) for train_dataset in dataset_train_list]
+        valid_loader_list = [DataLoader(valid_dataset, batch_size=batch_size, num_workers=0, shuffle=False) for valid_dataset in dataset_val_list]
         
-        max_epochs = 20
+        max_epochs = 50
         steps_per_epoch = math.ceil(sum([len(train_loader) for train_loader in train_loader_list]))
         max_lr = 4e-4
         
         
         # Set up optimizer and OneCycleLR scheduler
-        optimizer = torch.optim.AdamW(list(self.model.head.parameters()) + list(self.model.feature.parameters()), lr=6e-6, weight_decay=0.01)
+        optimizer = torch.optim.AdamW(
+            list(self.model.head.parameters()) + 
+            list(self.model.feature.parameters()), 
+            lr=1e-6, 
+            weight_decay=0.01)
         scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=max_lr, steps_per_epoch=steps_per_epoch, epochs=max_epochs, pct_start=0.2)
         
 
@@ -254,7 +227,9 @@ class LaBraMModel(AbstractModel):
             epoch_train_acc = 0
             num_train_batches = 0
             
-            for train_loader, ch_names in zip(train_loader_list, ch_names_list_train):
+            train_pairs = list(zip(train_loader_list, ch_names_list_train))
+            random.shuffle(train_pairs)
+            for train_loader, ch_names in train_pairs:
                 input_chans = utils.get_input_chans(ch_names)
                 train_loss, train_acc = train_epoch(self.model, train_loader, optimizer, scheduler, self.device, input_chans)
                 epoch_train_loss += train_loss
@@ -290,13 +265,13 @@ class LaBraMModel(AbstractModel):
             val_accuracies.append(avg_val_acc)
             
             # Optionally save the best model based on validation loss
-            #if val_loss < best_val_loss:
-            #    best_val_loss = val_loss
-            #    best_model_state = self.model.state_dict()
+            if avg_val_loss < best_val_loss:
+                best_val_loss = avg_val_loss
+                best_model_state = self.model.state_dict()
         
         # Load the best model (if saved)
-        #if best_model_state is not None:
-        #    self.model.load_state_dict(best_model_state)
+        if best_model_state is not None:
+            self.model.load_state_dict(best_model_state)
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # Format the current date and time
 
@@ -335,14 +310,16 @@ class LaBraMModel(AbstractModel):
     def predict(self, X: List[np.ndarray|List[BaseRaw]], meta: List[Dict]) -> np.ndarray:
         print("inside predict")
         task_name = meta[0]["task_name"]
-        dataset_test_list = [self.cache.cache(make_dataset)(X_, None, task_name, meta_["sampling_frequency"], meta_["channel_names"], train=False) for X_, meta_ in zip(cast(List[np.ndarray], X), meta)]
+        dataset_test_list = [self.cache.cache(make_dataset)(X_, None, task_name, meta_["sampling_frequency"], meta_["channel_names"], train=False, split_size=0) 
+                             for X_, meta_ in tqdm(zip(cast(List[np.ndarray], X), meta),
+                             desc="Creating datasets", total=len(meta))]
         dataset_test_list = [dataset for dataset in dataset_test_list if len(dataset) > 0]
         print("datasets length: ", len(dataset_test_list[0]))
         ch_names_list = [dataset.ch_names for dataset in dataset_test_list]
         # Inference on test set
 
         batch_size = 64
-        test_loader_list = [torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, num_workers=0, shuffle=False) for test_dataset in dataset_test_list]
+        test_loader_list = [DataLoader(test_dataset, batch_size=batch_size, num_workers=0, shuffle=False) for test_dataset in dataset_test_list]
 
         predictions = []
         for test_loader, ch_names in zip(test_loader_list, ch_names_list):
@@ -350,11 +327,9 @@ class LaBraMModel(AbstractModel):
             predictions.append(inference(self.model, test_loader, self.device, input_chans).cpu())
         
         predictions = torch.cat(predictions, dim=0).numpy()
-        print(predictions.shape)
 
-        reverse_label_mapping = {0: 'left_hand', 1: 'right_hand', 2: 'feet', 3: 'tongue'}
-        mapped_pred = np.array([reverse_label_mapping[idx] for idx in predictions])
+        mapped_pred = np.array([reverse_map_label(idx, task_name) for idx in predictions])
         
-        print(mapped_pred.shape)
+        print(mapped_pred)
         return mapped_pred
         

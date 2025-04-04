@@ -39,7 +39,7 @@ class EEGDataset(Dataset):
             self.filenames = [root_path + fn for fn in filenames if os.path.isfile(root_path+fn)]
             self.root_path = root_path
             
-        print("Number of subjects loaded: ", len(self.filenames))
+        #print("Number of subjects loaded: ", len(self.filenames))
         # self.data = data_all
         self.chunk_len = chunk_len
         self.num_chunks = num_chunks
@@ -169,5 +169,5 @@ class EEGDataset(Dataset):
 
         if labels is not None:
             out['labels'] = torch.from_numpy(np.array(labels)).to(torch.long)
-   
+    
         return out

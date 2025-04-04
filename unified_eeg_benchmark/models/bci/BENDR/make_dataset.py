@@ -1,4 +1,5 @@
 from .bendr_datasets import BENDRBCIDataset
+from ..LaBraM.utils_2 import map_label, n_unique_labels
 import numpy as np
 from typing import List, Tuple, Optional, cast
 from resampy import resample
@@ -87,16 +88,8 @@ def make_dataset(data: np.ndarray, labels: np.ndarray|None, task_name: str, samp
 
     # One hot encode labels if they are not None
     if labels is not None:
-        if task_name == "Left Hand vs Right Hand MI":
-            label_mapping = {'left_hand': 0, 'right_hand': 1}
-        elif task_name == "Right Hand vs Feet MI":
-            label_mapping = {'right_hand': 0, 'feet': 1}
-        elif task_name == "Left Hand vs Right Hand vs Feet vs Tongue MI":
-            label_mapping = {'left_hand': 0, 'right_hand': 1, 'feet': 2, 'tongue':3 }
-        else:
-            raise ValueError("Invalid task name")
-        labels = np.vectorize(label_mapping.get)(labels)
-        labels = np.eye(len(label_mapping))[labels]
+        labels = np.array([map_label(label, task_name) for label in labels])
+        labels = np.eye(n_unique_labels(task_name))[labels]
         print("labels shape: ", labels.shape)  
     if train:
         data_train, data_val, labels_train, labels_val = train_test_split(data, labels, test_size=0.1, random_state=42)
