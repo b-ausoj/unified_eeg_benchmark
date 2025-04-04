@@ -67,7 +67,7 @@ class AbstractClinicalTask(ABC):
         return self.name
 
     @abstractmethod
-    def get_scoring(self):
+    def get_metrics(self):
         """
         Retrieve the scoring function associated with this task.
 

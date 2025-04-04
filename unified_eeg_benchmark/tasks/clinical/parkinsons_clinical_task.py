@@ -85,5 +85,5 @@ class ParkinsonsClinicalTask(AbstractClinicalTask):
             m["task_name"] = self.name
         return X, y, meta
 
-    def get_scoring(self):
+    def get_metrics(self):
         return lambda y, y_pred: f1_score(y, y_pred.ravel())

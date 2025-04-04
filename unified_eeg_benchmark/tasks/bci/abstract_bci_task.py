@@ -60,7 +60,7 @@ class AbstractBCITask(ABC):
         ]
 
         X, y, meta = map(list, zip(*data))
-        
+
         for m in meta:
             m['task_name'] = self.name
 
@@ -70,7 +70,7 @@ class AbstractBCITask(ABC):
         return self.name
 
     @abstractmethod
-    def get_scoring(self):
+    def get_metrics(self):
         """
         Retrieve the scoring function associated with this task.
 

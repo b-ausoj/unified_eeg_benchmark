@@ -48,5 +48,5 @@ class EpilepsyClinicalTask(AbstractClinicalTask):
         """
         return super().get_data(split) # type: ignore
 
-    def get_scoring(self):
+    def get_metrics(self):
         return lambda y, y_pred: f1_score(y, y_pred.ravel())

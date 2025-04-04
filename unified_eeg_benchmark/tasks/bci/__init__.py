@@ -7,3 +7,4 @@ from .left_hand_right_hand_feet_tongue_mi_task import LeftHandvRightHandvFeetvTo
 from .left_hand_right_hand_mi_task import LeftHandvRightHandMITask
 from .pronation_supinatoin_mi_task import PronationvSupinationMITask
 from .right_hand_feet_mi_task import RightHandvFeetMITask
+from .five_fingers_mi_task import FiveFingersMITask
