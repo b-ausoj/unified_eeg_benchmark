@@ -39,7 +39,6 @@ def _load_data_cavanagh2017b(split: Split, subjects: Sequence[int], target_class
                 mat_1 = loadmat(file_name_1, simplify_cells=True)
                 signals = mat_1['EEG']['data']
                 signals = signals[:63, :]
-                signals = np.clip(signals, -800, 800)
                 data.append(signals)
                 if target_class == ClinicalClasses.PARKINSONS:
                     labels.append("parkinsons")
@@ -57,7 +56,6 @@ def _load_data_cavanagh2017b(split: Split, subjects: Sequence[int], target_class
                 mat_2 = loadmat(file_name_2, simplify_cells=True)
                 signals = mat_2['EEG']['data']
                 signals = signals[:63, :]
-                signals = np.clip(signals, -800, 800)
                 data.append(signals)
                 if target_class == ClinicalClasses.PARKINSONS:
                     labels.append("parkinsons")
@@ -77,7 +75,6 @@ def _load_data_cavanagh2017b(split: Split, subjects: Sequence[int], target_class
             mat = loadmat(file_name, simplify_cells=True)
             signals = mat['EEG']['data']
             signals = signals[:63, :]
-            signals = np.clip(signals, -800, 800)
             data.append(signals)
             if target_class == ClinicalClasses.PARKINSONS:
                 labels.append("no_parkinsons")
