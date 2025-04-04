@@ -20,7 +20,7 @@ class CSPSVMModel(AbstractModel):
         channels=["C3", "Cz", "C4"],
     ):
         super().__init__("CSP-SVM")
-        self.svm = SVC(kernel=kernel, C=C, random_state=random_state)
+        self.svm = SVC(kernel=kernel, C=C, random_state=random_state, class_weight="balanced")
         self.csp = CSP(n_components=n_components, reg=reg, log=log)
         self.resample_rate = resample_rate
         self.channels = channels
