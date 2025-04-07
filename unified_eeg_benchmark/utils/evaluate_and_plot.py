@@ -76,6 +76,8 @@ def print_classification_results(
             else average_precision_score(one_hot_encode(y_true), one_hot_encode(y_pred), average="macro")
             ),
             "Cohen Kappa": cohen_kappa_score(y_true, y_pred),
+            "Precision": precision_score(y_true, y_pred, average="weighted"),
+            "Recall": recall_score(y_true, y_pred, average="weighted"),
         }
 
     # Iterate over models and create tables
@@ -101,7 +103,7 @@ def print_classification_results(
         # Create a DataFrame for tabular formatting
         metrics_table = pd.DataFrame(
             results,
-            columns=["Dataset", "Accuracy", "Balanced Accuracy", "Weighted F1", "ROC AUC", "Average Precision", "Cohen Kappa"],
+            columns=["Dataset", "Accuracy", "Balanced Accuracy", "Weighted F1", "ROC AUC", "Average Precision", "Cohen Kappa", "Precision", "Recall"],
         )
 
         # Append table to output
