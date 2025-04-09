@@ -31,6 +31,10 @@ def save_results(
     # Build the filename with task name, models, and timestamp
     filename = os.path.join("results", "raw", f"{task_name}_{models_str}_{timestamp}.json")
 
+    y_train = [y.tolist() for y in y_train if isinstance(y, np.ndarray)]
+    y_test = [y.tolist() for y in y_test if isinstance(y, np.ndarray)]
+    results = [result.tolist() for result in results if isinstance(result, np.ndarray)]
+
     # Prepare the data to be saved
     data_to_save = {
         "y_train": y_train,

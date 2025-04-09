@@ -132,7 +132,7 @@ class NeuroGPTModel(AbstractModel):
         self.config = {
             "training_style": "decoding",
             "num_decoding_classes": 2,
-            "training_steps": 20000,
+            "training_steps": 25000,
             "eval_every_n_steps": 1000,
             "log_every_n_steps": 500,
             "num_chunks": 2,
@@ -203,7 +203,7 @@ class NeuroGPTModel(AbstractModel):
             manual_seed(self.config["seed"])
 
     def fit(self, X: List[np.ndarray|List[BaseRaw]], y: List[np.ndarray|List[str]], meta: List[Dict]) -> None:
-        print("inside fit")
+        print("inside fit NeuroGPT")
 
         task_name = meta[0]["task_name"]
 

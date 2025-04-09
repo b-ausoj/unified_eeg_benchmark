@@ -134,14 +134,14 @@ class BENDRModel(AbstractModel):
         self,
     ):
         super().__init__("BENDR Model")
-        print("inside init")
+        print("inside init BENDR")
         assert torch.cuda.is_available(), "CUDA is not available"
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.cache = Memory(location=get_config_value("cache"), verbose=0)
 
     def fit(self, X: List[np.ndarray|List[BaseRaw]], y: List[np.ndarray|List[str]], meta: List[Dict]) -> None:
-        print("inside fit")
+        print("inside fit BENDR")
         task_name = meta[0]["task_name"]
         
         num_classes = n_unique_labels(task_name)

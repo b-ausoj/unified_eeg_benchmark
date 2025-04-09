@@ -8,5 +8,7 @@ plots/
 checkpoints/
 cli_master_split.json
 bci2a_eeg_npz/
-results/models/
+results/
 pretrained_model/
+unified_eeg_benchmark.code-workspace
+hidden/
