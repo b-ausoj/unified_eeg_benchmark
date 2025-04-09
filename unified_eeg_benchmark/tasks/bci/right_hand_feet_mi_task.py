@@ -1,8 +1,8 @@
 from .abstract_bci_task import AbstractBCITask
 from ...datasets.bci import (
-    Weibo2013MDataset,
+    Weibo2014MDataset,
     Schirrmeister2017MDataset,
-    Schalk2004MDataset,
+    PhysionetMIMDataset,
     BCICompIV2aMDataset,
     Barachant2012MDataset,
     Zhou2016MDataset,
@@ -24,9 +24,9 @@ class RightHandvFeetMITask(AbstractBCITask):
             name="Right Hand vs Feet MI",
             classes=[Classes.RIGHT_HAND_MI, Classes.FEET_MI],
             datasets=[
-                Weibo2013MDataset,
+                Weibo2014MDataset,
                 Schirrmeister2017MDataset,
-                Schalk2004MDataset,
+                PhysionetMIMDataset,
                 BCICompIV2aMDataset,
                 Barachant2012MDataset,
                 Zhou2016MDataset,
@@ -36,7 +36,7 @@ class RightHandvFeetMITask(AbstractBCITask):
                 Kaya2018Dataset,
             ],
             subjects_split={
-                Weibo2013MDataset: {
+                Weibo2014MDataset: {
                     Split.TRAIN: [1, 2, 3, 4, 5, 6, 7, 8],
                     Split.TEST: [9, 10],
                 },
@@ -44,7 +44,7 @@ class RightHandvFeetMITask(AbstractBCITask):
                     Split.TRAIN: list(range(1, 12)),
                     Split.TEST: list(range(12, 15)),
                 },
-                Schalk2004MDataset: {
+                PhysionetMIMDataset: {
                     Split.TRAIN: list(range(1, 88)),
                     Split.TEST: list(range(89, 92)) + list(range(93, 100)) + list(range(101, 110)),
                 },

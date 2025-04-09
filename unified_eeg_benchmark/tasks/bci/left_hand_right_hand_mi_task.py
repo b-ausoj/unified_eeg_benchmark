@@ -2,13 +2,13 @@ from .abstract_bci_task import AbstractBCITask
 from ...datasets.bci import (
     BCICompIV2aMDataset,
     BCICompIV2bMDataset,
-    Weibo2013MDataset,
+    Weibo2014MDataset,
     Cho2017MDataset,
     GrosseWentrup2009MDataset,
     Lee2019MDataset,
     Liu2022MDataset,
     Schirrmeister2017MDataset,
-    Schalk2004MDataset,
+    PhysionetMIMDataset,
     Zhou2016MDataset,
     Kaya2018Dataset,
     Shin2017AMDataset,
@@ -26,13 +26,13 @@ class LeftHandvRightHandMITask(AbstractBCITask):
             datasets=[
                 BCICompIV2aMDataset,
                 BCICompIV2bMDataset,
-                Weibo2013MDataset,
+                Weibo2014MDataset,
                 Cho2017MDataset,
                 #GrosseWentrup2009MDataset, # no channel names
                 #Lee2019MDataset, # some errors in some subjects
                 Liu2022MDataset, # gave rather bad results
                 Schirrmeister2017MDataset,
-                Schalk2004MDataset,
+                PhysionetMIMDataset,
                 Zhou2016MDataset,
                 Kaya2018Dataset,
                 #Shin2017AMDataset, # not same channels, did some remapping but still not good
@@ -46,7 +46,7 @@ class LeftHandvRightHandMITask(AbstractBCITask):
                     Split.TRAIN: [1, 2, 3, 4, 5, 6, 7],
                     Split.TEST: [8, 9],
                 },
-                Weibo2013MDataset: {
+                Weibo2014MDataset: {
                     Split.TRAIN: [1, 2, 3, 4, 5, 6, 7, 8],
                     Split.TEST: [9, 10],
                 },
@@ -70,7 +70,7 @@ class LeftHandvRightHandMITask(AbstractBCITask):
                     Split.TRAIN: list(range(1, 12)),
                     Split.TEST: list(range(12, 15)),
                 },
-                Schalk2004MDataset: {
+                PhysionetMIMDataset: {
                     Split.TRAIN: list(range(1, 88)),
                     Split.TEST: list(range(89, 92)) + list(range(93, 100)) + list(range(101, 110)),
                 },

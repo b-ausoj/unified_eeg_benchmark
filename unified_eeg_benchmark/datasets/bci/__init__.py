@@ -7,11 +7,11 @@ from .grossewentrup2009_m import GrosseWentrup2009MDataset
 from .lee2019_m import Lee2019MDataset
 from .liu2022_m import Liu2022MDataset
 from .ofner2017_m import Ofner2017MDataset
-from .schalk2004_m import Schalk2004MDataset
+from .physionetmi_m import PhysionetMIMDataset
 from .schirrmeister2017_m import Schirrmeister2017MDataset
 from .shin2017a_m import Shin2017AMDataset
 from .stieger2021_m import Stieger2021MDataset
-from .weibo2013_m import Weibo2013MDataset
+from .weibo2014_m import Weibo2014MDataset
 from .zhou2016_m import Zhou2016MDataset
 from .steyrl2016_m import Steyrl2016MDataset
 from .faller2012_m import Faller2012MDataset
