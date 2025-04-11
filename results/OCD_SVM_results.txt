@@ -1,0 +1,25 @@
+
+======================== Task Overview ========================
+                     Task: ocd_clinical                     
+    Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
+OCDFlankers             35            11                 [18, 17]                  [6, 5]
+------------------------- Brainfeatures-SVM -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.636364           0.633333     0.636364 0.633333           0.541818     0.266667
+OCDFlankers  0.636364           0.633333     0.636364 0.633333           0.541818     0.266667
+------------------------- Brainfeatures-SVM -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.636364           0.633333     0.636364 0.633333           0.541818     0.266667
+OCDFlankers  0.636364           0.633333     0.636364 0.633333           0.541818     0.266667
+------------------------- Brainfeatures-SVM -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.636364           0.633333     0.636364 0.633333           0.541818     0.266667
+OCDFlankers  0.636364           0.633333     0.636364 0.633333           0.541818     0.266667
+------------------------- Brainfeatures-SVM -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.636364           0.633333     0.636364 0.633333           0.541818     0.266667
+OCDFlankers  0.636364           0.633333     0.636364 0.633333           0.541818     0.266667
+------------------------- Brainfeatures-SVM -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.636364           0.633333     0.636364 0.633333           0.541818     0.266667
+OCDFlankers  0.636364           0.633333     0.636364 0.633333           0.541818     0.266667

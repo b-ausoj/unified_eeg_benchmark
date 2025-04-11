@@ -1,0 +1,25 @@
+
+======================== Task Overview ========================
+                     Task: ocd_clinical                     
+    Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
+OCDFlankers             35            11                 [18, 17]                  [6, 5]
+------------------------- NeuroGPTModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.727273           0.733333     0.727273 0.733333           0.624242     0.459016
+OCDFlankers  0.727273           0.733333     0.727273 0.733333           0.624242     0.459016
+------------------------- NeuroGPTModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.818182           0.833333     0.815152 0.833333           0.714286     0.645161
+OCDFlankers  0.818182           0.833333     0.815152 0.833333           0.714286     0.645161
+------------------------- NeuroGPTModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.636364           0.666667     0.597403 0.666667           0.555556       0.3125
+OCDFlankers  0.636364           0.666667     0.597403 0.666667           0.555556       0.3125
+------------------------- NeuroGPTModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.636364           0.633333     0.636364 0.633333           0.541818     0.266667
+OCDFlankers  0.636364           0.633333     0.636364 0.633333           0.541818     0.266667
+------------------------- NeuroGPTModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.636364               0.65     0.630303     0.65           0.548052     0.290323
+OCDFlankers  0.636364               0.65     0.630303     0.65           0.548052     0.290323

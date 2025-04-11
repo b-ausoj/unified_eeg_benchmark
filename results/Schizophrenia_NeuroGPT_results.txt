@@ -1,0 +1,25 @@
+
+======================== Task Overview ========================
+                Task: schizophrenia_clinical                
+              Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
+SchizophreniaConflict             63            13                 [25, 38]                  [6, 7]
+------------------------- NeuroGPTModel -------------------------
+              Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+             Combined  0.538462           0.535714     0.538462 0.535714             0.5573     0.071429
+SchizophreniaConflict  0.538462           0.535714     0.538462 0.535714             0.5573     0.071429
+------------------------- NeuroGPTModel -------------------------
+              Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+             Combined  0.538462            0.52381     0.521154  0.52381           0.550672      0.04878
+SchizophreniaConflict  0.538462            0.52381     0.521154  0.52381           0.550672      0.04878
+------------------------- NeuroGPTModel -------------------------
+              Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+             Combined  0.538462            0.52381     0.521154  0.52381           0.550672      0.04878
+SchizophreniaConflict  0.538462            0.52381     0.521154  0.52381           0.550672      0.04878
+------------------------- NeuroGPTModel -------------------------
+              Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+             Combined  0.538462            0.52381     0.521154  0.52381           0.550672      0.04878
+SchizophreniaConflict  0.538462            0.52381     0.521154  0.52381           0.550672      0.04878
+------------------------- NeuroGPTModel -------------------------
+              Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+             Combined  0.615385           0.619048     0.615385 0.619048           0.611722     0.235294
+SchizophreniaConflict  0.615385           0.619048     0.615385 0.619048           0.611722     0.235294

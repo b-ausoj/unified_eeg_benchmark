@@ -1,0 +1,25 @@
+
+======================== Task Overview ========================
+                   Task: Five Fingers MI                    
+ Dataset  Train Samples  Test Samples       Train Class Distribution   Test Class Distribution
+Kaya2018          16172          1899 [2965, 3190, 3324, 3201, 3492] [343, 371, 392, 377, 416]
+------------------------- LaBraMModel -------------------------
+ Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+Combined  0.348078           0.344923     0.342867 0.590885           0.252044     0.183716   0.349793 0.348078
+Kaya2018  0.348078           0.344923     0.342867 0.590885           0.252044     0.183716   0.349793 0.348078
+------------------------- LaBraMModel -------------------------
+ Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision  Recall
+Combined   0.35387           0.351715     0.349759 0.595036           0.255107     0.191365   0.355484 0.35387
+Kaya2018   0.35387           0.351715     0.349759 0.595036           0.255107     0.191365   0.355484 0.35387
+------------------------- LaBraMModel -------------------------
+ Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision  Recall
+Combined   0.36019           0.356857     0.354773  0.59832           0.257673     0.198544   0.363925 0.36019
+Kaya2018   0.36019           0.356857     0.354773  0.59832           0.257673     0.198544   0.363925 0.36019
+------------------------- LaBraMModel -------------------------
+ Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+Combined  0.367562           0.364393     0.362384 0.603043           0.262836        0.208   0.370841 0.367562
+Kaya2018  0.367562           0.364393     0.362384 0.603043           0.262836        0.208   0.370841 0.367562
+------------------------- LaBraMModel -------------------------
+ Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+Combined  0.354397           0.352421     0.352653 0.595459           0.256531      0.19208   0.360442 0.354397
+Kaya2018  0.354397           0.352421     0.352653 0.595459           0.256531      0.19208   0.360442 0.354397

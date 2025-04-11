@@ -1,0 +1,25 @@
+
+======================== Task Overview ========================
+                    Task: mtbi_clinical                     
+    Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
+MTBIOddball            149            28                 [64, 85]                 [9, 19]
+------------------------- Brainfeatures-SVM -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.607143           0.622807     0.620083 0.622807           0.740602     0.214286
+MTBIOddball  0.607143           0.622807     0.620083 0.622807           0.740602     0.214286
+------------------------- Brainfeatures-SVM -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.607143           0.622807     0.620083 0.622807           0.740602     0.214286
+MTBIOddball  0.607143           0.622807     0.620083 0.622807           0.740602     0.214286
+------------------------- Brainfeatures-SVM -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.607143           0.622807     0.620083 0.622807           0.740602     0.214286
+MTBIOddball  0.607143           0.622807     0.620083 0.622807           0.740602     0.214286
+------------------------- Brainfeatures-SVM -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.607143           0.622807     0.620083 0.622807           0.740602     0.214286
+MTBIOddball  0.607143           0.622807     0.620083 0.622807           0.740602     0.214286
+------------------------- Brainfeatures-SVM -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.607143           0.622807     0.620083 0.622807           0.740602     0.214286
+MTBIOddball  0.607143           0.622807     0.620083 0.622807           0.740602     0.214286

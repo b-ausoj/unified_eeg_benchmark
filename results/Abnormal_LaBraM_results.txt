@@ -1,0 +1,25 @@
+
+======================== Task Overview ========================
+                  Task: abnormal_clinical                   
+      Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
+TUEG_Abnormal           2717           276             [1346, 1371]              [126, 150]
+------------------------- LaBraMModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.826087           0.820952     0.825084 0.820952           0.782254     0.646833
+TUEG_Abnormal  0.826087           0.820952     0.825084 0.820952           0.782254     0.646833
+------------------------- LaBraMModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.844203           0.838889     0.843201 0.838889           0.799747     0.683419
+TUEG_Abnormal  0.844203           0.838889     0.843201 0.838889           0.799747     0.683419
+------------------------- LaBraMModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.836957           0.832222     0.836119 0.832222           0.794058     0.669118
+TUEG_Abnormal  0.836957           0.832222     0.836119 0.832222           0.794058     0.669118
+------------------------- LaBraMModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.855072           0.849524     0.854041 0.849524           0.810069     0.705317
+TUEG_Abnormal  0.855072           0.849524     0.854041 0.849524           0.810069     0.705317
+------------------------- LaBraMModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.851449            0.84619     0.850494  0.84619           0.807207     0.698143
+TUEG_Abnormal  0.851449            0.84619     0.850494  0.84619           0.807207     0.698143

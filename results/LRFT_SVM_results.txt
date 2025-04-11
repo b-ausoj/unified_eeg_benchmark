@@ -1,0 +1,11 @@
+
+======================== Task Overview ========================
+     Task: Left Hand vs Right Hand vs Feet vs Tongue MI     
+    Dataset  Train Samples  Test Samples Train Class Distribution  Test Class Distribution
+BCICompIV2a           4032          1152 [1008, 1008, 1008, 1008]     [288, 288, 288, 288]
+   Kaya2018          13484          5151 [3295, 3354, 3321, 3514] [1269, 1277, 1272, 1333]
+------------------------- CSP-SVM -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+   Combined  0.284944           0.286851     0.259162 0.524507           0.260714     0.048664   0.279301 0.284944
+BCICompIV2a  0.274306           0.274306     0.168802 0.516204           0.266577     0.032407   0.299866 0.274306
+   Kaya2018  0.287323           0.289396     0.251088 0.526197           0.261423     0.052004   0.287988 0.287323

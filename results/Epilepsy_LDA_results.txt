@@ -1,0 +1,9 @@
+
+======================== Task Overview ========================
+                  Task: epilepsy_clinical                   
+      Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
+TUEG_Epilepsy           1652           389              [1384, 268]              [267, 122]
+------------------------- Brainfeatures-LDA -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined   0.59126           0.530868     0.593432 0.530868           0.328639     0.061057
+TUEG_Epilepsy   0.59126           0.530868     0.593432 0.530868           0.328639     0.061057

@@ -1,0 +1,25 @@
+
+======================== Task Overview ========================
+                     Task: ocd_clinical                     
+    Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
+OCDFlankers             35            11                 [18, 17]                  [6, 5]
+------------------------- BENDRModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.454545                0.5     0.284091      0.5           0.454545          0.0
+OCDFlankers  0.454545                0.5     0.284091      0.5           0.454545          0.0
+------------------------- BENDRModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.454545           0.466667     0.445455 0.466667           0.438961    -0.064516
+OCDFlankers  0.454545           0.466667     0.445455 0.466667           0.438961    -0.064516
+------------------------- BENDRModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.636364                0.6     0.560606      0.6           0.563636     0.214286
+OCDFlankers  0.636364                0.6     0.560606      0.6           0.563636     0.214286
+------------------------- BENDRModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.454545                0.5     0.284091      0.5           0.454545          0.0
+OCDFlankers  0.454545                0.5     0.284091      0.5           0.454545          0.0
+------------------------- BENDRModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.454545                0.5     0.284091      0.5           0.454545          0.0
+OCDFlankers  0.454545                0.5     0.284091      0.5           0.454545          0.0

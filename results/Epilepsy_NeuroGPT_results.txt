@@ -1,0 +1,25 @@
+
+======================== Task Overview ========================
+                  Task: epilepsy_clinical                   
+      Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
+TUEG_Epilepsy           1652           389              [1384, 268]              [267, 122]
+------------------------- NeuroGPTModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined   0.70437           0.746807      0.71478 0.746807           0.488869     0.418218
+TUEG_Epilepsy   0.70437           0.746807      0.71478 0.746807           0.488869     0.418218
+------------------------- NeuroGPTModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.701799           0.740483     0.712413 0.740483           0.483638      0.40982
+TUEG_Epilepsy  0.701799           0.740483     0.712413 0.740483           0.483638      0.40982
+------------------------- NeuroGPTModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.681234           0.734405     0.691509 0.734405           0.473025     0.387697
+TUEG_Epilepsy  0.681234           0.734405     0.691509 0.734405           0.473025     0.387697
+------------------------- NeuroGPTModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined   0.66838           0.725041     0.678502 0.725041           0.463195     0.368816
+TUEG_Epilepsy   0.66838           0.725041     0.678502 0.725041           0.463195     0.368816
+------------------------- NeuroGPTModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.678663           0.723629     0.689622 0.723629           0.464915     0.374703
+TUEG_Epilepsy  0.678663           0.723629     0.689622 0.723629           0.464915     0.374703

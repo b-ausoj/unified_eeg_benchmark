@@ -1,0 +1,25 @@
+
+======================== Task Overview ========================
+                  Task: epilepsy_clinical                   
+      Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
+TUEG_Epilepsy           1652           389              [1384, 268]              [267, 122]
+------------------------- BENDRModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.683805           0.731826     0.694439 0.731826            0.47199     0.386993
+TUEG_Epilepsy  0.683805           0.731826     0.694439 0.731826            0.47199     0.386993
+------------------------- BENDRModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.722365            0.74211     0.732111  0.74211           0.492728     0.428859
+TUEG_Epilepsy  0.722365            0.74211     0.732111  0.74211           0.492728     0.428859
+------------------------- BENDRModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.658098           0.722002     0.667373 0.722002           0.458682     0.358603
+TUEG_Epilepsy  0.658098           0.722002     0.667373 0.722002           0.458682     0.358603
+------------------------- BENDRModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined   0.70437            0.74013      0.71497  0.74013           0.484301      0.41156
+TUEG_Epilepsy   0.70437            0.74013      0.71497  0.74013           0.484301      0.41156
+------------------------- BENDRModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.727506           0.761436     0.737325 0.761436           0.508021     0.452389
+TUEG_Epilepsy  0.727506           0.761436     0.737325 0.761436           0.508021     0.452389

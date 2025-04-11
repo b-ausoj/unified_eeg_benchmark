@@ -1,0 +1,25 @@
+
+======================== Task Overview ========================
+                  Task: abnormal_clinical                   
+      Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
+TUEG_Abnormal           2717           276             [1346, 1371]              [126, 150]
+------------------------- Brainfeatures-LDA -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.681159           0.676825     0.680397 0.676825           0.656286     0.355003
+TUEG_Abnormal  0.681159           0.676825     0.680397 0.676825           0.656286     0.355003
+------------------------- Brainfeatures-LDA -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.681159           0.676825     0.680397 0.676825           0.656286     0.355003
+TUEG_Abnormal  0.681159           0.676825     0.680397 0.676825           0.656286     0.355003
+------------------------- Brainfeatures-LDA -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.681159           0.676825     0.680397 0.676825           0.656286     0.355003
+TUEG_Abnormal  0.681159           0.676825     0.680397 0.676825           0.656286     0.355003
+------------------------- Brainfeatures-LDA -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.681159           0.676825     0.680397 0.676825           0.656286     0.355003
+TUEG_Abnormal  0.681159           0.676825     0.680397 0.676825           0.656286     0.355003
+------------------------- Brainfeatures-LDA -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.681159           0.676825     0.680397 0.676825           0.656286     0.355003
+TUEG_Abnormal  0.681159           0.676825     0.680397 0.676825           0.656286     0.355003

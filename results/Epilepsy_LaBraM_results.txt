@@ -1,0 +1,25 @@
+
+======================== Task Overview ========================
+                  Task: epilepsy_clinical                   
+      Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
+TUEG_Epilepsy           1652           389              [1384, 268]              [267, 122]
+------------------------- LaBraMModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.732648            0.58935     0.673806  0.58935            0.40945     0.223463
+TUEG_Epilepsy  0.732648            0.58935     0.673806  0.58935            0.40945     0.223463
+------------------------- LaBraMModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.717224            0.56476     0.647057  0.56476            0.37859     0.164715
+TUEG_Epilepsy  0.717224            0.56476     0.647057  0.56476            0.37859     0.164715
+------------------------- LaBraMModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.709512           0.563594     0.646862 0.563594           0.369178     0.158605
+TUEG_Epilepsy  0.709512           0.563594     0.646862 0.563594           0.369178     0.158605
+------------------------- LaBraMModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.719794           0.564407      0.64605 0.564407           0.382819      0.16522
+TUEG_Epilepsy  0.719794           0.564407      0.64605 0.564407           0.382819      0.16522
+------------------------- LaBraMModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.701799           0.542396     0.621775 0.542396            0.35066     0.109066
+TUEG_Epilepsy  0.701799           0.542396     0.621775 0.542396            0.35066     0.109066

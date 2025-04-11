@@ -1,0 +1,31 @@
+
+======================== Task Overview ========================
+     Task: Left Hand vs Right Hand vs Feet vs Tongue MI     
+    Dataset  Train Samples  Test Samples Train Class Distribution  Test Class Distribution
+BCICompIV2a           4032          1152 [1008, 1008, 1008, 1008]     [288, 288, 288, 288]
+   Kaya2018          13484          5151 [3295, 3354, 3321, 3514] [1269, 1277, 1272, 1333]
+------------------------- NeuroGPTModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+   Combined  0.379026           0.378239     0.376895 0.585547           0.298900     0.171419   0.381305 0.379026
+BCICompIV2a  0.321181           0.321181     0.263323 0.547454           0.275675     0.094907   0.341327 0.321181
+   Kaya2018  0.391963           0.391626     0.391174 0.594451           0.305568     0.189061   0.392412 0.391963
+------------------------- NeuroGPTModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+   Combined  0.379026           0.378239     0.376895 0.585547           0.298900     0.171419   0.381305 0.379026
+BCICompIV2a  0.321181           0.321181     0.263323 0.547454           0.275675     0.094907   0.341327 0.321181
+   Kaya2018  0.391963           0.391626     0.391174 0.594451           0.305568     0.189061   0.392412 0.391963
+------------------------- NeuroGPTModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+   Combined  0.379026           0.378239     0.376895 0.585547           0.298900     0.171419   0.381305 0.379026
+BCICompIV2a  0.321181           0.321181     0.263323 0.547454           0.275675     0.094907   0.341327 0.321181
+   Kaya2018  0.391963           0.391626     0.391174 0.594451           0.305568     0.189061   0.392412 0.391963
+------------------------- NeuroGPTModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+   Combined  0.379026           0.378239     0.376895 0.585547           0.298900     0.171419   0.381305 0.379026
+BCICompIV2a  0.321181           0.321181     0.263323 0.547454           0.275675     0.094907   0.341327 0.321181
+   Kaya2018  0.391963           0.391626     0.391174 0.594451           0.305568     0.189061   0.392412 0.391963
+------------------------- NeuroGPTModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+   Combined  0.379026           0.378239     0.376895 0.585547           0.298900     0.171419   0.381305 0.379026
+BCICompIV2a  0.321181           0.321181     0.263323 0.547454           0.275675     0.094907   0.341327 0.321181
+   Kaya2018  0.391963           0.391626     0.391174 0.594451           0.305568     0.189061   0.392412 0.391963

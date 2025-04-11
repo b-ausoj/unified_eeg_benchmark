@@ -1,0 +1,25 @@
+
+======================== Task Overview ========================
+                     Task: ocd_clinical                     
+    Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
+OCDFlankers             35            11                 [18, 17]                  [6, 5]
+------------------------- LaBraMModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.727273           0.716667     0.722611 0.716667           0.631818     0.440678
+OCDFlankers  0.727273           0.716667     0.722611 0.716667           0.631818     0.440678
+------------------------- LaBraMModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.727273           0.716667     0.722611 0.716667           0.631818     0.440678
+OCDFlankers  0.727273           0.716667     0.722611 0.716667           0.631818     0.440678
+------------------------- LaBraMModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.727273           0.716667     0.722611 0.716667           0.631818     0.440678
+OCDFlankers  0.727273           0.716667     0.722611 0.716667           0.631818     0.440678
+------------------------- LaBraMModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.818182           0.816667     0.818182 0.816667           0.730909     0.633333
+OCDFlankers  0.818182           0.816667     0.818182 0.816667           0.730909     0.633333
+------------------------- LaBraMModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.727273           0.733333     0.727273 0.733333           0.624242     0.459016
+OCDFlankers  0.727273           0.733333     0.727273 0.733333           0.624242     0.459016

@@ -1,0 +1,25 @@
+
+======================== Task Overview ========================
+                Task: schizophrenia_clinical                
+              Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
+SchizophreniaConflict             63            13                 [25, 38]                  [6, 7]
+------------------------- LaBraMModel -------------------------
+              Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+             Combined  0.538462           0.547619     0.532967 0.547619           0.564835     0.093023
+SchizophreniaConflict  0.538462           0.547619     0.532967 0.547619           0.564835     0.093023
+------------------------- LaBraMModel -------------------------
+              Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+             Combined  0.538462           0.559524     0.503846 0.559524           0.575092     0.113636
+SchizophreniaConflict  0.538462           0.559524     0.503846 0.559524           0.575092     0.113636
+------------------------- LaBraMModel -------------------------
+              Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+             Combined  0.615385           0.607143     0.610723 0.607143           0.600275     0.216867
+SchizophreniaConflict  0.615385           0.607143     0.610723 0.607143           0.600275     0.216867
+------------------------- LaBraMModel -------------------------
+              Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+             Combined  0.538462                0.5     0.376923      0.5           0.538462          0.0
+SchizophreniaConflict  0.538462                0.5     0.376923      0.5           0.538462          0.0
+------------------------- LaBraMModel -------------------------
+              Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+             Combined  0.461538                0.5     0.291498      0.5           0.538462          0.0
+SchizophreniaConflict  0.461538                0.5     0.291498      0.5           0.538462          0.0

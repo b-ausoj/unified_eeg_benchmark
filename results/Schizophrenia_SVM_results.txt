@@ -1,0 +1,25 @@
+
+======================== Task Overview ========================
+                Task: schizophrenia_clinical                
+              Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
+SchizophreniaConflict             63            13                 [25, 38]                  [6, 7]
+------------------------- Brainfeatures-SVM -------------------------
+              Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+             Combined  0.692308           0.678571     0.680769 0.678571           0.648352     0.365854
+SchizophreniaConflict  0.692308           0.678571     0.680769 0.678571           0.648352     0.365854
+------------------------- Brainfeatures-SVM -------------------------
+              Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+             Combined  0.692308           0.678571     0.680769 0.678571           0.648352     0.365854
+SchizophreniaConflict  0.692308           0.678571     0.680769 0.678571           0.648352     0.365854
+------------------------- Brainfeatures-SVM -------------------------
+              Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+             Combined  0.692308           0.678571     0.680769 0.678571           0.648352     0.365854
+SchizophreniaConflict  0.692308           0.678571     0.680769 0.678571           0.648352     0.365854
+------------------------- Brainfeatures-SVM -------------------------
+              Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+             Combined  0.692308           0.678571     0.680769 0.678571           0.648352     0.365854
+SchizophreniaConflict  0.692308           0.678571     0.680769 0.678571           0.648352     0.365854
+------------------------- Brainfeatures-SVM -------------------------
+              Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+             Combined  0.692308           0.678571     0.680769 0.678571           0.648352     0.365854
+SchizophreniaConflict  0.692308           0.678571     0.680769 0.678571           0.648352     0.365854

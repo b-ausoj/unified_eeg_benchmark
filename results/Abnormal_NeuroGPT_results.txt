@@ -1,0 +1,25 @@
+
+======================== Task Overview ========================
+                  Task: abnormal_clinical                   
+      Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
+TUEG_Abnormal           2717           276             [1346, 1371]              [126, 150]
+------------------------- NeuroGPTModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.721014           0.703968     0.707927 0.703968           0.671099     0.420484
+TUEG_Abnormal  0.721014           0.703968     0.707927 0.703968           0.671099     0.420484
+------------------------- NeuroGPTModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.713768           0.696667     0.700341 0.696667           0.665619     0.405432
+TUEG_Abnormal  0.713768           0.696667     0.700341 0.696667           0.665619     0.405432
+------------------------- NeuroGPTModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.710145           0.693333      0.69705 0.693333           0.663261       0.3983
+TUEG_Abnormal  0.710145           0.693333      0.69705 0.693333           0.663261       0.3983
+------------------------- NeuroGPTModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.710145           0.693333      0.69705 0.693333           0.663261       0.3983
+TUEG_Abnormal  0.710145           0.693333      0.69705 0.693333           0.663261       0.3983
+------------------------- NeuroGPTModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.706522           0.690635     0.694727 0.690635           0.661621     0.391971
+TUEG_Abnormal  0.706522           0.690635     0.694727 0.690635           0.661621     0.391971

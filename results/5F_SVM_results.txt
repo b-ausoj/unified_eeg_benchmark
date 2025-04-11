@@ -1,0 +1,25 @@
+
+======================== Task Overview ========================
+                   Task: Five Fingers MI                    
+ Dataset  Train Samples  Test Samples       Train Class Distribution   Test Class Distribution
+Kaya2018          16172          1899 [2965, 3190, 3324, 3201, 3492] [343, 371, 392, 377, 416]
+------------------------- CSP-SVM -------------------------
+ Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+Combined  0.196419           0.205624      0.13116 0.503436           0.201391     0.006323   0.119973 0.196419
+Kaya2018  0.196419           0.205624      0.13116 0.503436           0.201391     0.006323   0.119973 0.196419
+------------------------- CSP-SVM -------------------------
+ Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+Combined  0.196419           0.205624      0.13116 0.503436           0.201391     0.006323   0.119973 0.196419
+Kaya2018  0.196419           0.205624      0.13116 0.503436           0.201391     0.006323   0.119973 0.196419
+------------------------- CSP-SVM -------------------------
+ Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+Combined  0.196419           0.205624      0.13116 0.503436           0.201391     0.006323   0.119973 0.196419
+Kaya2018  0.196419           0.205624      0.13116 0.503436           0.201391     0.006323   0.119973 0.196419
+------------------------- CSP-SVM -------------------------
+ Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+Combined  0.196419           0.205624      0.13116 0.503436           0.201391     0.006323   0.119973 0.196419
+Kaya2018  0.196419           0.205624      0.13116 0.503436           0.201391     0.006323   0.119973 0.196419
+------------------------- CSP-SVM -------------------------
+ Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+Combined  0.196419           0.205624      0.13116 0.503436           0.201391     0.006323   0.119973 0.196419
+Kaya2018  0.196419           0.205624      0.13116 0.503436           0.201391     0.006323   0.119973 0.196419

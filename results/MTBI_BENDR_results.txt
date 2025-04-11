@@ -1,0 +1,25 @@
+
+======================== Task Overview ========================
+                    Task: mtbi_clinical                     
+    Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
+MTBIOddball            149            28                 [64, 85]                 [9, 19]
+------------------------- BENDRModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.285714           0.444444     0.142857 0.444444           0.678571    -0.072797
+MTBIOddball  0.285714           0.444444     0.142857 0.444444           0.678571    -0.072797
+------------------------- BENDRModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.714286           0.555556     0.624845 0.555556           0.703704     0.145038
+MTBIOddball  0.714286           0.555556     0.624845 0.555556           0.703704     0.145038
+------------------------- BENDRModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.357143           0.467836     0.310268 0.467836           0.666165    -0.045643
+MTBIOddball  0.357143           0.467836     0.310268 0.467836           0.666165    -0.045643
+------------------------- BENDRModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined  0.678571                0.5     0.548632      0.5           0.678571          0.0
+MTBIOddball  0.678571                0.5     0.548632      0.5           0.678571          0.0
+------------------------- BENDRModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+   Combined       0.5            0.48538     0.516043  0.48538           0.672306    -0.026178
+MTBIOddball       0.5            0.48538     0.516043  0.48538           0.672306    -0.026178

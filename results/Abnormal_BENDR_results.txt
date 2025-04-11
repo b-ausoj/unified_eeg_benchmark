@@ -1,0 +1,25 @@
+
+======================== Task Overview ========================
+                  Task: abnormal_clinical                   
+      Dataset  Train Samples  Test Samples Train Class Distribution Test Class Distribution
+TUEG_Abnormal           2717           276             [1346, 1371]              [126, 150]
+------------------------- BENDRModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.724638           0.716825      0.72184 0.716825           0.686065     0.438664
+TUEG_Abnormal  0.724638           0.716825      0.72184 0.716825           0.686065     0.438664
+------------------------- BENDRModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.721014           0.712857     0.717948 0.712857           0.682627     0.430913
+TUEG_Abnormal  0.721014           0.712857     0.717948 0.712857           0.682627     0.430913
+------------------------- BENDRModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.728261           0.720159     0.725274 0.720159           0.688589     0.445694
+TUEG_Abnormal  0.728261           0.720159     0.725274 0.720159           0.688589     0.445694
+------------------------- BENDRModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.724638           0.716825      0.72184 0.716825           0.686065     0.438664
+TUEG_Abnormal  0.724638           0.716825      0.72184 0.716825           0.686065     0.438664
+------------------------- BENDRModel -------------------------
+      Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa
+     Combined  0.728261           0.720159     0.725274 0.720159           0.688589     0.445694
+TUEG_Abnormal  0.728261           0.720159     0.725274 0.720159           0.688589     0.445694

@@ -1,0 +1,31 @@
+
+======================== Task Overview ========================
+     Task: Left Hand vs Right Hand vs Feet vs Tongue MI     
+    Dataset  Train Samples  Test Samples Train Class Distribution  Test Class Distribution
+BCICompIV2a           4032          1152 [1008, 1008, 1008, 1008]     [288, 288, 288, 288]
+   Kaya2018          13484          5151 [3295, 3354, 3321, 3514] [1269, 1277, 1272, 1333]
+------------------------- BENDR Model -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+   Combined  0.621609           0.621352     0.620695 0.747614           0.481060     0.495420   0.620937 0.621609
+BCICompIV2a  0.322917           0.322917     0.319726 0.548611           0.275421     0.097222   0.325047 0.322917
+   Kaya2018  0.688410           0.687942     0.686286 0.792009           0.551656     0.584371   0.688050 0.688410
+------------------------- BENDR Model -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+   Combined  0.627003           0.626596     0.625014 0.751116           0.486348     0.502532   0.625953 0.627003
+BCICompIV2a  0.363715           0.363715     0.361564 0.575810           0.292428     0.151620   0.365581 0.363715
+   Kaya2018  0.685886           0.685210     0.682882 0.790203           0.548964     0.580926   0.686132 0.685886
+------------------------- BENDR Model -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+   Combined  0.626210           0.625727     0.623910 0.750549           0.485620     0.501460   0.625051 0.626210
+BCICompIV2a  0.362847           0.362847     0.360833 0.575231           0.293286     0.150463   0.365585 0.362847
+   Kaya2018  0.685110           0.684381     0.681549 0.789655           0.548244     0.579873   0.685877 0.685110
+------------------------- BENDR Model -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+   Combined  0.628748           0.628409     0.626715 0.752318           0.488254     0.504882   0.627008 0.628748
+BCICompIV2a  0.349826           0.349826     0.348832 0.566551           0.288495     0.133102   0.356372 0.349826
+   Kaya2018  0.691128           0.690630     0.687882 0.793781           0.555221     0.587933   0.691174 0.691128
+------------------------- BENDR Model -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+   Combined  0.622878           0.622448     0.620733 0.748357           0.482045     0.497033   0.621780 0.622878
+BCICompIV2a  0.326389           0.326389     0.325913 0.550926           0.279186     0.101852   0.332858 0.326389
+   Kaya2018  0.689187           0.688531     0.685866 0.792404           0.552884     0.585309   0.689844 0.689187

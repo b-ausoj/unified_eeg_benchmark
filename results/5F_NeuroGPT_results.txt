@@ -1,0 +1,25 @@
+
+======================== Task Overview ========================
+                   Task: Five Fingers MI                    
+ Dataset  Train Samples  Test Samples       Train Class Distribution   Test Class Distribution
+Kaya2018          16172          1899 [2965, 3190, 3324, 3201, 3492] [343, 371, 392, 377, 416]
+------------------------- NeuroGPTModel -------------------------
+ Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+Combined  0.231174           0.228478     0.190239 0.517985           0.207374     0.037113   0.234805 0.231174
+Kaya2018  0.231174           0.228478     0.190239 0.517985           0.207374     0.037113   0.234805 0.231174
+------------------------- NeuroGPTModel -------------------------
+ Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+Combined  0.239073           0.235217     0.200407 0.522316           0.210255     0.046498   0.240731 0.239073
+Kaya2018  0.239073           0.235217     0.200407 0.522316           0.210255     0.046498   0.240731 0.239073
+------------------------- NeuroGPTModel -------------------------
+ Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+Combined  0.231701           0.228802     0.196332 0.518239           0.208542     0.037905   0.235934 0.231701
+Kaya2018  0.231701           0.228802     0.196332 0.518239           0.208542     0.037905   0.235934 0.231701
+------------------------- NeuroGPTModel -------------------------
+ Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+Combined  0.228541           0.225673     0.186535 0.516254           0.207023     0.033767     0.2377 0.228541
+Kaya2018  0.228541           0.225673     0.186535 0.516254           0.207023     0.033767     0.2377 0.228541
+------------------------- NeuroGPTModel -------------------------
+ Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+Combined  0.235387           0.232169     0.204372 0.520303           0.208709     0.041836   0.249875 0.235387
+Kaya2018  0.235387           0.232169     0.204372 0.520303           0.208709     0.041836   0.249875 0.235387

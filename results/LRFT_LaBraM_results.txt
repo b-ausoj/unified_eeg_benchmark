@@ -1,0 +1,31 @@
+
+======================== Task Overview ========================
+     Task: Left Hand vs Right Hand vs Feet vs Tongue MI     
+    Dataset  Train Samples  Test Samples Train Class Distribution  Test Class Distribution
+BCICompIV2a           4032          1152 [1008, 1008, 1008, 1008]     [288, 288, 288, 288]
+   Kaya2018          13484          5151 [3295, 3354, 3321, 3514] [1269, 1277, 1272, 1333]
+------------------------- LaBraMModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+   Combined  0.635570           0.635668     0.635683 0.757120           0.495432     0.514159   0.636805 0.635570
+BCICompIV2a  0.305556           0.305556     0.306153 0.537037           0.267980     0.074074   0.307653 0.305556
+   Kaya2018  0.709377           0.709613     0.709590 0.806406           0.576803     0.612584   0.711647 0.709377
+------------------------- LaBraMModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+   Combined  0.640806           0.640945     0.641030 0.760638           0.501074     0.521163   0.642580 0.640806
+BCICompIV2a  0.300347           0.300347     0.298513 0.533565           0.265315     0.067130   0.299487 0.300347
+   Kaya2018  0.716948           0.717099     0.717365 0.811419           0.586309     0.622686   0.720860 0.716948
+------------------------- LaBraMModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+   Combined  0.639378           0.639598     0.639594 0.759735           0.500388     0.519298   0.643621 0.639378
+BCICompIV2a  0.296007           0.296007     0.294224 0.530671           0.264151     0.061343   0.293819 0.296007
+   Kaya2018  0.716172           0.716550     0.716812 0.811030           0.586818     0.621714   0.723641 0.716172
+------------------------- LaBraMModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+   Combined  0.637792           0.637901     0.637700 0.758601           0.497678     0.517104   0.639190 0.637792
+BCICompIV2a  0.265625           0.265625     0.264073 0.510417           0.254398     0.020833   0.266593 0.265625
+   Kaya2018  0.721025           0.721283     0.721292 0.814188           0.591466     0.628128   0.726085 0.721025
+------------------------- LaBraMModel -------------------------
+    Dataset  Accuracy  Balanced Accuracy  Weighted F1  ROC AUC  Average Precision  Cohen Kappa  Precision   Recall
+   Combined  0.636522           0.636737     0.636668 0.757817           0.496691     0.515458   0.638496 0.636522
+BCICompIV2a  0.278646           0.278646     0.277209 0.519097           0.258595     0.038194   0.276847 0.278646
+   Kaya2018  0.716560           0.716960     0.716810 0.811281           0.585769     0.622191   0.720190 0.716560
