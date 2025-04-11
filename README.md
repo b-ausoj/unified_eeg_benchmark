@@ -52,3 +52,8 @@ The benchmark can be run via the script `benchmark_console.py` with the argument
 | labram     | LaBra                         |
 | bendr      | BENDR                         |
 | neurogpt   | NeuroGPT                      |
+
+for example
+```
+python benchmark_console.py --model labram --task lr
+```
