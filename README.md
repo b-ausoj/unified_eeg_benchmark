@@ -111,7 +111,7 @@ def predict(self, X: List[np.ndarray | List [BaseRaw]], meta: List[Dict]) -> np.
 
 ```
 ### Run Your Model
-Register your model in `models/__init__.py` and add it to `benchmark_console.py` to run:
+Register your model in `benchmark_console.py` to run:
 ```bash
 python benchmark_console.py --model mymodel --task ab
 ```
