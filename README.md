@@ -94,6 +94,28 @@ Add your task to:
 
 Implement `get_data()` to return training/testing splits with data, labels, and metadata.
 
+## 🤖 Add Your Own Model
+To integrate a new model, implement the `AbstractModel` interface and place your code in:
+- `models/bci/` for Motor Imagery (BCI) models
+- `models/clinical/` for Clinical models
+
+### Your model must implement:
+```python
+def fit(self, X: List[np.ndarray | List [BaseRaw]], y: List[np.ndarray | List[str]], meta: List[Dict]) -> None:
+    # Each list entry corresponds to one dataset
+    pass
+
+def predict(self, X: List[np.ndarray | List [BaseRaw]], meta: List[Dict]) -> np.ndarray:
+    # Predict on each dataset separately, return concatenated predictions
+    pass
+
+```
+### Run Your Model
+Register your model in `models/__init__.py` and add it to `benchmark_console.py` to run:
+```bash
+python benchmark_console.py --model mymodel --task ab
+```
+
 ## 📊 Evaluation & Reproducibility
 All experiments:
 - Use fixed subject-level splits
