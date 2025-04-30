@@ -17,6 +17,7 @@ import gc
 import os
 import lightning as L
 import torchaudio
+from ...utils.config import get_config_value
 from .Maxim.mae_rope_encoder import EncoderViTRoPE
 from sklearn.neural_network import MLPClassifier
 from ..bci.Maxim.simple_classifier import SimpleClassifier
@@ -48,23 +49,10 @@ from .Maxim.transforms import (
 )
 
 CHKPT_PATHS = [
-    (
-        "/itet-stor/jbuerki/home/unified_eeg_benchmark/"
-        "unified_eeg_benchmark/models/clinical/Maxim/pretrain_ckpts/"
-        "epoch=0-step=32807-val_loss=133.55.ckpt"
-    ),
-    (
-        "/itet-stor/jbuerki/home/unified_eeg_benchmark/"
-        "unified_eeg_benchmark/models/clinical/Maxim/pretrain_ckpts/"
-        "epoch=5-step=181751-val_loss=130.43-lr.ckpt"
-    ),
-    (
-        "/itet-stor/jbuerki/home/unified_eeg_benchmark/"
-        "unified_eeg_benchmark/models/clinical/Maxim/pretrain_ckpts/"
-        "epoch=7-step=221332-val_loss=129.99-lr.ckpt"
-    ),
-]
-        
+    f"/itet-stor/{get_config_value("user")}/deepeye_storage/pretrain_ckpts/epoch=0-step=32807-val_loss=133.55.ckpt",
+    f"/itet-stor/{get_config_value("user")}/deepeye_storage/pretrain_ckpts/epoch=5-step=181751-val_loss=130.43-lr.ckpt",
+    f"/itet-stor/{get_config_value("user")}/deepeye_storage/pretrain_ckpts/epoch=7-step=221332-val_loss=129.99-lr.ckpt",
+]       
 
 
 def mean_aggregation(tokens):

@@ -9,9 +9,10 @@ from mne.io import read_raw_edf, BaseRaw
 from tqdm import tqdm
 from sklearn.utils import shuffle
 from pathlib import Path
+from ...utils.config import get_config_value
 
 
-DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/tueg_abnormal/tuab/edf/"
+DATA_PATH = get_config_value("tuab")
 
 
 def _load_data_tueg_abnormal(subjects: Sequence[int], split: Split, preload: bool) -> Tuple[List[BaseRaw], List[str], List[str]]:

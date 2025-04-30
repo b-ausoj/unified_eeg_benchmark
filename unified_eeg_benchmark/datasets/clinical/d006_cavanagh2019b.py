@@ -8,9 +8,10 @@ from scipy.io import loadmat
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+from ...utils.config import get_config_value
 
 
-DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d006_cavanagh2019b/data/Depression PS Task/"
+DATA_PATH = get_config_value("d006")
 
 
 def _load_data_cavanagh2019b(subjects: Sequence[int], split: Split, target_class: ClinicalClasses, sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:

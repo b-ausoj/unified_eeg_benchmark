@@ -11,9 +11,7 @@ from tqdm import tqdm
 from ...utils.config import get_config_value
 import os
 
-
-#DATA_PATH = os.path.join(get_config_value("d012"), "data/mTBI Rest/")
-DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d012_cavanagh2019d/data/mTBI Rest/"
+DATA_PATH = get_config_value("d012")
 
 
 def _load_data_cavanagh2019d(subjects: Sequence[int], target_class: ClinicalClasses, sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:

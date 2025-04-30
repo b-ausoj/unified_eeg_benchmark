@@ -15,9 +15,7 @@ from ...utils.config import get_config_value
 import os
 import random
 
-
-#DATA_PATH = os.path.join(get_config_value("d011"), "data/PD Gait/")
-DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d011_singh2019/data/PD Gait/"
+DATA_PATH = get_config_value("d011")
 
 
 def _load_data_singh2019(split: Split, subjects: Sequence[int], target_class: ClinicalClasses, sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:

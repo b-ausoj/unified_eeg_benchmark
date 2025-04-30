@@ -8,9 +8,10 @@ from mne.filter import filter_data, notch_filter
 from resampy import resample
 import numpy as np
 from tqdm import tqdm
+from ...utils.config import get_config_value
 
 
-DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d001_cavanagh2017a/data/"
+DATA_PATH = get_config_value("d001")
 
 
 def _load_data_cavanagh2017a(split: Split, subjects: Sequence[int], sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:

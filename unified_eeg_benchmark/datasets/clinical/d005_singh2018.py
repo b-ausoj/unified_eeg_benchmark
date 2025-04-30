@@ -8,9 +8,9 @@ import numpy as np
 from resampy import resample
 import pandas as pd
 from tqdm import tqdm
+from ...utils.config import get_config_value
 
-
-DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d005_singh2018/data/PD Conflict Task/"
+DATA_PATH = get_config_value("d005")
 
 
 def _load_data_singh2018(split: Split, subjects: Sequence[int], target_class: ClinicalClasses, sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:

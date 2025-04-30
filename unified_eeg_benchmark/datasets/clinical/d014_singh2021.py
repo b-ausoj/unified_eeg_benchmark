@@ -16,9 +16,7 @@ import os
 import random
 
 
-#DATA_PATH = os.path.join(get_config_value("d014"), "data/PD Interval Timing NPJ/")
-DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d014_singh2021/data/PD Interval Timing NPJ/"
-
+DATA_PATH = get_config_value("d014")
 
 def _load_data_singh2021(split: Split, subjects: Sequence[int], target_class: ClinicalClasses, sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:
     ctr_subjects = ['Control1135', 'Control1195', 'Control1065', 'Control1275', 'Control1205', 'Control1025', 'Control1055', 'Control1225', 'Control1375', 'Control1295', 'Control1345', 'Control1115', 'Control1405', 'Control1155', 'Control1265', 'Control1035', 'Control1385', 'Control1255', 'Control1335', 'Control1175', 'Control1305', 'Control1235', 'Control1415', 'Control1125', 'Control1095', 'Control1315', 'Control1395', 'Control1365', 'Control1325', 'Control1105', 'Control1185', 'Control1245', 'Control1085', 'Control1285', 'Control1215', 'Control1075', 'Control1145']

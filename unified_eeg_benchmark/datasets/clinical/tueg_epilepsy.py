@@ -6,9 +6,10 @@ import glob
 import os
 from mne.io import read_raw_edf, Raw
 from tqdm import tqdm
+from ...utils.config import get_config_value
 
 
-DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/tueg_epilepsy/"
+DATA_PATH = get_config_value("tuep")
 
 
 def _load_data_tueg_epilepsy(subjects: Sequence[int], preload: bool) -> Tuple[List[List[Raw]], List[str], List[List[str]]]:

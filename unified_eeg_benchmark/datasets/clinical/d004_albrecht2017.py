@@ -8,9 +8,10 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from resampy import resample
+from ...utils.config import get_config_value
 
 
-DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d004_albrecht2017/data/Cost Conflict in Schizophrenia/"
+DATA_PATH = get_config_value("d004")
 
 
 def _load_data_albrecht2017(split: Split, subjects: Sequence[int], target_class: ClinicalClasses, sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:

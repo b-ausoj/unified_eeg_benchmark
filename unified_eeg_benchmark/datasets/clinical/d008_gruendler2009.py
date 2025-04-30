@@ -10,9 +10,10 @@ import pandas as pd
 from mne.io import read_raw_cnt
 import warnings
 from tqdm import tqdm
+from ...utils.config import get_config_value
 
 
-DATA_PATH = "/itet-stor/jbuerki/net_scratch/data/d008_gruendler2009/data/OCI Flankers/"
+DATA_PATH = get_config_value("d008")
 
 
 def _load_data_gruendler2009(split: Split, subjects: Sequence[int], target_class: ClinicalClasses, sampling_frequency: int, resampling_frequency: Optional[int] = None) -> Tuple[Sequence[np.ndarray], np.ndarray]:
