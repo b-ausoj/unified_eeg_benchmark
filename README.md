@@ -16,10 +16,10 @@ conda activate unified_eeg_benchmark
 
 ### Configure Paths
 I would quickly search the whole project (Shift + CMD + F) for occurences of `jbuerki` or and adjust it for your personal username. Furthermore the cache path is defined in `utils/config.json`. The download paths for MOABB probably also need to be adjusted (in MNE config).
+- Adjust cache, chkpt, data and download paths:
+    - utils/config.json (benchmark cache, chkpt and data)
+    - MNE config for MOABB dataset download paths
 - Update hardcoded paths (jbuerki) using global search (e.g. Shift+Cmd+F).
-- Adjust cache and download paths:
-    - utils/config.json (benchmark cache)
-    - MNE config for MOABB dataset paths
 
 ## 📁 Project Structure
 
