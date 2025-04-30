@@ -23,6 +23,7 @@ from unified_eeg_benchmark.models.clinical import (
     LaBraMModel,
     BENDRModel,
     NeuroGPTModel,
+    MaximsModel,
 )
 from unified_eeg_benchmark.models.abstract_model import AbstractModel
 from unified_eeg_benchmark.utils.evaluate_and_plot import print_classification_results, generate_classification_plots
@@ -31,7 +32,7 @@ from typing import Sequence
 from tqdm import tqdm
 import logging
 
-logging.basicConfig(level=logging.INFO,
+logging.basicConfig(level=logging.ERROR,
                         format='%(asctime)s [%(levelname)s] %(name)s: %(message)s'
 )
 logger = logging.getLogger(__name__)
@@ -76,9 +77,10 @@ if __name__ == "__main__":
         # MTBIClinicalTask(),
         # OCDClinicalTask(),
         # EpilepsyClinicalTask(),
-        # AbnormalClinicalTask(),
+        AbnormalClinicalTask(),
     ]
     models = [
+        MaximsModel(),
         # BrainfeaturesLDAModel(),
         # BrainfeaturesSVMModel(seed=seed),
         # LaBraMModel(),

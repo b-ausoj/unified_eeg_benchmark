@@ -21,6 +21,7 @@ from unified_eeg_benchmark.models.bci import (
     LaBraMModel,
     NeuroGPTModel,
     TSLRModel,
+    MaximsModel,
 )
 from unified_eeg_benchmark.utils.evaluate_and_plot import print_classification_results, generate_classification_plots
 from unified_eeg_benchmark.utils.utils import set_seed, save_results
@@ -71,7 +72,7 @@ if __name__ == "__main__":
     tasks = [
         #LeftHandvRightHandMITask(),
         #RightHandvFeetMITask(),
-        #LeftHandvRightHandvFeetvTongueMITask(),
+        LeftHandvRightHandvFeetvTongueMITask(),
         #FiveFingersMITask(),
         #FleExtSupProCloOpnMITask(),
         #FlexionvExtensionMITask(),
@@ -85,7 +86,8 @@ if __name__ == "__main__":
         # LaBraMModel(),
         # NeuroGPTModel(seed=seed),
         # BENDRModel(),
-        
+        MaximsModel(),
+
         # CSPriemannLDAModel(),
         # FgMDMModel(),
         # TSLRModel(),

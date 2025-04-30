@@ -22,6 +22,7 @@ from unified_eeg_benchmark.models.clinical import (
     LaBraMModel as LaBraMClinical,
     BENDRModel as BENDRClinical,
     NeuroGPTModel as NeuroGPTClinical,
+    MaximsModel as MaximsClinical,
 )
 from unified_eeg_benchmark.models.bci import (
     CSPLDAModel as CSPLDA,
@@ -29,6 +30,7 @@ from unified_eeg_benchmark.models.bci import (
     LaBraMModel as LaBraMBci,
     BENDRModel as BENDRBci,
     NeuroGPTModel as NeuroGPTBci,
+    MaximsModel as MaximsBci,
 )
 from unified_eeg_benchmark.utils.evaluate_and_plot import print_classification_results, generate_classification_plots
 from unified_eeg_benchmark.utils.utils import set_seed, save_results
@@ -118,6 +120,7 @@ def main():
         "labram": LaBraMClinical,
         "bendr": BENDRClinical,
         "neurogpt": NeuroGPTClinical,
+        "maxim": MaximsClinical,
     }
     bci_models_map = {
         "lda": CSPLDA,
@@ -125,6 +128,7 @@ def main():
         "labram": LaBraMBci,
         "bendr": BENDRBci,
         "neurogpt": NeuroGPTBci,
+        "maxim": MaximsBci,
     }
 
     task_key = args.task.lower()

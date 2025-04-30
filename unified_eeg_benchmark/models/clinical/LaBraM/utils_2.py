@@ -561,6 +561,41 @@ def calc_class_weights(labels: List[np.ndarray]) -> List[float]:
     
     return class_weights
 
+def get_labels_from_finetune_dataset(dataset):
+    """
+    Extract labels from a FinetuneDataset instance.
+    """
+    labels = []
+    with h5py.File(dataset.h5_path, 'r') as hf:
+        for rec_name in dataset.recording_names:
+            recording_grp = hf[f'/recordings/{rec_name}']
+            if 'label' in recording_grp:
+                label = recording_grp['label'][()]
+            else:
+                label = -1  # or whatever default for missing labels
+            labels.append(label)
+    return labels
+
+
+def calc_sample_weights(dataset) -> torch.Tensor:
+    """
+    Create a WeightedRandomSampler to handle class imbalance.
+    Args:
+        labels (List[np.ndarray]): List of numpy arrays containing the labels.
+    Returns:
+        WeightedRandomSampler: A sampler to use in the DataLoader.
+    """
+    labels = get_labels_from_finetune_dataset(dataset)
+    labels = [map_label(label) for label in labels]  # if needed
+
+    class_counts = torch.bincount(torch.tensor(labels))
+    class_weights = 1.0 / class_counts.float()
+    sample_weights = [class_weights[label] for label in labels]
+    sample_weights = torch.tensor(sample_weights, dtype=torch.float32)
+
+    return sample_weights
+
+
 def get_channels(task_name):
     if task_name == "parkinsons_clinical":
         return ['P8', 'C2', 'PO8', 'PO7', 'P6', 'P4', 'CP1', 'FT7', 'Fz', 'Fp2', 'F2', 'Cz', 'C4', 'Fp1', 'P7', 'C5', 'TP7', 'P2', 'CP5', 'P1', 'F5', 'C3', 'FC6', 'FC1', 'C1', 'FC5', 'F1', 'FC3', 'O1', 'AF8', 'T7', 'CP2', 'O2', 'FCz', 'AF4', 'F6', 'F8', 'F4', 'CP4', 'CP6', 'P3', 'AFz', 'Oz', 'T8', 'C6', 'FC2', 'CP3', 'FC4', 'POz', 'FT8', 'TP8', 'AF3', 'AF7', 'P5', 'F3', 'F7']

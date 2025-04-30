@@ -63,6 +63,8 @@ def map_label(label: str, task_name: str) -> int:
                 return 4
         else:
             raise ValueError("Invalid label: ", label)
+    else:
+        raise ValueError("Label cannot be None")
         
 def reverse_map_label(label: int, task_name: str) -> str:
     """

@@ -3,6 +3,7 @@
     "data": "/scratch/jbuerki/data/",
     "log": "/scratch/jbuerki/log/",
     "tmp": "/scratch/jbuerki/tmp/",
+    "chkpt": "/scratch/jbuerki/chkpt/",
     "d014": "/itet-stor/jbuerki/deepeye_storage/foundation_clinical/CLI_UNM_D014/",
     "d013": "/itet-stor/jbuerki/deepeye_storage/foundation_clinical/CLI_UNM_D013/",
     "d012": "/itet-stor/jbuerki/deepeye_storage/foundation_clinical/CLI_UNM_D012/",

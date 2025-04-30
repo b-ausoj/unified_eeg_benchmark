@@ -1,17 +1,12 @@
 from ..abstract_model import AbstractModel
 from typing import List, Dict, cast, Literal
 import numpy as np
-from .LaBraM.make_dataset import make_dataset, make_dataset_abnormal
 from .LaBraM.make_dataset_2 import make_dataset as make_dataset_2
 from .LaBraM.utils_2 import calc_class_weights, map_label_reverse, LaBraMDataset2
 from .LaBraM import utils
 import torch
 from timm.models import create_model
-import random
 import numpy as np
-from .LaBraM.optim_factory import create_optimizer, get_parameter_groups, LayerDecayValueAssigner
-from .LaBraM.engine_for_finetuning import train_one_epoch, evaluate
-from einops import rearrange
 from mne.io import BaseRaw
 from .LaBraM import modeling_finetune # important to load the models
 import torch.nn as nn

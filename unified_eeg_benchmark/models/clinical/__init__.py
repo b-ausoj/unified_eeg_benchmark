@@ -4,5 +4,6 @@ from .brainfeatures_rf_model import BrainfeaturesRFModel
 from .brainfeatures_dt_model import BrainfeaturesDTModel
 from .brainfeatures_sgd_model import BrainfeaturesSGDModel
 from .labram_model import LaBraMModel
-from .bendr_model_2 import BENDRModel
+from .bendr_model import BENDRModel
 from .neurogpt_model import NeuroGPTModel
+from .maxims_model_L import MaximsModel

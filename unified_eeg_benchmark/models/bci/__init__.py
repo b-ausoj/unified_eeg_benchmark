@@ -7,3 +7,4 @@ from .labram_model import LaBraMModel
 from .neurogpt_model import NeuroGPTModel
 from .ts_lr_model import TSLRModel
 from .ts_svm_grid_model import TSSVMGridModel
+from .maxims_model import MaximsModel
