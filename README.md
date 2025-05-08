@@ -13,6 +13,11 @@ cd unified_eeg_benchmark
 conda env create -f environment.yml
 conda activate unified_eeg_benchmark
 ```
+### RuntimeErrors
+Unfortunately, due to the many different packages and number of different models, there can be problems with the versions of libraries. Known problems with solutions are listed below:
+- `RuntimeError: Failed to import transformers.training_args because of the following error (look up to see its traceback): No module named 'torch._six'` or `ModuleNotFoundError: No module named 'torch._six'`: One has to delete 
+    - the line 18 `from torch._six import inf` in `conda_envs/unified_eeg_benchmark/lib/python3.10/site-packages/deepspeed/runtime/utils.py`
+    - the line 9 `from torch._six import inf` in `conda_envs/unified_eeg_benchmark/lib/python3.10/site-packages/deepspeed/runtime/zero/stage2.py`
 
 ### Configure Paths
 I would quickly search the whole project (Shift + CMD + F) for occurences of `jbuerki` or and adjust it for your personal username. Furthermore the cache path is defined in `utils/config.json`. The download paths for MOABB probably also need to be adjusted (in MNE config).

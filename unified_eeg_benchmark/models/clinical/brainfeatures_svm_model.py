@@ -81,9 +81,6 @@ class BrainfeaturesSVMModel(AbstractModel):
             "cutoff_start_s": 10,
             "cutoff_end_s": 5,
         }
-
-        if meta[0]["task_name"] == "mtbi_clinical":
-            feature_generation_params["max_recording_len_min"] = 29
         
         print("Preparing data w/ ", feature_generation_params)
         all_data, all_labels = self.cache.cache(_prepare_data_cached)(X, y, meta, dataset_name, feature_generation_params) # type: ignore
